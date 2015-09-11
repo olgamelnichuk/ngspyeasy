@@ -34,6 +34,12 @@ class CommandLineOptionsTest(unittest.TestCase):
         self.assertEqual(projects_home, ngs_projects_dir)
         self.assertTrue(errmsg is None)
 
+        file = tempfile.NamedTemporaryFile(dir=ngs_projects_config_dir)
+        (tsv_name, projects_home, errmsg) = utils.check_cmdline_options(os.path.basename(file.name), ngs_projects_dir)
+        self.assertEqual(tsv_name, os.path.basename(file.name))
+        self.assertEqual(projects_home, ngs_projects_dir)
+        self.assertTrue(errmsg is None)
+
     def assertError(self, (tsv_name, projects_home, errmsg)):
         self.assertTrue(tsv_name is None)
         self.assertTrue(projects_home is None)
