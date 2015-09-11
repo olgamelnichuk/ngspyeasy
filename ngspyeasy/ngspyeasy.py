@@ -3,9 +3,9 @@
 import sys
 import getopt
 import utils
-from project_structure import projects_log_dir, projects_conf_relpath, init_project
-import logger
 import tsv_config
+from project_structure import get_log_dir, get_config_path, init_project
+from logger import init_logger
 
 
 def usage():
@@ -51,13 +51,13 @@ def main(argv):
     if errmsg:
         utils.exit_with_error(errmsg)
 
-    log = logger.create(projects_log_dir(projects_home), tsv_name, verbose)
+    init_logger(get_log_dir(projects_home), tsv_name, verbose)
 
-    tsv_conf = tsv_config.parse(projects_conf_relpath(projects_home, tsv_name), log)
+    tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
     if tsv_conf is None:
-        utils.exit_with_error("Can't parse TSV config. see logs for details")
+        utils.exit_with_error("Invalid TSV config. See logs for details...")
 
-    ngspyeasy(tsv_conf, projects_home, log)
+    ngspyeasy(tsv_conf, projects_home)
 
 
 def ngspyeasy(tsv_conf, projects_home, log):

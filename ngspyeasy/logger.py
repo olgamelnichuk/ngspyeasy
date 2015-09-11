@@ -1,35 +1,44 @@
 #!/usr/bin/env python
 
-import os.path
 import logging
+import os.path
+from settings import VERSION, RUNDATE
 
-def create(logdir, tsv_name, verbose):
-    version = "0.1"
-    rundate = "RUNDATE"
-    logfile = os.path.join(logdir, "ngspyeasy." + version + "." + tsv_name + "." + rundate)
-    return Logger(logfile, verbose)
+LOGGER_NAME = "MainLogger"
 
 
-class Logger:
+def init_logger(logdir, tsv_name, verbose):
+    logfile = os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + "." + RUNDATE)
 
-    def __init__(self, filename=None, verbose=False):
-        logger = logging.getLogger()
-        formatter = logging.Formatter('%(asctime)s : %(message)s')
-        fileHandler = logging.FileHandler(filename, mode='w')
-        fileHandler.setFormatter(formatter)
-        streamHandler = logging.StreamHandler()
-        streamHandler.setFormatter(formatter)
+    logger = logging.getLogger(LOGGER_NAME)
+    formatter = logging.Formatter('%(asctime)s : %(message)s')
 
-        logger.setLevel()
-        logger.addHandler(fileHandler)
-        logger.addHandler(streamHandler)
-        self.logger = logger
+    file_handler = logging.FileHandler(logfile, mode='w')
+    file_handler.setFormatter(formatter)
 
-    def error(self, msg):
-        self.logger.error(msg)
+    stream_handler = logging.StreamHandler()
+    stream_handler.setFormatter(formatter)
 
-    def debug(self, msg):
-        self.logger.debug(msg)
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    logger.addHandler(file_handler)
+    logger.addHandler(stream_handler)
 
-    def info(self, msg):
-        self.logger.info(msg)
+
+def get_logger():
+    return logging.getLogger(LOGGER_NAME)
+
+
+def log_error(msg, *args):
+    get_logger().error(msg, args)
+
+
+def log_debug(msg, *args):
+    get_logger().debug(msg, args)
+
+
+def log_info(msg, *args):
+    get_logger().info(msg, args)
+
+
+def log_warn(msg, *args):
+    get_logger().warn(msg, args)

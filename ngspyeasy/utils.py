@@ -2,7 +2,12 @@
 
 import sys
 import os.path
-from project_structure import projects_conf_relpath, projects_conf_dir
+import datetime
+import logging
+from project_structure import get_config_path, get_config_dir
+
+
+
 
 
 def check_cmdline_options(tsv_config_file, ngs_projects_dir):
@@ -33,11 +38,11 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
     if not tsv_config_file:
         return None, None, "TSV config file is not specified."
 
-    expected_path = projects_conf_relpath(projects_home, os.path.basename(tsv_config_file))
+    expected_path = get_config_path(projects_home, os.path.basename(tsv_config_file))
 
     if os.path.isabs(tsv_config_file):
         if os.path.abspath(tsv_config_file) != expected_path:
-            return None, "Config file must be in the projects config directory: '" + projects_conf_dir(
+            return None, "Config file must be in the projects config directory: '" + get_config_dir(
                 projects_home) + "'"
 
     if not os.path.isfile(expected_path):
@@ -49,3 +54,4 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
 def exit_with_error(msg):
     print >> sys.stderr, "[ngspyeasy]:ERROR:" + msg
     sys.exit(1)
+

@@ -1,16 +1,28 @@
 #!/usr/bin/env python
 
+from mock import Mock, patch
 import unittest
 import tempfile
+from testsettings import get_resource_path
 from ngspyeasy import tsv_config
 
 
 class TsvConfigTest(unittest.TestCase):
 
-    def test_empty_tsv(self):
-        tsv = tempfile.TemporaryFile()
-        #config = tsv_config.parse(tsv, log)
-        #self.assertTrue(config.isEmpty())
+    @patch("ngspyeasy.tsv_config.log_warn")
+    def test_empty_tsv(self, mock_log_warn):
+        tmp = tempfile.NamedTemporaryFile()
+        config = tsv_config.parse(tmp.name)
 
+        self.assertTrue(config.is_empty())
+        self.assertTrue(mock_log_warn.called)
 
+    @patch("ngspyeasy.tsv_config.log_error")
+    def test_columns(self, mock_log_error):
+        config = tsv_config.parse(get_resource_path("ngspyeasy_test.config.tsv"))
 
+        self.assertFalse(config.is_empty())
+        self.assertEqual(2, config.row_size())
+        self.assertEqual(23, config.col_size())
+
+        self.assertFalse(mock_log_error.called)
