@@ -4,13 +4,13 @@ import logging
 import os.path
 from settings import VERSION, RUNDATE
 
-LOGGER_NAME = "MainLogger"
 
+CURRENT_STEP = ["ngspyeasy"]
 
 def init_logger(logdir, tsv_name, verbose):
     logfile = os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + "." + RUNDATE)
 
-    logger = logging.getLogger(LOGGER_NAME)
+    logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s : %(message)s')
 
     file_handler = logging.FileHandler(logfile, mode='w')
@@ -25,20 +25,28 @@ def init_logger(logdir, tsv_name, verbose):
 
 
 def get_logger():
-    return logging.getLogger(LOGGER_NAME)
+    return logging.getLogger()
 
 
 def log_error(msg, *args):
-    get_logger().error(msg, args)
+    get_logger().error(with_step(msg), args)
 
 
 def log_debug(msg, *args):
-    get_logger().debug(msg, args)
+    get_logger().debug(with_step(msg), args)
 
 
 def log_info(msg, *args):
-    get_logger().info(msg, args)
+    get_logger().info(with_step(msg), args)
 
 
 def log_warn(msg, *args):
-    get_logger().warn(msg, args)
+    get_logger().warn(with_step(msg), args)
+
+
+def log_set_current_step(step):
+    CURRENT_STEP[0] = step
+
+
+def with_step(msg):
+    return "[" + CURRENT_STEP[0] + "]:" + msg

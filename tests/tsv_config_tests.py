@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-from mock import Mock, patch
+from mock import patch
 import unittest
 import tempfile
 from testsettings import get_resource_path
@@ -22,7 +22,9 @@ class TsvConfigTest(unittest.TestCase):
         config = tsv_config.parse(get_resource_path("ngspyeasy_test.config.tsv"))
 
         self.assertFalse(config.is_empty())
-        self.assertEqual(2, config.row_size())
+        self.assertEqual(1, config.row_size())
         self.assertEqual(23, config.col_size())
-
+        self.assertTrue(config.has_header())
+        self.assertEqual("GCAT_Data", config.row_at(0).get_project_id())
+        self.assertEqual("NA12878", config.row_at(0).get_sample_id())
         self.assertFalse(mock_log_error.called)

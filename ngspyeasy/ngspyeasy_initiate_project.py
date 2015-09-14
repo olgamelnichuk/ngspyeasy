@@ -5,15 +5,13 @@ import getopt
 import tsv_config
 from cmdline_options import check_cmdline_options
 from project_structure import get_log_dir, get_config_path
-from logger import init_logger
-
-from ngspyeasy_initiate_project import ngspyeasy_initiate_project
-#from ngspyeasy_fastqc import ngspyeasy_fastqc
+from logger import init_logger, log_info, log_set_current_step
+import project_structure
 
 
 def usage():
     print """
-Usage:  ngspyeasy -c <config_file> -d <project_directory>
+Usage:  ngspyeasy_initiate_project -c <config_file> -d <project_directory>
 
 Options:
         -c  STRING  configuration file
@@ -66,17 +64,13 @@ def main(argv):
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
-    ngspyeasy(tsv_conf, projects_home)
-
-
-def ngspyeasy(tsv_conf, projects_home):
     ngspyeasy_initiate_project(tsv_conf, projects_home)
-    # ngspyeasy_fastqc(tsv_conf, projects_home)
-    # ngspyeasy_trimmomatic.run_all(tsv_config, ngs_projects_dir)
-    # ngspyeasy_alignment.run_all(tsv_config, ngs_projects_dir)
-    # ngspyeasy_realign.run_all(tsv_config, ngs_projects_dir)
-    # ngspyeasy_bsqr.run_all(tsv_config, ngs_projects_dir)
-    # ngspyeasy_variant_calling.run_all(tsv_config, ngs_projects_dir)
+
+
+def ngspyeasy_initiate_project(tsv_config, projects_home):
+    log_set_current_step("ngspyeasy_initiate_project")
+    log_info("Start: Initiate Project")
+    project_structure.init_project(tsv_config, projects_home)
 
 
 if __name__ == '__main__':
