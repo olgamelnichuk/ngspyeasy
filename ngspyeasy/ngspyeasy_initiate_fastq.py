@@ -11,7 +11,7 @@ import project_structure
 
 def usage():
     print """
-Usage:  ngspyeasy_initiate_project -c <config_file> -d <project_directory>
+Usage:  ngspyeasy_initiate_fastq -c <config_file> -d <project_directory>
 
 Options:
         -c  STRING  configuration file
@@ -65,17 +65,17 @@ def main(argv):
         exit_with_error("Invalid TSV config. See logs for details...")
 
     try:
-        ngspyeasy_initiate_project(tsv_conf, projects_home)
+        ngspyeasy_initiate_fastq(tsv_conf, projects_home)
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
 
 
-def ngspyeasy_initiate_project(tsv_conf, projects_home):
-    log_set_current_step("ngspyeasy_initiate_project")
-    log_info("Start: Initiate Project")
+def ngspyeasy_initiate_fastq(tsv_conf, projects_home):
+    log_set_current_step("ngspyeasy_initiate_fastq")
+    log_info("Start: Initiate Fastq")
 
-    project_structure.init_project(tsv_conf, projects_home)
+    project_structure.init_fastq(tsv_conf, projects_home)
 
 
 if __name__ == '__main__':

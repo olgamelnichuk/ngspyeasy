@@ -27,4 +27,6 @@ class TsvConfigTest(unittest.TestCase):
         self.assertTrue(config.has_header())
         self.assertEqual("GCAT_Data", config.row_at(0).get_project_id())
         self.assertEqual("NA12878", config.row_at(0).get_sample_id())
+        self.assertEqual("illumina.100bp.pe.wex.150x_1.fastq.gz", config.row_at(0).get_fastq1())
+        self.assertEqual("illumina.100bp.pe.wex.150x_2.fastq.gz", config.row_at(0).get_fastq2())
         self.assertFalse(mock_log_error.called)

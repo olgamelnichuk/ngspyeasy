@@ -87,3 +87,9 @@ class TsvConfigRow:
 
     def get_sample_id(self):
         return self.value_at(columns.SAMPLE_ID)
+
+    def get_fastq1(self):
+        return self.value_at(columns.FASTQ1)
+
+    def get_fastq2(self):
+        return self.value_at(columns.FASTQ2)

@@ -5,9 +5,10 @@ import getopt
 import tsv_config
 from cmdline_options import check_cmdline_options
 from project_structure import get_log_dir, get_config_path
-from logger import init_logger
+from logger import init_logger, log_error
 
 from ngspyeasy_initiate_project import ngspyeasy_initiate_project
+from ngspyeasy_initiate_fastq import ngspyeasy_initiate_fastq
 #from ngspyeasy_fastqc import ngspyeasy_fastqc
 
 
@@ -66,11 +67,16 @@ def main(argv):
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
-    ngspyeasy(tsv_conf, projects_home)
+    try:
+        ngspyeasy(tsv_conf, projects_home)
+    except Exception as ex:
+        log_error(ex)
+        sys.exit(1)
 
 
 def ngspyeasy(tsv_conf, projects_home):
     ngspyeasy_initiate_project(tsv_conf, projects_home)
+    ngspyeasy_initiate_fastq(tsv_conf, projects_home)
     # ngspyeasy_fastqc(tsv_conf, projects_home)
     # ngspyeasy_trimmomatic.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_alignment.run_all(tsv_config, ngs_projects_dir)

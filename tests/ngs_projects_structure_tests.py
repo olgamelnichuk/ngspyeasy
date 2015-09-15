@@ -8,7 +8,7 @@ from ngspyeasy.project_structure import get_config_path, get_project_dir, get_sa
     get_sample_config_dir, get_sample_log_dir, get_sample_fastq_dir, get_sample_alignments_dir, get_sample_reports_dir, \
     get_sample_vcf_dir
 from testsettings import get_resource_path
-from ngspyeasy.project_structure import init_project
+from ngspyeasy.project_structure import init_project, init_fastq
 from testutils import create_ngs_projects_dir, file_permissions
 
 
@@ -38,3 +38,31 @@ class NGSProjectsStructureTest(unittest.TestCase):
 
             for name in dirs:
                 self.assertTrue(0775, file_permissions(os.path.join(root, name)))
+
+    def test_fastq_not_exist(self):
+        projects_home = create_ngs_projects_dir("test_fastq_not_exist",
+                                                get_resource_path("ngspyeasy_test.config.tsv"))
+        tsv_conf = tsv_config.parse(get_config_path(projects_home, "ngspyeasy_test.config.tsv"))
+        init_project(tsv_conf, projects_home)
+
+        try:
+            init_fastq(tsv_conf, projects_home)
+            self.fail("Exception should be raised, as fastq files do not exist")
+        except ValueError:
+            pass
+
+    def test_fastq_exist(self):
+        projects_home = create_ngs_projects_dir("test_fastq_exist",
+                                                get_resource_path("ngspyeasy_test.config.tsv"))
+        tsv_conf = tsv_config.parse(get_config_path(projects_home, "ngspyeasy_test.config.tsv"))
+        init_project(tsv_conf, projects_home)
+
+        raw_fastq_dir = os.path.join(projects_home, "raw_fastq")
+        os.makedirs(raw_fastq_dir)
+        open(os.path.join(raw_fastq_dir, "illumina.100bp.pe.wex.150x_1.fastq.gz"),'a').close()
+        open(os.path.join(raw_fastq_dir, "illumina.100bp.pe.wex.150x_2.fastq.gz"),'a').close()
+
+        try:
+            init_fastq(tsv_conf, projects_home)
+        except ValueError:
+            self.fail("Exception should not be raised, as fastq files exist")
