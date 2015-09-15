@@ -111,4 +111,4 @@ def move_fastq(projects_home, sample_home, fastq_name):
         log_info("Moving fastq file: src=%s, dest=%s", source, dest)
         move(source, dest)
     else:
-        log_info("OK (fastq file found: %s)", dest)
+        log_info("OK (fastq file exists: %s)", dest)
