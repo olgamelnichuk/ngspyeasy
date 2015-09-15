@@ -106,7 +106,7 @@ def move_fastq(projects_home, sample_home, fastq_name):
 
     if not os.path.isfile(dest):
         if not os.path.isfile(source):
-            raise ValueError("Fastq file doesn't exist: %s", source)
+            raise OSError("Fastq file doesn't exist: %s", source)
 
         log_info("Moving fastq file: src=%s, dest=%s", source, dest)
         move(source, dest)
