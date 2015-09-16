@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import sys
 import logging
 import os.path
 from settings import VERSION, RUNDATE
@@ -11,12 +11,12 @@ def init_logger(logdir, tsv_name, verbose):
     logfile = os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + "." + RUNDATE)
 
     logger = logging.getLogger()
-    formatter = logging.Formatter('%(asctime)s : %(message)s')
+    formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s : %(message)s')
 
     file_handler = logging.FileHandler(logfile, mode='w')
     file_handler.setFormatter(formatter)
 
-    stream_handler = logging.StreamHandler()
+    stream_handler = logging.StreamHandler(sys.stdout)
     stream_handler.setFormatter(formatter)
 
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
