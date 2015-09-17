@@ -15,7 +15,7 @@ job_requests = Queue(-1)  # infinite shared job queue
 
 
 class JobScheduler(Thread):
-    def __init__(self, logfile=None):
+    def __init__(self, logfile=None, timeout=60):
         super(JobScheduler, self).__init__()
         self.logger = self.create_logger(logfile)
         self.logger.debug("job_scheduler_init")
@@ -33,6 +33,7 @@ class JobScheduler(Thread):
         self.tree = JobDependencyTree()
         self.max_processes = numjobsallowed
         self.stopped = False
+        self.timeout = timeout
 
     def create_logger(self, logfile):
         logger = logging.getLogger("JobScheduler")
@@ -59,56 +60,76 @@ class JobScheduler(Thread):
                 self.logger.debug("job_request_found: %s", req_id)
 
                 if req_id == "stop_all":
-                    pass
-                    #self.logger.info("[stop_all] message received. Preparing to stop...")
-                    #self.stopped = True
-                    #break
+                    self.logger.info("[stop_all] message received. Preparing to stop...")
+                    self.stopped = True
+                    break
+
+                try:
+                    self.tree.append(req_id, req_dep, req_command)
+                except ValueError as ex:
+                    self.logger.error(ex.message, ex.args)
+                    self.logger.info("Preparing to stop...")
+                    self.stopped = True
+                    break
+
+            if len(self.processes) < self.max_processes:
+                (job_id, job_command) = self.tree.get()
+                if job_command is None:
+                    if job_id is not None:
+                        self.tree.done(job_id, 0)
                 else:
-                    try:
-                        self.tree.append(req_id, req_dep, req_command)
-                    except ValueError as ex:
-                        self.logger.error(ex.message, ex.args)
-                        self.logger.info("Preparing to stop...")
-                        self.stopped = True
-                        break
+                    self.logger.debug("job_to_run: %s", job_id)
+                    self.logger.debug("command_to_run: [[\n%s \n]]", job_command)
 
-            while len(self.processes) >= self.max_processes:
-                time.sleep(0.2)
-                self.update_processes()
+                    proc = subprocess.Popen(shlex.split(job_command), shell=True)
+                    self.processes.append((proc, job_command, job_id))
 
-            (job_id, job_command) = self.tree.get()
-            if job_id is None or job_command is None:
-                continue
-
-            self.logger.debug("job_to_run: %s", job_id)
-            self.logger.debug("command_to_run: [[\n %s \n]]", job_command)
-
-            proc = subprocess.Popen(shlex.split(job_command))
-            self.processes.append((proc, job_command, job_id))
-
-        self.logger.info("[stop_all] waiting processes to finish..")
-        while len(self.processes) > 0:
-            time.sleep(0.2)
             self.update_processes()
 
-        self.logger.info("[stop_all] all stopped")
+        self.logger.info("stopping all running processes..")
+
+        waiting_time = 0
+        while len(self.processes) > 0:
+            time.sleep(0.5)
+            if waiting_time >= 2 * self.timeout:
+                self.terminate_processes(sigkill=True)
+            elif waiting_time >= self.timeout:
+                self.terminate_processes()
+            else:
+                self.update_processes()
+            waiting_time += 0.5
+
+        self.logger.info("all stopped")
 
     def update_processes(self):
         unfinished = []
-        for p, c, job_id in self.processes:
+        for (p, c, job_id) in self.processes:
             ret = p.poll()
             if ret is None:
-                unfinished.append((p, c))
+                unfinished.append((p, c, job_id))
             else:
                 self.logger.debug("job_done: %s", job_id)
                 self.tree.done(job_id, ret)
                 if ret != 0:
-                    self.logger.error("Command (%s) completed with error. See logs for details", c)
+                    self.logger.error("Command [[\n%s \n]] completed with error. See logs for details", c)
 
         self.processes = unfinished
 
+    def terminate_processes(self, sigkill=False):
+        unfinished = []
+        for (p, c, job_id) in self.processes:
+            ret = p.poll()
+            if ret is None:
+                unfinished.append((p, c, job_id))
+                self.logger.error("Terminating process after timeout (%d) [[\n%s \n]]", self.timeout, c)
+                if sigkill:
+                    p.kill()
+                else:
+                    p.terminate()
+        self.processes = unfinished
 
-def submit(id, command, dependencies=None):
+
+def submit(id, command=None, dependencies=None):
     global job_requests
     log_debug("job_request_submit: (%s, %s)", id, command)
     job_requests.put((id, dependencies, command))
@@ -116,4 +137,4 @@ def submit(id, command, dependencies=None):
 
 
 def stop():
-    submit("stop_all", None, None)
+    submit("stop_all")
