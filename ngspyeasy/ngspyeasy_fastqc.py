@@ -1,10 +1,14 @@
 #!/usr/bin/env python
 import sys
 import getopt
+from ngspyeasy import job_scheduler
+from ngspyeasy.docker import docker_cmd
+from ngspyeasy.settings import NGSEASYVERSION
 import tsv_config
 from cmdline_options import check_cmdline_options
-from project_structure import get_log_dir, get_config_path
+from project_structure import get_log_dir, get_config_path, get_resources_dir
 from logger import init_logger, log_info, log_error, log_set_current_step
+import job_id_generator
 
 
 def usage():
@@ -69,15 +73,20 @@ def main(argv):
         sys.exit(1)
 
 
-def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies):
+def ngspyeasy_fastqc(tsv_conf, projects_home):
     log_set_current_step("ngspyeasy_fastqc")
     log_info("Start: FastQC")
 
     for row in tsv_conf.all_rows():
-        job_submit(
-            FastQCJob(tsv_conf.filename(), projects_home, row.get_sample_id()),
-            dependencies.get(row.get_sample_id()))
+        sample_id = row.get_sample_id()
+        cmd = ["/ngspyeasy/bin/ngspyeasy_fastqc_job", "-v", "-c", tsv_conf.filename(), "-d",
+               "/home/pipeman/ngs_projects", "-i", sample_id]
 
+        job_id = job_id_generator.get_next(["fastqc", sample_id])
 
-if __name__ == '__main__':
-    main(sys.argv[1:])
+        job_scheduler.submit(
+            job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,
+                               get_resources_dir(projects_home), pipeman=False), [])
+
+    if __name__ == '__main__':
+        main(sys.argv[1:])

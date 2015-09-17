@@ -18,6 +18,10 @@ def get_raw_fastq_dir(projects_home):
     return os.path.join(projects_home, "raw_fastq")
 
 
+def get_resources_dir(projects_home):
+    return os.path.join(projects_home, "ngseasy_resources")
+
+
 def get_config_path(projects_home, tsv_name):
     return os.path.join(get_config_dir(projects_home), tsv_name)
 
@@ -32,6 +36,10 @@ def get_sample_dir(projects_home, project_id, sample_id):
 
 def get_sample_fastq_dir(sample_dir):
     return os.path.join(sample_dir, "fastq")
+
+
+def get_sample_fastq_path(sample_dir, fastq_filename):
+    return os.path.join(get_sample_fastq_dir(sample_dir), fastq_filename)
 
 
 def get_sample_tmp_dir(sample_dir):

@@ -11,7 +11,7 @@ from logger import init_logger, log_error, log_info
 
 from ngspyeasy_initiate_project import ngspyeasy_initiate_project
 from ngspyeasy_initiate_fastq import ngspyeasy_initiate_fastq
-#from ngspyeasy_fastqc import ngspyeasy_fastqc
+from ngspyeasy_fastqc import ngspyeasy_fastqc
 
 
 def usage():
@@ -86,7 +86,6 @@ def main(argv):
         log_error(ex)
         retcode = 1
 
-
     log_info("All done!")
     sys.exit(retcode)
 
@@ -94,7 +93,7 @@ def main(argv):
 def ngspyeasy(tsv_conf, projects_home):
     ngspyeasy_initiate_project(tsv_conf, projects_home)
     ngspyeasy_initiate_fastq(tsv_conf, projects_home)
-    # ngspyeasy_fastqc(tsv_conf, projects_home)
+    ngspyeasy_fastqc(tsv_conf, projects_home)
     # ngspyeasy_trimmomatic.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_alignment.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_realign.run_all(tsv_config, ngs_projects_dir)
