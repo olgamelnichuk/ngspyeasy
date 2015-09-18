@@ -1,5 +1,5 @@
 #!/usr/bin/env python
-
+import os.path
 from mock import patch
 import unittest
 import tempfile
@@ -16,6 +16,7 @@ class TsvConfigTest(unittest.TestCase):
 
         self.assertTrue(config.is_empty())
         self.assertTrue(mock_log_warn.called)
+        self.assertEqual(os.path.basename(tmp.name), config.filename())
 
     @patch("ngspyeasy.tsv_config.log_error")
     def test_columns(self, mock_log_error):
@@ -30,3 +31,4 @@ class TsvConfigTest(unittest.TestCase):
         self.assertEqual("illumina.100bp.pe.wex.150x_1.fastq.gz", config.row_at(0).get_fastq1())
         self.assertEqual("illumina.100bp.pe.wex.150x_2.fastq.gz", config.row_at(0).get_fastq2())
         self.assertFalse(mock_log_error.called)
+        self.assertEqual("ngspyeasy_test.config.tsv", config.filename())

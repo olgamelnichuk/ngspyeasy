@@ -11,13 +11,16 @@ columns = Enum('PROJECT_ID', 'SAMPLE_ID', 'FASTQ1', 'FASTQ2', 'PROJECT_DIR', 'DN
 
 
 def parse(tsvfile):
+
     if not os.path.exists(tsvfile):
         log_error("[TSV parser]: file %s doesn't exist", tsvfile)
         return None
 
+    filename = os.path.basename(tsvfile)
+
     if os.stat(tsvfile).st_size == 0:
         log_warn("[TSV parser]: file %s is empty", tsvfile)
-        return TsvConfig([])
+        return TsvConfig([], filename)
 
     rows = []
     with open(tsvfile, 'r') as tsv:
@@ -28,7 +31,7 @@ def parse(tsvfile):
         except csv.Error as e:
             log_error('file %s, line %d: %s' % (tsvfile, reader.line_num, e))
             return None
-    return TsvConfig(rows)
+    return TsvConfig(rows, filename)
 
 
 def utf_8_encoder(unicode_csv_data):
@@ -37,9 +40,10 @@ def utf_8_encoder(unicode_csv_data):
 
 
 class TsvConfig:
-    def __init__(self, rows):
+    def __init__(self, rows, config_file_name=None):
         self.rows = []
         self.header = None
+        self.config_file_name = config_file_name
 
         if (rows is None) or len(rows) == 0:
             return
@@ -70,6 +74,9 @@ class TsvConfig:
 
     def row_at(self, index):
         return self.rows[index] if 0 <= index <= self.row_size() else None
+
+    def filename(self):
+        return self.config_file_name
 
 
 class TsvConfigRow:
