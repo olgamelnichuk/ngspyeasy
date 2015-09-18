@@ -86,7 +86,7 @@ def main(argv):
         log_exception(e)
         retcode = 1
 
-    log_info("All done!")
+    log_info("Exit(%d)", retcode)
     sys.exit(retcode)
 
 
