@@ -16,6 +16,10 @@ def init_job_logger(logdir, name, verbose):
 
 
 def init_logger(logfile, verbose):
+    log_dir = os.path.dirname(logfile)
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+
     logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s : %(message)s')
 
