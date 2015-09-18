@@ -7,7 +7,7 @@ import job_scheduler
 import tsv_config
 from cmdline_options import check_cmdline_options
 from project_structure import get_log_dir, get_config_path
-from logger import log_error, log_info, init_main_logger
+from logger import log_error, log_info, init_main_logger, log_exception
 from ngspyeasy_initiate_project import ngspyeasy_initiate_project
 from ngspyeasy_initiate_fastq import ngspyeasy_initiate_fastq
 from ngspyeasy_fastqc import ngspyeasy_fastqc
@@ -76,14 +76,14 @@ def main(argv):
 
         try:
             ngspyeasy(tsv_conf, projects_home)
-        except Exception as ex:
-            log_error(ex.message, ex.args)
+        except Exception, e:
+            log_exception(e)
             job_scheduler.stop()
             retcode = 1
 
         scheduler.join()
-    except Exception as ex:
-        log_error(ex.message, ex.args)
+    except Exception, e:
+        log_exception(e)
         retcode = 1
 
     log_info("All done!")
