@@ -8,7 +8,7 @@ CURRENT_STEP = ["ngspyeasy"]
 
 
 def init_main_logger(logdir, tsv_name, verbose):
-    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + "." + RUNDATE + ".log"), verbose)
+    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + ".log"), verbose)
 
 
 def init_job_logger(logdir, name, verbose):
@@ -47,15 +47,15 @@ def log_error(msg, *args):
 
 
 def log_debug(msg, *args):
-    get_logger().debug(with_step(msg % args if args else msg), args)
+    get_logger().debug(with_step(msg % args if args else msg))
 
 
 def log_info(msg, *args):
-    get_logger().info(with_step(msg % args if args else msg), args)
+    get_logger().info(with_step(msg % args if args else msg))
 
 
 def log_warn(msg, *args):
-    get_logger().warn(with_step(msg % args if args else msg), args)
+    get_logger().warn(with_step(msg % args if args else msg))
 
 
 def log_set_current_step(step):
