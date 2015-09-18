@@ -8,18 +8,18 @@ CURRENT_STEP = ["ngspyeasy"]
 
 
 def init_main_logger(logdir, tsv_name, verbose):
-    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + "." + RUNDATE), verbose)
+    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + "." + RUNDATE + ".log"), verbose)
 
 
 def init_job_logger(logdir, name, verbose):
-    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + name), verbose)
+    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + name + ".log"), verbose)
 
 
 def init_logger(logfile, verbose):
     logger = logging.getLogger()
     formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s : %(message)s')
 
-    file_handler = logging.FileHandler(logfile, mode='w')
+    file_handler = logging.FileHandler(logfile)
     file_handler.setFormatter(formatter)
 
     stream_handler = logging.StreamHandler(sys.stdout)
