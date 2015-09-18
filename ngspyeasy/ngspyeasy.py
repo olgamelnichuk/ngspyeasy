@@ -2,6 +2,7 @@
 import os
 import sys
 import getopt
+import signal
 
 import job_scheduler
 import tsv_config
@@ -76,6 +77,7 @@ def main(argv):
 
         try:
             ngspyeasy(tsv_conf, projects_home)
+
         except Exception, e:
             log_exception(e)
             job_scheduler.stop()
@@ -101,5 +103,9 @@ def ngspyeasy(tsv_conf, projects_home):
     # ngspyeasy_variant_calling.run_all(tsv_config, ngs_projects_dir)
 
 
+def signal_handler():
+    job_scheduler.stop()
+
 if __name__ == '__main__':
+    signal.signal(signal.SIGINT, signal_handler)
     main(sys.argv[1:])
