@@ -48,7 +48,7 @@ class NGSProjectsStructureTest(unittest.TestCase):
         try:
             init_fastq(tsv_conf, projects_home)
             self.fail("Exception should be raised, as fastq files do not exist")
-        except OSError:
+        except IOError:
             pass
 
     def test_fastq_exist(self):
@@ -64,5 +64,5 @@ class NGSProjectsStructureTest(unittest.TestCase):
 
         try:
             init_fastq(tsv_conf, projects_home)
-        except OSError:
+        except IOError:
             self.fail("Exception should not be raised, as fastq files exist")

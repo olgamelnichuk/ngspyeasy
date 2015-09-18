@@ -2,6 +2,7 @@
 
 import os
 from shutil import move
+
 from logger import log_debug, log_info
 from utils import uniq_set
 
@@ -114,7 +115,7 @@ def move_fastq(projects_home, sample_home, fastq_name):
 
     if not os.path.isfile(dest):
         if not os.path.isfile(source):
-            raise OSError("Fastq file doesn't exist: %s", source)
+            raise IOError("Fastq file doesn't exist: " + source)
 
         log_info("Moving fastq file: src=%s, dest=%s", source, dest)
         move(source, dest)
