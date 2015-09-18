@@ -83,7 +83,7 @@ def main(argv):
             job_scheduler.stop()
             retcode = 1
 
-        scheduler.join()
+        scheduler.join(1)
     except Exception, e:
         log_exception(e)
         retcode = 1
@@ -103,7 +103,7 @@ def ngspyeasy(tsv_conf, projects_home):
     # ngspyeasy_variant_calling.run_all(tsv_config, ngs_projects_dir)
 
 
-def signal_handler():
+def signal_handler(signum, frame):
     job_scheduler.stop()
 
 if __name__ == '__main__':
