@@ -63,4 +63,4 @@ def log_set_current_step(step):
 
 
 def with_step(msg):
-    return "[" + CURRENT_STEP[0] + "]:" + msg
+    return "[" + CURRENT_STEP[0] + "]: " + msg
