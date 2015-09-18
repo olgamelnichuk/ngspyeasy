@@ -7,7 +7,7 @@ from settings import NGSEASYVERSION
 import tsv_config
 from cmdline_options import check_cmdline_options
 from project_structure import get_log_dir, get_config_path, get_resources_dir
-from logger import init_logger, log_info, log_error, log_set_current_step
+from logger import init_main_logger, log_info, log_error, log_set_current_step
 import job_id_generator
 
 
@@ -60,7 +60,7 @@ def main(argv):
     if errmsg:
         exit_with_error(errmsg)
 
-    init_logger(get_log_dir(projects_home), tsv_name, verbose)
+    init_main_logger(get_log_dir(projects_home), tsv_name, verbose)
 
     tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
     if tsv_conf is None:
