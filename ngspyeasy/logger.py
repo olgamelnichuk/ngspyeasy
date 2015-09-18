@@ -43,19 +43,19 @@ def log_exception(e):
 
 
 def log_error(msg, *args):
-    get_logger().error(with_step(msg), args)
+    get_logger().error(with_step(msg % args if args else msg))
 
 
 def log_debug(msg, *args):
-    get_logger().debug(with_step(msg), args)
+    get_logger().debug(with_step(msg % args if args else msg), args)
 
 
 def log_info(msg, *args):
-    get_logger().info(with_step(msg), args)
+    get_logger().info(with_step(msg % args if args else msg), args)
 
 
 def log_warn(msg, *args):
-    get_logger().warn(with_step(msg), args)
+    get_logger().warn(with_step(msg % args if args else msg), args)
 
 
 def log_set_current_step(step):
