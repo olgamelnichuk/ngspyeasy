@@ -2,6 +2,7 @@
 
 import getopt
 import os
+import subprocess
 import sys
 import re
 from ngspyeasy import tsv_config
@@ -121,13 +122,19 @@ def run_fastqc(row, projects_home):
         log_info("FastQC Data already exists...skipping this bit")
         return
 
-    run_command(["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
-                 "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2])
+    cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
+                 "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
+    try:
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
+        retcode = 0
+    except subprocess.CalledProcessError as ex:
+        log_error("Command [[\n%s\n]] failed. See logs for details", ex.cmd)
+        output = ex.output
+        retcode = ex.returncode
 
-def run_command(cmd):
-    # TODO
-    pass
+    log_info(output)
+    sys.exit(retcode)
 
 
 def get_fastqc_basename(fastq_file):
