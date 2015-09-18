@@ -39,24 +39,26 @@ def get_logger():
 
 
 def log_error(msg, *args):
-    get_logger().error(with_step(msg), args)
+    get_logger().error(with_step(msg, args))
 
 
 def log_debug(msg, *args):
-    get_logger().debug(with_step(msg), args)
+    get_logger().debug(with_step(msg, args))
 
 
 def log_info(msg, *args):
-    get_logger().info(with_step(msg), args)
+    get_logger().info(with_step(msg, args))
 
 
 def log_warn(msg, *args):
-    get_logger().warn(with_step(msg), args)
+    get_logger().warn(with_step(msg, args))
 
 
 def log_set_current_step(step):
     CURRENT_STEP[0] = step
 
 
-def with_step(msg):
+def with_step(msg, *args):
+    if args:
+        msg = msg % args
     return "[" + CURRENT_STEP[0] + "]:" + msg
