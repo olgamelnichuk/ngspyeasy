@@ -3,6 +3,7 @@ import os
 import sys
 import getopt
 import signal
+import threading
 
 import job_scheduler
 import tsv_config
@@ -83,7 +84,13 @@ def main(argv):
             job_scheduler.stop()
             retcode = 1
 
-        scheduler.join(1)
+        while True:
+            threads = threading.enumerate()
+            if len(threads) == 1: break
+            for t in threads:
+                if t != threading.currentThread():
+                    t.join(1)
+
     except Exception, e:
         log_exception(e)
         retcode = 1
