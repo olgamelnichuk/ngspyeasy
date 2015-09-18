@@ -20,7 +20,7 @@ def check_cmdline_options(tsv_config_file, ngs_projects_dir):
 
 def check_ngs_projects_dir_option(ngs_projects_dir):
     if not ngs_projects_dir:
-        return None, "Projects directory is not specified."
+        return None, "Projects directory is a required parameter. Can't find one."
 
     projects_home = os.path.abspath(ngs_projects_dir)
 

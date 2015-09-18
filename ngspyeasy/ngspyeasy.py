@@ -1,14 +1,13 @@
 #!/usr/bin/env python
 import os
-
 import sys
 import getopt
+
 import job_scheduler
 import tsv_config
 from cmdline_options import check_cmdline_options
 from project_structure import get_log_dir, get_config_path
-from logger import init_logger, log_error, log_info
-
+from logger import log_error, log_info, init_main_logger
 from ngspyeasy_initiate_project import ngspyeasy_initiate_project
 from ngspyeasy_initiate_fastq import ngspyeasy_initiate_fastq
 from ngspyeasy_fastqc import ngspyeasy_fastqc
@@ -27,7 +26,8 @@ Options:
 
 
 def exit_with_error(msg):
-    print >> sys.stderr, "ERROR:" + msg
+    print >> sys.stderr, "ERROR: " + msg
+    print >> sys.stderr, "Exiting..."
     sys.exit(1)
 
 
@@ -63,7 +63,7 @@ def main(argv):
     if errmsg:
         exit_with_error(errmsg)
 
-    init_logger(get_log_dir(projects_home), tsv_name, verbose)
+    init_main_logger(get_log_dir(projects_home), tsv_name, verbose)
 
     tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
     if tsv_conf is None:
