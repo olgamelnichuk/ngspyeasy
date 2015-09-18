@@ -77,13 +77,13 @@ def main(argv):
         try:
             ngspyeasy(tsv_conf, projects_home)
         except Exception as ex:
-            log_error(ex)
+            log_error(ex.message, ex.args)
             job_scheduler.stop()
             retcode = 1
 
         scheduler.join()
     except Exception as ex:
-        log_error(ex)
+        log_error(ex.message, ex.args)
         retcode = 1
 
     log_info("All done!")
