@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 import sys
 import getopt
-from ngspyeasy import job_scheduler
-from ngspyeasy.docker import docker_cmd
-from ngspyeasy.settings import NGSEASYVERSION
+import job_scheduler
+from docker import docker_cmd
+from settings import NGSEASYVERSION
 import tsv_config
 from cmdline_options import check_cmdline_options
 from project_structure import get_log_dir, get_config_path, get_resources_dir
