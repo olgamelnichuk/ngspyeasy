@@ -10,7 +10,7 @@ config = {
     'download_url': 'a download url',
     'author_email': 'an email',
     'version': '0.1',
-    'install_requires': ['nose'],
+    'install_requires': [],
     'packages': ['ngspyeasy'],
     'scripts': [],
     'name': 'NGSPyEasy'
