@@ -6,9 +6,9 @@ import subprocess
 import sys
 import re
 from ngspyeasy import tsv_config
-from ngspyeasy.cmdline_options import check_cmdline_options
-from ngspyeasy.logger import init_job_logger, log_error, log_info
-from ngspyeasy.project_structure import get_config_path, get_log_dir, get_sample_dir, get_sample_fastq_path, \
+from cmdline_options import check_cmdline_options
+from logger import init_job_logger, log_error, log_info
+from project_structure import get_config_path, get_log_dir, get_sample_dir, get_sample_fastq_path, \
     get_sample_tmp_dir, get_sample_fastq_dir
 
 
@@ -21,6 +21,7 @@ Options:
         -d  STRING  project directory
         -v  NULL    verbose
         -h  NULL    show this message
+        -i  STRING sample id
 """
 
 
@@ -31,7 +32,7 @@ def exit_with_error(msg):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "hc:d:", ["help"])
+        opts, args = getopt.getopt(argv, "hvc:d:i:", ["help"])
         if len(opts) == 0:
             usage()
             sys.exit(1)
@@ -72,7 +73,7 @@ def main(argv):
         exit_with_error("Invalid TSV config. See logs for details...")
 
     try:
-        ngspyeasy_fastqc_job(tsv_conf, projects_home)
+        ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id)
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
@@ -118,7 +119,7 @@ def run_fastqc(row, projects_home):
         fqout2 = get_sample_fastq_path(sample_dir, prefix_fastq2 + "_2_fastqc.html")
 
     log_info("Check if FastQC Data already exists: [%s] and [%s]", fqout1, fqout2)
-    if (os.path.isfile(fqout1) and os.path.isfile(fqout2)):
+    if os.path.isfile(fqout1) and os.path.isfile(fqout2):
         log_info("FastQC Data already exists...skipping this bit")
         return
 
@@ -128,8 +129,8 @@ def run_fastqc(row, projects_home):
     try:
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True)
         retcode = 0
-    except subprocess.CalledProcessError as ex:
-        log_error("Command [[\n%s\n]] failed. See logs for details", ex.cmd)
+    except subprocess.CalledProcessError, ex:
+        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(ex.cmd))
         output = ex.output
         retcode = ex.returncode
 
