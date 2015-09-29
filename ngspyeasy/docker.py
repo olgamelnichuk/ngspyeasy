@@ -8,11 +8,11 @@ NGS_PROJECTS = HOME + "/ngs_projects"
 
 NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 
-DOCKER_OPTS = "-t"
+DOCKER_OPTS = "-t -v /opt/ngspyeasy:/ngspyeasy:ro"
 
 
 def docker_cmd(name, image, cmd, projects_home, resources_home, pipeman=True):
-    docker_run = ["docker", "run", "-P", "-w", HOME, "-e", "HOME=" + HOME]
+    docker_run = ["docker", "run", "--rm", "-P", "-w", HOME, "-e", "HOME=" + HOME]
     if pipeman:
         docker_run.extend(["-e", "USER=" + USER, "--user", USER])
 
