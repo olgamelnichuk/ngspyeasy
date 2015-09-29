@@ -79,7 +79,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home):
 
     for row in tsv_conf.all_rows():
         sample_id = row.get_sample_id()
-        cmd = ["/ngspyeasy/bin/ngspyeasy_fastqc_job", "-v", "-c", tsv_conf.filename(), "-d",
+        cmd = ["python /ngspyeasy/bin/ngspyeasy_fastqc_job.py", "-v", "-c", tsv_conf.filename(), "-d",
                "/home/pipeman/ngs_projects", "-i", sample_id]
 
         job_id = job_id_generator.get_next(["fastqc", sample_id])
