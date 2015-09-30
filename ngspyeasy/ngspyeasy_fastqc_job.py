@@ -132,7 +132,8 @@ def run_fastqc(row, projects_home):
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             shell=True,
-                            env=os.environ.copy())
+                            env=os.environ.copy(),
+                            executable="/bin/bash")
     (out, err) = proc.communicate()
     output = out
     retcode = 0
