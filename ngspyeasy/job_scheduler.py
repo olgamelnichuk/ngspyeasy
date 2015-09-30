@@ -10,6 +10,7 @@ from threading import Thread
 from Queue import Queue
 from logger import log_debug
 from job_dependency_tree import JobDependencyTree
+import os
 
 job_requests = Queue(-1)  # infinite shared job queue
 
@@ -81,7 +82,7 @@ class JobScheduler(Thread):
                     self.logger.debug("[scheduler]: job_to_run: %s", job_id)
                     self.logger.debug("[scheduler]: command_to_run: [[\n%s \n]]", job_command)
 
-                    proc = subprocess.Popen(shlex.split(job_command), shell=True)
+                    proc = subprocess.Popen(job_command, shell=True, env=os.environ.copy())
                     self.processes.append((proc, job_command, job_id))
 
             self.update_processes()
