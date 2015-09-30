@@ -124,24 +124,25 @@ def run_fastqc(row, projects_home):
         return
 
     cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
-                 "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
+           "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
     try:
-        output = subprocess.check_output("env", stderr=subprocess.STDOUT, shell=True, env=os.environ.copy())
-        log_info(output)
-        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True, env=os.environ.copy())
+        output = subprocess.check_output("env", stderr=subprocess.STDOUT, shell=True, executable='/bin/bash',
+                                         env=os.environ.copy())
+        log_info("env: \n" + output)
+        output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True, executable='/bin/bash',
+                                         env=os.environ.copy())
         retcode = 0
     except subprocess.CalledProcessError, ex:
         log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(ex.cmd))
         output = ex.output
         retcode = ex.returncode
 
-    log_info(output)
+    log_info("cmd: \n" + output)
     sys.exit(retcode)
 
 
 def get_fastqc_basename(fastq_file):
-
     illumina_patterns = [r'(.*_L.*_R[1,2]_[0-9][0-9][0-9])\.fastq\.gz',
                          r'(.*_L.*_R[1,2]_[0-9][0-9][0-9][0-9])\.fastq\.gz']
 
