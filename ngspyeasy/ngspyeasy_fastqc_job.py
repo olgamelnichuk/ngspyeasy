@@ -118,15 +118,17 @@ def run_fastqc(row, projects_home):
         fqout1 = get_sample_fastq_path(sample_dir, prefix_fastq1 + "_1_fastqc.html")
         fqout2 = get_sample_fastq_path(sample_dir, prefix_fastq2 + "_2_fastqc.html")
 
-    log_info("Check if FastQC Data already exists: [%s] and [%s]", fqout1, fqout2)
+    log_info("Checking if FastQC Data already exists: [%s] and [%s]", fqout1, fqout2)
     if os.path.isfile(fqout1) and os.path.isfile(fqout2):
         log_info("FastQC Data already exists...skipping this bit")
         return
 
+    log_info("Running FastQC tool...")
+
     cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
            "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
-    proc = subprocess.Popen(["/bin/bash", "-c", "source ~/.bashrc && env"],
+    proc = subprocess.Popen(["source ~/.bashrc && env && " + cmd],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             shell=True,
