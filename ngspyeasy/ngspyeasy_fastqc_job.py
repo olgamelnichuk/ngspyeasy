@@ -127,7 +127,7 @@ def run_fastqc(row, projects_home):
            "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
     try:
-        output = subprocess.check_output(["/bin/bash", "-c", "source ~/.bashrc && env && " + " ".join(cmd)],
+        output = subprocess.check_output(["/bin/bash", "-c", "source ~/.bashrc && env"],
                                          stderr=subprocess.STDOUT, shell=True,
                                          env=os.environ.copy())
         retcode = 0
