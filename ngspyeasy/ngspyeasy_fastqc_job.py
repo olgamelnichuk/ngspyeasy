@@ -130,6 +130,9 @@ def run_fastqc(row, projects_home):
         output = subprocess.check_output("env", stderr=subprocess.STDOUT, shell=True, executable='/bin/bash',
                                          env=os.environ.copy())
         log_info("env: \n" + output)
+        output = subprocess.check_output("echo $CLASSPATH", stderr=subprocess.STDOUT, shell=True, executable='/bin/bash',
+                                         env=os.environ.copy())
+        log_info("echo $CLASSPATH: \n" + output)
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True, executable='/bin/bash',
                                          env=os.environ.copy())
         retcode = 0
