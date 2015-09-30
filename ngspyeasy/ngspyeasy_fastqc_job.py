@@ -127,6 +127,8 @@ def run_fastqc(row, projects_home):
                  "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
     try:
+        output = subprocess.check_output("env", stderr=subprocess.STDOUT, shell=True, env=os.environ.copy())
+        log_info(output)
         output = subprocess.check_output(cmd, stderr=subprocess.STDOUT, shell=True, env=os.environ.copy())
         retcode = 0
     except subprocess.CalledProcessError, ex:
