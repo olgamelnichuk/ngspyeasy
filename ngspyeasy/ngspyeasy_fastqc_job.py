@@ -128,7 +128,7 @@ def run_fastqc(row, projects_home):
     cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
            "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
-    proc = subprocess.Popen(["source ~/.bashrc && env && " + cmd],
+    proc = subprocess.Popen(["source ~/.bashrc && env && " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
                             shell=True,
