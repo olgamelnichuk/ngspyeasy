@@ -126,15 +126,18 @@ def run_fastqc(row, projects_home):
     cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
            "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
-    try:
-        output = subprocess.check_output(["/bin/bash", "-c", "source ~/.bashrc && env"],
-                                         stderr=subprocess.STDOUT, shell=True,
-                                         env=os.environ.copy())
-        retcode = 0
-    except subprocess.CalledProcessError, ex:
-        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(ex.cmd))
-        output = ex.output
-        retcode = ex.returncode
+    proc = subprocess.Popen(["/bin/bash", "-c", "source ~/.bashrc && env"],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.PIPE,
+                            shell=True,
+                            env=os.environ.copy())
+    (out, err) = proc.communicate()
+    output = out
+    retcode = 0
+    if err:
+        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
+        output = err
+        retcode = proc.returncode
 
     log_info("cmd: \n" + output)
     sys.exit(retcode)
