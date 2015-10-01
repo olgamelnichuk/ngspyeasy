@@ -7,7 +7,7 @@ import sys
 import re
 from ngspyeasy import tsv_config
 from cmdline_options import check_cmdline_options
-from logger import init_job_logger, log_error, log_info
+from logger import init_job_logger, log_error, log_info, log_debug
 from project_structure import get_config_path, get_log_dir, get_sample_dir, get_sample_fastq_path, \
     get_sample_tmp_dir, get_sample_fastq_dir
 
@@ -128,22 +128,21 @@ def run_fastqc(row, projects_home):
     cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
            "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
 
-    proc = subprocess.Popen(["source ~/.bashrc && env && " + " ".join(cmd)],
+    proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; echo $CLASSPATH; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
-                            stderr=subprocess.PIPE,
-                            shell=True,
-                            env=os.environ.copy(),
-                            executable="/bin/bash")
-    (out, err) = proc.communicate()
-    output = out
-    retcode = 0
-    if err:
-        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
-        output = err
-        retcode = proc.returncode
+                            stderr=subprocess.STDOUT)
 
-    log_info("cmd: \n" + output)
-    sys.exit(retcode)
+    stdout = []
+    for line in iter(proc.stdout.readline, ''):
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        stdout.append(line)
+
+    if proc.returncode:
+        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
+
+    log_debug("cmd: \n" + "\n".join(stdout))
+    sys.exit(proc.returncode)
 
 
 def get_fastqc_basename(fastq_file):
