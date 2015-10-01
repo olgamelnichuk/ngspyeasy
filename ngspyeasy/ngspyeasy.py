@@ -1,18 +1,19 @@
 #!/usr/bin/env python
-import os
 import sys
 import getopt
 import signal
 import threading
+import projects_dir
 
+import os
 import job_scheduler
 import tsv_config
 from cmdline_options import check_cmdline_options
-from project_structure import get_log_dir, get_config_path
-from logger import log_error, log_info, init_main_logger, log_exception
+from logger import log_info, log_exception, init_logger
 from ngspyeasy_initiate_project import ngspyeasy_initiate_project
 from ngspyeasy_initiate_fastq import ngspyeasy_initiate_fastq
 from ngspyeasy_fastqc import ngspyeasy_fastqc
+from ngspyeasy_trimmomatic import ngspyeasy_trimmomatic
 
 
 def usage():
@@ -65,15 +66,15 @@ def main(argv):
     if errmsg:
         exit_with_error(errmsg)
 
-    init_main_logger(get_log_dir(projects_home), tsv_name, verbose)
+    init_logger(projects_dir.main_log_file(projects_home, tsv_name), verbose)
 
-    tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
+    tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
     retcode = 0
     try:
-        scheduler = job_scheduler.JobScheduler(os.path.join(get_log_dir(projects_home), "job_scheduler.log"))
+        scheduler = job_scheduler.JobScheduler(os.path.join(projects_dir.log_dir(projects_home), "job_scheduler.log"))
         scheduler.start()
 
         try:
@@ -103,7 +104,7 @@ def ngspyeasy(tsv_conf, projects_home):
     ngspyeasy_initiate_project(tsv_conf, projects_home)
     ngspyeasy_initiate_fastq(tsv_conf, projects_home)
     ngspyeasy_fastqc(tsv_conf, projects_home)
-    # ngspyeasy_trimmomatic.run_all(tsv_config, ngs_projects_dir)
+    ngspyeasy_trimmomatic.run_all(tsv_config, projects_home)
     # ngspyeasy_alignment.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_realign.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_bsqr.run_all(tsv_config, ngs_projects_dir)

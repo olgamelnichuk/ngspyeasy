@@ -2,17 +2,8 @@
 import sys
 import logging
 import os.path
-from settings import VERSION, RUNDATE
 
 CURRENT_STEP = ["ngspyeasy"]
-
-
-def init_main_logger(logdir, tsv_name, verbose):
-    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + tsv_name + ".log"), verbose)
-
-
-def init_job_logger(logdir, name, verbose):
-    init_logger(os.path.join(logdir, "ngspyeasy." + VERSION + "." + name + ".log"), verbose)
 
 
 def init_logger(logfile, verbose):

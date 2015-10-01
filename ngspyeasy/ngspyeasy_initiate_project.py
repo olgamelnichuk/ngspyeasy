@@ -4,9 +4,9 @@ import sys
 import getopt
 import tsv_config
 from cmdline_options import check_cmdline_options
-from project_structure import get_log_dir, get_config_path
+from projects_dir import log_dir, config_full_path
 from logger import init_logger, log_info, log_error, log_set_current_step
-import project_structure
+import projects_dir
 
 
 def usage():
@@ -58,9 +58,9 @@ def main(argv):
     if errmsg:
         exit_with_error(errmsg)
 
-    init_logger(get_log_dir(projects_home), tsv_name, verbose)
+    init_logger(projects_dir.main_log_file(projects_home, tsv_name), verbose)
 
-    tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
+    tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
@@ -75,7 +75,7 @@ def ngspyeasy_initiate_project(tsv_conf, projects_home):
     log_set_current_step("ngspyeasy_initiate_project")
     log_info("Start: Initiate Project")
 
-    project_structure.init_project(tsv_conf, projects_home)
+    projects_dir.init(projects_home, tsv_conf)
 
 
 if __name__ == '__main__':

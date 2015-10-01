@@ -51,7 +51,7 @@ class TsvConfig:
         header = TsvConfigRow(rows[0])
         data_rows = rows[0:]
 
-        if header.get_project_id() == 'PROJECT_ID':
+        if header.project_id() == 'PROJECT_ID':
             self.header = header
             data_rows = rows[1:]
 
@@ -89,14 +89,14 @@ class TsvConfigRow:
     def value_at(self, index):
         return self.values[index] if 0 <= index <= len(self.values) else None
 
-    def get_project_id(self):
+    def project_id(self):
         return self.value_at(columns.PROJECT_ID)
 
-    def get_sample_id(self):
+    def sample_id(self):
         return self.value_at(columns.SAMPLE_ID)
 
-    def get_fastq1(self):
+    def fastq1(self):
         return self.value_at(columns.FASTQ1)
 
-    def get_fastq2(self):
+    def fastq2(self):
         return self.value_at(columns.FASTQ2)

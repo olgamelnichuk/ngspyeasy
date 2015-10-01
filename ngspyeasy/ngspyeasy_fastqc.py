@@ -6,9 +6,9 @@ from docker import docker_cmd
 from settings import NGSEASYVERSION
 import tsv_config
 from cmdline_options import check_cmdline_options
-from project_structure import get_log_dir, get_config_path, get_resources_dir
-from logger import init_main_logger, log_info, log_error, log_set_current_step
+from logger import log_info, log_error, log_set_current_step, init_logger
 import job_id_generator
+import projects_dir
 
 
 def usage():
@@ -60,9 +60,9 @@ def main(argv):
     if errmsg:
         exit_with_error(errmsg)
 
-    init_main_logger(get_log_dir(projects_home), tsv_name, verbose)
+    init_logger(projects_dir.main_log_file(projects_home, tsv_name), verbose)
 
-    tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
+    tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
@@ -78,7 +78,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home):
     log_info("Start: FastQC")
 
     for row in tsv_conf.all_rows():
-        sample_id = row.get_sample_id()
+        sample_id = row.sample_id()
         cmd = ["python /ngspyeasy/bin/ngspyeasy_fastqc_job.py", "-v", "-c", tsv_conf.filename(), "-d",
                "/home/pipeman/ngs_projects", "-i", sample_id]
 
@@ -86,7 +86,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home):
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,
-                               get_resources_dir(projects_home), pipeman=False), [])
+                               projects_dir.resources_dir(projects_home), pipeman=False), [])
 
     if __name__ == '__main__':
         main(sys.argv[1:])

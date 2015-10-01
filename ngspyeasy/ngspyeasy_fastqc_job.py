@@ -4,12 +4,12 @@ import getopt
 import os
 import subprocess
 import sys
-import re
-from ngspyeasy import tsv_config
+
+import utils
+import projects_dir
+import tsv_config
 from cmdline_options import check_cmdline_options
-from logger import init_job_logger, log_error, log_info, log_debug
-from project_structure import get_config_path, get_log_dir, get_sample_dir, get_sample_fastq_path, \
-    get_sample_tmp_dir, get_sample_fastq_dir
+from logger import init_logger, log_error, log_info, log_debug
 
 
 def usage():
@@ -65,10 +65,9 @@ def main(argv):
     if errmsg:
         exit_with_error(errmsg)
 
-    log_name = tsv_name + "_fastqc_job_" + (sample_id if sample_id is not None else "all_samples")
-    init_job_logger(get_log_dir(projects_home), log_name, verbose)
+    init_logger(projects_dir.sample_log_file(projects_home, tsv_name, sample_id), verbose)
 
-    tsv_conf = tsv_config.parse(get_config_path(projects_home, tsv_name))
+    tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
@@ -82,51 +81,40 @@ def main(argv):
 def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
-        rows2run = filter(lambda x: x.get_sample_id() == sample_id, rows2run)
+        rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
 
     for row in rows2run:
         run_fastqc(row, projects_home)
 
 
 def run_fastqc(row, projects_home):
-    sample_dir = get_sample_dir(projects_home, row.get_project_id(), row.get_sample_id())
-    fastq1 = get_sample_fastq_path(sample_dir, row.get_fastq1())
-    fastq2 = get_sample_fastq_path(sample_dir, row.get_fastq2())
+    sample_dir = projects_dir.sample_dir(projects_home, row.project_id(), row.sample_id())
+    fastq = [row.fastq1(), row.fastq2()]
+    fastq = map(lambda x: projects_dir.fastq_full_path(sample_dir, x), fastq)
 
-    if not os.path.isfile(fastq1):
-        raise OSError("File not found: %s", fastq1)
+    for fq_file in fastq:
+        if not os.path.isfile(fq_file):
+            raise IOError("File does not exist: %s", fq_file)
 
-    if not os.path.isfile(fastq2):
-        raise OSError("File not found: %s", fastq2)
+    fastq_parsed = map(lambda x: utils.recognize_fastq(x), fastq)
+    fastq_types = set(map(lambda x: x.type, fastq_parsed))
 
-    prefix_fastq1, type1 = get_fastqc_basename(fastq1)
-    prefix_fastq2, type2 = get_fastqc_basename(fastq2)
+    if len(fastq_types) > 1:
+        raise ValueError("Fastqc file formats are not the same: %s" % str(fastq_types))
 
-    if prefix_fastq1 is None:
-        raise ValueError("Unsupported Fastq file format: %s", fastq1)
+    fastq_results = map(lambda x: x.result, fastq_parsed)
+    log_info("Checking if FastQC results already exists: %s", fastq_results)
 
-    if prefix_fastq2 is None:
-        raise ValueError("Unsupported Fastq file format: %s", fastq2)
-
-    if type1 != type2:
-        raise ValueError("Fastqc file formans are not the same")
-
-    if type1 == "illumina":
-        fqout1 = get_sample_fastq_path(sample_dir, prefix_fastq1 + "_fastqc.html")
-        fqout2 = get_sample_fastq_path(sample_dir, prefix_fastq2 + "_fastqc.html")
-    else:
-        fqout1 = get_sample_fastq_path(sample_dir, prefix_fastq1 + "_1_fastqc.html")
-        fqout2 = get_sample_fastq_path(sample_dir, prefix_fastq2 + "_2_fastqc.html")
-
-    log_info("Checking if FastQC Data already exists: [%s] and [%s]", fqout1, fqout2)
-    if os.path.isfile(fqout1) and os.path.isfile(fqout2):
-        log_info("FastQC Data already exists...skipping this bit")
+    fastq_results = filter(lambda x: not os.path.isfile(x), fastq_results)
+    if len(fastq_results) == 0:
+        log_info("FastQC results already exists...skipping this bit")
         return
 
     log_info("Running FastQC tool...")
 
     cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
-           "--dir", get_sample_tmp_dir(sample_dir), "--outdir", get_sample_fastq_dir(sample_dir), fastq1, fastq2]
+           "--dir", projects_dir.sample_tmp_dir(sample_dir), "--outdir",
+           projects_dir.sample_fastq_dir(sample_dir)] + fastq
 
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; echo $CLASSPATH; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
@@ -143,28 +131,6 @@ def run_fastqc(row, projects_home):
 
     log_debug("cmd: \n" + "".join(stdout))
     sys.exit(proc.returncode)
-
-
-def get_fastqc_basename(fastq_file):
-    illumina_patterns = [r'(.*_L.*_R[1,2]_[0-9][0-9][0-9])\.fastq\.gz',
-                         r'(.*_L.*_R[1,2]_[0-9][0-9][0-9][0-9])\.fastq\.gz']
-
-    other_patterns = [r'(.*)_[1,2]\.fastq\.gz',
-                      r'(.*)_R[1,2]\.fastq\.gz',
-                      r'(.*)_[1,2]\.fq\.gz',
-                      r'(.*)_R[1,2]\.fq\.gz']
-
-    for p in illumina_patterns:
-        match = re.match(p, fastq_file)
-        if match:
-            return match.group(1), "illumina"
-
-    for p in other_patterns:
-        match = re.match(p, fastq_file)
-        if match:
-            return match.group(1), "other"
-
-    return None, "unknown"
 
 
 if __name__ == '__main__':
