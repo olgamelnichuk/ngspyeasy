@@ -141,7 +141,7 @@ def run_fastqc(row, projects_home):
     if proc.returncode:
         log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
 
-    log_debug("cmd: \n" + "\n".join(stdout))
+    log_debug("cmd: \n" + "".join(stdout))
     sys.exit(proc.returncode)
 
 
