@@ -100,3 +100,12 @@ class TsvConfigRow:
 
     def fastq2(self):
         return self.value_at(columns.FASTQ2)
+
+    def trim(self):
+        return self.value_at(columns.TRIM)
+
+    def ncpu(self):
+        return self.value_at(columns.NCPU)
+
+    def genomebuild(self):
+        return self.value_at(columns.GENOMEBUILD)

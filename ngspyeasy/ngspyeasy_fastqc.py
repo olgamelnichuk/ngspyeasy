@@ -67,13 +67,13 @@ def main(argv):
         exit_with_error("Invalid TSV config. See logs for details...")
 
     try:
-        ngspyeasy_fastqc(tsv_conf, projects_home)
+        ngspyeasy_fastqc(tsv_conf, projects_home, dict())
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
 
 
-def ngspyeasy_fastqc(tsv_conf, projects_home):
+def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies):
     log_set_current_step("ngspyeasy_fastqc")
     log_info("Start: FastQC")
 
@@ -83,10 +83,13 @@ def ngspyeasy_fastqc(tsv_conf, projects_home):
                "/home/pipeman/ngs_projects", "-i", sample_id]
 
         job_id = job_id_generator.get_next(["fastqc", sample_id])
+        prev_job_ids = [dependencies.get(sample_id)]
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,
-                               projects_dir.resources_dir(projects_home), pipeman=False), [])
+                               projects_dir.resources_dir(projects_home), pipeman=False),
+            [x for x in prev_job_ids if x is not None])
+        dependencies.update(sample_id, job_id)
 
     if __name__ == '__main__':
         main(sys.argv[1:])

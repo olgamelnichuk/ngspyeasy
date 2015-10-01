@@ -103,8 +103,10 @@ def main(argv):
 def ngspyeasy(tsv_conf, projects_home):
     ngspyeasy_initiate_project(tsv_conf, projects_home)
     ngspyeasy_initiate_fastq(tsv_conf, projects_home)
-    ngspyeasy_fastqc(tsv_conf, projects_home)
-    ngspyeasy_trimmomatic.run_all(tsv_config, projects_home)
+
+    dependencies = dict()
+    ngspyeasy_fastqc(tsv_conf, projects_home, dependencies)
+    ngspyeasy_trimmomatic(tsv_config, projects_home, dependencies)
     # ngspyeasy_alignment.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_realign.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_bsqr.run_all(tsv_config, ngs_projects_dir)

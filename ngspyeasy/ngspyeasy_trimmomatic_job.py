@@ -1,20 +1,18 @@
 #!/usr/bin/env python
 
 import getopt
-import os
 import subprocess
 import sys
-
-import utils
-import projects_dir
 import tsv_config
+import projects_dir
+
 from cmdline_options import check_cmdline_options
 from logger import init_logger, log_error, log_info, log_debug
 
 
 def usage():
     print """
-Usage:  ngspyeasy_fastqc_job -c <config_file> -d <project_directory> -i <sample_id>
+Usage:  ngspyeasy_trimmomatic_job -c <config_file> -d <project_directory> -i <sample_id>
 
 Options:
         -c  STRING  configuration file
@@ -72,49 +70,54 @@ def main(argv):
         exit_with_error("Invalid TSV config. See logs for details...")
 
     try:
-        ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id)
+        ngspyeasy_trimmomatic_job(tsv_conf, projects_home, sample_id)
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
 
 
-def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
+def ngspyeasy_trimmomatic_job(tsv_conf, projects_home, sample_id):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
         rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
 
     for row in rows2run:
-        run_fastqc(row, projects_home)
+        run_trimmomatic(row, projects_home)
 
 
-def run_fastqc(row, projects_home):
-    sample_dir = projects_dir.sample_dir(projects_home, row.project_id(), row.sample_id())
-    fastq = [row.fastq1(), row.fastq2()]
-    fastq = map(lambda x: projects_dir.fastq_full_path(sample_dir, x), fastq)
+def run_trimmomatic(row, projects_home):
+    if (row.trim() == "atrim"):
+        run_trimmomatic_atrim(row, projects_home)
 
-    for fq_file in fastq:
-        if not os.path.isfile(fq_file):
-            raise IOError("File does not exist: %s", fq_file)
+    # else if (row.trim() == "btrim"):
+    #    run_trimmomatic_btrim(row, projects_home)
 
-    fastq_parsed = map(lambda x: utils.recognize_fastq(x), fastq)
-    fastq_types = set(map(lambda x: x.type, fastq_parsed))
+    else:
+        raise ValueError("Unknown trimmomatic type: %s" % row.trim())
 
-    if len(fastq_types) > 1:
-        raise ValueError("Fastqc file formats are not the same: %s" % str(fastq_types))
 
-    fastq_results = map(lambda x: x.result, fastq_parsed)
-    log_info("Checking if FastQC results already exists: %s", fastq_results)
+def run_trimmomatic_atrim(row, projects_home):
+    if row.genomebuild() == "b37":
+        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_b37/contaminant_list.fa"
+    elif row.genomebuild() == "hg19":
+        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_hg19/contaminant_list.fa"
+    elif row.genomebuild() == "hs37d5":
+        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_hs37d5/contaminant_list.fa"
+    elif row.genomebuild() == "hs38DH":
+        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_hs38DH/contaminant_list.fa"
+    else:
+        raise ValueError("Unknown GENOMEBUILD value: '%s'" % row.genomebuild())
 
-    fastq_results = filter(lambda x: not os.path.isfile(x), fastq_results)
-    if len(fastq_results) == 0:
-        log_info("FastQC results already exists...skipping this bit")
-        return
-
-    log_info("Running FastQC tool...")
-
-    cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
-           "--dir", projects_dir.sample_tmp_dir(sample_dir), "--outdir",
-           projects_dir.sample_fastq_dir(sample_dir)] + fastq
+    fastq = [] # TODO
+    log_info("Running Trimmomatic tool...")
+    cmd = ["java", "-XX:ParallelGCThreads=1", "-jar", "/usr/local/pipeline/Trimmomatic-0.32/trimmomatic-0.32.jar",
+           "PE", "-threads", row.ncpu()] + fastq + [
+              "ILLUMINACLIP:" + adapter_fa + ":2:30:10:5:true",
+              "LEADING:3",
+              "TRAILING:3",
+              "SLIDINGWINDOW:4:15",
+              "AVGQUAL:2",
+              "MINLEN:75"]
 
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
