@@ -1,3 +1,5 @@
+#!/usr/bin/env python
+
 import subprocess
 import sys
 import os
@@ -8,14 +10,18 @@ def log(msg):
 
 
 def main():
-    cmd = "source ~/.bashrc && env"
 
-    proc = subprocess.Popen([cmd],
+    print dict(os.environ)
+
+    cmd = "source ~/.profile; echo -n $CLASSPATH\n"
+
+    proc = subprocess.Popen(["bash", "-i", "-c", cmd],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.PIPE,
-                            shell=True,
-                            env=os.environ.copy(),
-                            executable="/bin/sh")
+                            stdin=subprocess.PIPE)
+                            #shell=True)
+                            #env=dict(os.environ),
+                            #executable="/bin/bash")
     (out, err) = proc.communicate()
     output = out
     retcode = 0
@@ -24,7 +30,7 @@ def main():
         output = err
         retcode = proc.returncode
 
-    log("cmd: \n" + output)
+    log(output)
     sys.exit(retcode)
 
 
