@@ -9,7 +9,7 @@ import sample_data
 import projects_dir
 import tsv_config
 from cmdline_options import check_cmdline_options
-from logger import init_logger, log_error, log_info, log_debug
+from logger import init_logger, log_error, log_info, log_debug, log_set_current_step
 
 
 def usage():
@@ -66,6 +66,7 @@ def main(argv):
         exit_with_error(errmsg)
 
     init_logger(projects_dir.sample_log_file(projects_home, tsv_name, sample_id), verbose)
+    log_set_current_step("ngspyeasy_fastqc_job")
 
     tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
     if tsv_conf is None:
