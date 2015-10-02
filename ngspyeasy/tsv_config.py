@@ -109,3 +109,9 @@ class TsvConfigRow:
 
     def genomebuild(self):
         return self.value_at(columns.GENOMEBUILD)
+
+    def ngs_type(self):
+        return self.value_at(columns.NGS_TYPE)
+
+    def dna_prep_library_id(self):
+        return self.value_at(columns.DNA_PREP_LIBRARY_ID)

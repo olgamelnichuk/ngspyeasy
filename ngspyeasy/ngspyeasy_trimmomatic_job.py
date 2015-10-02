@@ -1,10 +1,13 @@
 #!/usr/bin/env python
 
 import getopt
+import os
 import subprocess
 import sys
+import docker
 import tsv_config
 import projects_dir
+import sample_data
 
 from cmdline_options import check_cmdline_options
 from logger import init_logger, log_error, log_info, log_debug
@@ -86,38 +89,60 @@ def ngspyeasy_trimmomatic_job(tsv_conf, projects_home, sample_id):
 
 
 def run_trimmomatic(row, projects_home):
-    if (row.trim() == "atrim"):
-        run_trimmomatic_atrim(row, projects_home)
+    log_info("Trimmomatic Job (SAMPLE_ID='%s', TRIM='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.trim(), row.genomebuild()))
 
-    # else if (row.trim() == "btrim"):
-    #    run_trimmomatic_btrim(row, projects_home)
-
-    else:
-        raise ValueError("Unknown trimmomatic type: %s" % row.trim())
-
-
-def run_trimmomatic_atrim(row, projects_home):
     if row.genomebuild() == "b37":
-        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_b37/contaminant_list.fa"
+        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_b37/contaminant_list.fa"
     elif row.genomebuild() == "hg19":
-        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_hg19/contaminant_list.fa"
+        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_hg19/contaminant_list.fa"
     elif row.genomebuild() == "hs37d5":
-        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_hs37d5/contaminant_list.fa"
+        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_hs37d5/contaminant_list.fa"
     elif row.genomebuild() == "hs38DH":
-        adapter_fa = "/home/pipeman/ngs_projects/ngseasy_resources/reference_genomes_hs38DH/contaminant_list.fa"
+        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_hs38DH/contaminant_list.fa"
     else:
         raise ValueError("Unknown GENOMEBUILD value: '%s'" % row.genomebuild())
 
-    fastq = [] # TODO
+    sample = sample_data.create(row, projects_home)
+
+    pe = sample.trimmomatic_paired_results()
+    ue = sample.trimmomatic_unpaired_results()
+    trimmomatic_results = [pe[0], ue[0], pe[1], ue[1]]
+    log_info("Checking if Trimmomatic data already exists: %s" % trimmomatic_results)
+
+    not_exist = filter(lambda x: not os.path.isfile(x), trimmomatic_results)
+    if len(not_exist) == 0:
+        log_info("Trimmomatic data already exists...skipping this bit")
+        return
+
     log_info("Running Trimmomatic tool...")
+    trimmomatic_options = ["LEADING:3",
+                           "TRAILING:3",
+                           "SLIDINGWINDOW:4:15",
+                           "AVGQUAL:2",
+                           "MINLEN:75"]
+
+    if row.trim() == "atrim":
+        log_info("TRIM set to '%s' - adaptor trim. Adaptor and read quality trimming" % row.trim())
+        trimmomatic_options = ["ILLUMINACLIP:" + adapter_fa + ":2:30:10:5:true"] + trimmomatic_options
+
+    elif row.trim() == "btrim":
+        log_info("TRIM set to '%s' - basic trim. Just read quality trimming. No adaptor trimming" % row.trim())
+
+    elif row.trim() == "no-trim":
+        log_info("Skipping quality control of raw fastq reads. NOT RECOMMENDED")
+        return
+    else:
+        raise ValueError("Unrecognised TRIM option. Should be one of [atrim] [btrim] or [no-trim]: '%s'" % row.trim())
+
+    log_info("Trimmomatic options:\n %s" % "\n".join(trimmomatic_options))
+
     cmd = ["java", "-XX:ParallelGCThreads=1", "-jar", "/usr/local/pipeline/Trimmomatic-0.32/trimmomatic-0.32.jar",
-           "PE", "-threads", row.ncpu()] + fastq + [
-              "ILLUMINACLIP:" + adapter_fa + ":2:30:10:5:true",
-              "LEADING:3",
-              "TRAILING:3",
-              "SLIDINGWINDOW:4:15",
-              "AVGQUAL:2",
-              "MINLEN:75"]
+           "PE",
+           "-threads", row.ncpu()] + \
+          sample.fastq_files() + \
+          trimmomatic_results + \
+          trimmomatic_options
 
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
@@ -129,11 +154,10 @@ def run_trimmomatic_atrim(row, projects_home):
         sys.stdout.flush()
         stdout.append(line)
 
+    log_debug("cmd: \n" + "".join(stdout))
+
     if proc.returncode:
         log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
-
-    log_debug("cmd: \n" + "".join(stdout))
-    sys.exit(proc.returncode)
 
 
 if __name__ == '__main__':

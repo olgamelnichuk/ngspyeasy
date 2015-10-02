@@ -5,7 +5,7 @@ import os
 import subprocess
 import sys
 
-import utils
+import sample_data
 import projects_dir
 import tsv_config
 from cmdline_options import check_cmdline_options
@@ -90,33 +90,23 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
 def run_fastqc(row, projects_home):
     log_info("FastQC Job (SAMPLE_ID='%s')" % row.sample_id())
 
-    sample_dir = projects_dir.sample_dir(projects_home, row.project_id(), row.sample_id())
-    fastq = [row.fastq1(), row.fastq2()]
-    fastq = map(lambda x: projects_dir.fastq_full_path(sample_dir, x), fastq)
+    sample = sample_data.create(row, projects_home)
 
-    for fq_file in fastq:
-        if not os.path.isfile(fq_file):
-            raise IOError("File does not exist: %s", fq_file)
+    fastqc_results = sample.fastqc_result_files()
+    log_info("Checking if FastQC results already exist: %s" % fastqc_results)
 
-    fastq_parsed = map(lambda x: utils.recognize_fastq(x), fastq)
-    fastq_types = set(map(lambda x: x.type, fastq_parsed))
-
-    if len(fastq_types) > 1:
-        raise ValueError("Fastqc file formats are not the same: %s" % str(fastq_types))
-
-    fastq_results = map(lambda x: x.result, fastq_parsed)
-    log_info("Checking if FastQC results already exists: %s", fastq_results)
-
-    fastq_results = filter(lambda x: not os.path.isfile(x), fastq_results)
-    if len(fastq_results) == 0:
-        log_info("FastQC results already exists...skipping this bit")
+    not_exist = filter(lambda x: not os.path.isfile(x), fastqc_results)
+    if len(not_exist) == 0:
+        log_info("FastQC results already exist...skipping this bit")
         return
 
     log_info("Running FastQC tool...")
 
-    cmd = ["/usr/local/pipeline/FastQC/fastqc", "--threads", "2", "--extract",
-           "--dir", projects_dir.sample_tmp_dir(sample_dir), "--outdir",
-           projects_dir.sample_fastq_dir(sample_dir)] + fastq
+    cmd = ["/usr/local/pipeline/FastQC/fastqc",
+           "--threads", "2",
+           "--extract",
+           "--dir", sample.tmp_dir(),
+           "--outdir", sample.fastq_dir()] + sample.fastq_files()
 
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
@@ -128,11 +118,10 @@ def run_fastqc(row, projects_home):
         sys.stdout.flush()
         stdout.append(line)
 
+    log_debug("cmd: \n" + "".join(stdout))
+
     if proc.returncode:
         log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
-
-    log_debug("cmd: \n" + "".join(stdout))
-    sys.exit(proc.returncode)
 
 
 if __name__ == '__main__':
