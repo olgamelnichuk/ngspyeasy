@@ -88,6 +88,8 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
 
 
 def run_fastqc(row, projects_home):
+    log_info("FastQC Job (SAMPLE_ID='%s')" % row.sample_id())
+
     sample_dir = projects_dir.sample_dir(projects_home, row.project_id(), row.sample_id())
     fastq = [row.fastq1(), row.fastq2()]
     fastq = map(lambda x: projects_dir.fastq_full_path(sample_dir, x), fastq)
