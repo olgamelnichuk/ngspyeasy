@@ -37,7 +37,7 @@ def recognize_fastq(path):
     (prefix, num, fq_type) = recognize_fastq_naming(name)
 
     if prefix is None:
-        raise ValueError("Unsupported Fastq file naming: %s", path)
+        raise ValueError("Fastq naming format not recognised for file: %s", path)
 
     result = [prefix, num, "fastqc.html"]
     result = [x for x in result if x is not None]
