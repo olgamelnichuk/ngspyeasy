@@ -25,13 +25,13 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
                "/home/pipeman/ngs_projects", "-i", sample_id]
 
         job_id = job_id_generator.get_next(["trimmomatic", sample_id])
-        prev_job_ids = [dependencies.get(sample_id)]
+        prev_job_ids = [dependencies[sample_id]]
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-trimmomatic:" + NGSEASYVERSION, " ".join(cmd), projects_home,
                                projects_dir.resources_dir(projects_home), pipeman=False),
             [x for x in prev_job_ids if x is not None])
-        dependencies.update(sample_id, job_id)
+        dependencies[sample_id] = job_id
 
         # trimmomatic step 2
 
@@ -39,10 +39,10 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
                "/home/pipeman/ngs_projects", "-i", sample_id]
 
         job_id = job_id_generator.get_next(["trimmomatic_fastqc", sample_id])
-        prev_job_ids = [dependencies.get(sample_id)]
+        prev_job_ids = [dependencies[sample_id]]
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,
                                projects_dir.resources_dir(projects_home), pipeman=False),
             [x for x in prev_job_ids if x is not None])
-        dependencies.update(sample_id, job_id)
+        dependencies[sample_id] = job_id
