@@ -68,7 +68,7 @@ def enqueue_output(out, lines):
 
 
 def run_command(cmd):
-    log_debug("cmd to run: %s" + " ".join(cmd))
+    log_debug("cmd to run: %s" % " ".join(cmd))
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
@@ -83,7 +83,7 @@ def run_command(cmd):
         if ret is not None:
             break
 
-        if q.get_nowait() == "terminate":
+        if not q.empty() and q.get_nowait() == "terminate":
             log_debug("got terminate signal")
             proc.terminate()
             continue
