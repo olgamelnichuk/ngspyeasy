@@ -75,7 +75,7 @@ def main(argv):
 
 def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies):
     log_set_current_step("ngspyeasy_fastqc")
-    log_info("Start: FastQC")
+    log_info("Schedule FastQC job")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -84,6 +84,8 @@ def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies):
 
         job_id = job_id_generator.get_next(["fastqc", sample_id])
         prev_job_ids = [dependencies.get(sample_id, None)]
+
+        log_info("New FastQC job(sample_id='%s', job_id='%s', dependencies=['%s'])" % (sample_id, job_id, prev_job_ids))
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,

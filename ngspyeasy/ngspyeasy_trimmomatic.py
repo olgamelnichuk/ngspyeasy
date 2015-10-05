@@ -10,7 +10,7 @@ from settings import NGSEASYVERSION
 
 def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
     log_set_current_step("ngspyeasy_trimmomatic")
-    log_info("Start: Trimmomatic")
+    log_info("Schedule Trimmomatic Job")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -27,6 +27,8 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
         job_id = job_id_generator.get_next(["trimmomatic", sample_id])
         prev_job_ids = [dependencies.get(sample_id, None)]
 
+        log_info("New Trimmomatic job(sample_id='%s', job_id='%s', dependencies=['%s'])" % (sample_id, job_id, prev_job_ids))
+
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-trimmomatic:" + NGSEASYVERSION, " ".join(cmd), projects_home,
                                projects_dir.resources_dir(projects_home), pipeman=False),
@@ -40,6 +42,8 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
 
         job_id = job_id_generator.get_next(["trimmomatic_fastqc", sample_id])
         prev_job_ids = [dependencies.get(sample_id, None)]
+
+        log_info("New (post Trimmomatic) FastQC job(sample_id='%s', job_id='%s', dependencies=['%s'])" % (sample_id, job_id, prev_job_ids))
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,
