@@ -51,10 +51,13 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
 
     return os.path.basename(expected_path), None
 
+
 q = Queue()
+
 
 def terminate():
     q.put("terminate")
+
 
 def enqueue_output(out, lines):
     for line in iter(out.readline, b''):
@@ -65,6 +68,7 @@ def enqueue_output(out, lines):
 
 
 def run_command(cmd):
+    log_debug("cmd to run: %s" + " ".join(cmd))
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
