@@ -2,6 +2,7 @@
 
 import subprocess
 import sys
+from cmdline_options import run_command
 import os
 
 
@@ -34,5 +35,8 @@ def main():
     sys.exit(retcode)
 
 
+def main1():
+    run_command("sleep 60")
+
 if __name__ == '__main__':
-    main()
+    main1()
