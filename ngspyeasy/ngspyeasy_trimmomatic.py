@@ -10,11 +10,15 @@ from settings import NGSEASYVERSION
 
 def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
     log_set_current_step("ngspyeasy_trimmomatic")
-    log_info("Schedule Trimmomatic Job")
+    log_info("Schedule Trimmomatic jobs")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
         trim_type = row.trim()
+
+        if trim_type == "no-trim":
+            log_info("[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED", (trim_type, sample_id))
+            continue
 
         if trim_type not in ["atrim", "btrim"]:
             raise ValueError("Unknown trimmomatic type: %s" % trim_type)
