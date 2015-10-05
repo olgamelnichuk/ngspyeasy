@@ -1,8 +1,9 @@
 #!/usr/bin/env python
-
+import subprocess
 import sys
-import os.path
 
+from logger import log_debug, log_error, log_info
+import os.path
 from projects_dir import config_full_path, config_dir
 
 
@@ -45,3 +46,23 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
         return None, "Config file '" + expected_path + "' does not exist."
 
     return os.path.basename(expected_path), None
+
+
+def run_command(cmd):
+    proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
+                            stdout=subprocess.PIPE,
+                            stderr=subprocess.STDOUT)
+
+    stdout = []
+    try:
+        for line in iter(proc.stdout.readline, ''):
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            stdout.append(line)
+    except KeyboardInterrupt:
+        log_info("got Ctrl + C")
+
+    log_debug("cmd: \n" + "".join(stdout))
+
+    if proc.returncode:
+        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))

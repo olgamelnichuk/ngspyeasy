@@ -2,14 +2,13 @@
 
 import getopt
 import os
-import subprocess
 import sys
 
 import sample_data
 import projects_dir
 import tsv_config
-from cmdline_options import check_cmdline_options
-from logger import init_logger, log_error, log_info, log_debug, log_set_current_step
+from cmdline_options import check_cmdline_options, run_command
+from logger import init_logger, log_error, log_info, log_set_current_step
 
 
 def usage():
@@ -115,20 +114,7 @@ def run_fastqc(row, projects_home):
            "--outdir", sample.fastq_dir()] + \
            fastq_files
 
-    proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
-
-    stdout = []
-    for line in iter(proc.stdout.readline, ''):
-        sys.stdout.write(line)
-        sys.stdout.flush()
-        stdout.append(line)
-
-    log_debug("cmd: \n" + "".join(stdout))
-
-    if proc.returncode:
-        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
+    run_command(cmd)
 
 
 if __name__ == '__main__':
