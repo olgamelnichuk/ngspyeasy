@@ -114,7 +114,6 @@ def ngspyeasy(tsv_conf, projects_home):
 
 
 def signal_handler(signum, frame):
-    log_info("Got [%s] signal" % signum)
     job_scheduler.stop()
 
 if __name__ == '__main__':
