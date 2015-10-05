@@ -17,7 +17,7 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies):
         trim_type = row.trim()
 
         if trim_type == "no-trim":
-            log_info("[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED", (trim_type, sample_id))
+            log_info("[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED" % (trim_type, sample_id))
             continue
 
         if trim_type not in ["atrim", "btrim"]:
