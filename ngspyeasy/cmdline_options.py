@@ -4,6 +4,7 @@ import subprocess
 import sys
 from threading import Thread
 import threading
+import time
 
 from logger import log_debug, log_error, log_info
 import os.path
@@ -50,6 +51,10 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
 
     return os.path.basename(expected_path), None
 
+q = Queue()
+
+def terminate():
+    q.put("terminate")
 
 def enqueue_output(out, lines):
     for line in iter(out.readline, b''):
@@ -69,16 +74,17 @@ def run_command(cmd):
     t.daemon = True
     t.start()
 
-    try:
-        while True:
-            threads = threading.enumerate()
-            if len(threads) == 1: break
-            for t in threads:
-                if t != threading.currentThread():
-                    t.join(1)
-    except KeyboardInterrupt:
-        log_info("Got Ctrl+C signal. Stopping..")
-        proc.terminate()
+    while True:
+        ret = proc.poll()
+        if ret is not None:
+            break
+
+        if q.get_nowait() == "terminate":
+            log_debug("got terminate signal")
+            proc.terminate()
+            continue
+
+        time.sleep(0.5)
 
     log_debug("cmd: \n" + ''.join(lines))
 

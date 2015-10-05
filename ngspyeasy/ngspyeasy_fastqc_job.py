@@ -8,7 +8,7 @@ import os
 import sample_data
 import projects_dir
 import tsv_config
-from cmdline_options import check_cmdline_options, run_command
+from cmdline_options import check_cmdline_options, run_command, terminate
 from logger import init_logger, log_error, log_info, log_set_current_step
 
 
@@ -113,5 +113,5 @@ def run_fastqc(row, projects_home):
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGTERM, lambda *args: sys.exit(-signal.SIGTERM))
+    signal.signal(signal.SIGTERM, lambda *args: terminate())
     main(sys.argv[1:])
