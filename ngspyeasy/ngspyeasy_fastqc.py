@@ -83,7 +83,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies):
                "/home/pipeman/ngs_projects", "-i", sample_id]
 
         job_id = job_id_generator.get_next(["fastqc", sample_id])
-        prev_job_ids = [dependencies[sample_id]]
+        prev_job_ids = [dependencies.get(sample_id, None)]
 
         job_scheduler.submit(
             job_id, docker_cmd(job_id, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, " ".join(cmd), projects_home,
