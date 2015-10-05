@@ -8,6 +8,7 @@ NGS_PROJECTS = HOME + "/ngs_projects"
 
 NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 
+# !!! NOE: -t and -i options are required to be able to stop pipleine and containers by Ctrl+C command
 DOCKER_OPTS = "-t -i -v /opt/ngspyeasy:/ngspyeasy:ro"
 
 
