@@ -1,12 +1,8 @@
 #!/usr/bin/env python
-from Queue import Queue
 import subprocess
 import sys
-from threading import Thread
-import threading
-import time
 
-from logger import log_debug, log_error, log_info
+from logger import log_debug, log_error
 import os.path
 from projects_dir import config_full_path, config_dir
 
@@ -52,21 +48,6 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
     return os.path.basename(expected_path), None
 
 
-q = Queue()
-
-
-def terminate():
-    q.put("terminate")
-
-
-def enqueue_output(out, lines):
-    for line in iter(out.readline, b''):
-        sys.stdout.write(line)
-        sys.stdout.flush()
-        lines.append(line)
-    out.close()
-
-
 def run_command(cmd):
     log_debug("cmd to run: %s" % " ".join(cmd))
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
@@ -74,21 +55,11 @@ def run_command(cmd):
                             stderr=subprocess.STDOUT)
 
     lines = []
-    t = Thread(target=enqueue_output, args=(proc.stdout, lines))
-    t.daemon = True
-    t.start()
-
-    while True:
-        ret = proc.poll()
-        if ret is not None:
-            break
-
-        if not q.empty() and q.get_nowait() == "terminate":
-            log_debug("got terminate signal")
-            proc.terminate()
-            continue
-
-        time.sleep(0.5)
+    for line in iter(proc.stdout.readline, b''):
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        lines.append(line)
+    proc.stdout.close()
 
     log_debug("cmd: \n" + ''.join(lines))
 
