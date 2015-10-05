@@ -1,6 +1,7 @@
 #!/usr/bin/env python
 
 import getopt
+import signal
 import os
 import subprocess
 import sys
@@ -163,4 +164,5 @@ def run_trimmomatic(row, projects_home):
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, lambda *args: sys.exit(-signal.SIGTERM))
     main(sys.argv[1:])

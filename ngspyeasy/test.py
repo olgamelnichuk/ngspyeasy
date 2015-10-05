@@ -36,7 +36,7 @@ def main():
 
 
 def main1():
-    run_command("sleep 60")
+    run_command(["sleep 60"])
 
 if __name__ == '__main__':
     main1()

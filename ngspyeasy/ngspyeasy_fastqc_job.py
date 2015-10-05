@@ -2,6 +2,7 @@
 
 import getopt
 import sys
+import signal
 
 import os
 import sample_data
@@ -112,4 +113,5 @@ def run_fastqc(row, projects_home):
 
 
 if __name__ == '__main__':
+    signal.signal(signal.SIGTERM, lambda *args: sys.exit(-signal.SIGTERM))
     main(sys.argv[1:])
