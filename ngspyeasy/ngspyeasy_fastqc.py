@@ -75,7 +75,7 @@ def main(argv):
 
 def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies):
     log_set_current_step("ngspyeasy_fastqc")
-    log_info("Schedule FastQC job")
+    log_info("Schedule FastQC jobs")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
