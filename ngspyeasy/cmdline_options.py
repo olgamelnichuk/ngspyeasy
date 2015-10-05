@@ -1,6 +1,9 @@
 #!/usr/bin/env python
+from Queue import Queue
 import subprocess
 import sys
+from threading import Thread
+import threading
 
 from logger import log_debug, log_error, log_info
 import os.path
@@ -48,21 +51,36 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
     return os.path.basename(expected_path), None
 
 
+def enqueue_output(out, lines):
+    for line in iter(out.readline, b''):
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        lines.append(line)
+    out.close()
+
+
 def run_command(cmd):
     proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
 
-    stdout = []
-    try:
-        for line in iter(proc.stdout.readline, ''):
-            sys.stdout.write(line)
-            sys.stdout.flush()
-            stdout.append(line)
-    except KeyboardInterrupt:
-        log_info("got Ctrl + C")
+    lines = []
+    t = Thread(target=enqueue_output, args=(proc.stdout, lines))
+    t.daemon = True
+    t.start()
 
-    log_debug("cmd: \n" + "".join(stdout))
+    try:
+        while True:
+            threads = threading.enumerate()
+            if len(threads) == 1: break
+            for t in threads:
+                if t != threading.currentThread():
+                    t.join(1)
+    except KeyboardInterrupt:
+        log_info("Got Ctrl+C signal. Stopping..")
+        proc.terminate()
+
+    log_debug("cmd: \n" + ''.join(lines))
 
     if proc.returncode:
         log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
