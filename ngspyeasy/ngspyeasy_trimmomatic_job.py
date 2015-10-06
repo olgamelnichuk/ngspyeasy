@@ -1,17 +1,15 @@
 #!/usr/bin/env python
 
 import getopt
-import signal
-import os
-import subprocess
 import sys
+
+import os
 import docker
 import tsv_config
 import projects_dir
 import sample_data
-
-from cmdline_options import check_cmdline_options
-from logger import init_logger, log_error, log_info, log_debug, log_set_current_step
+from cmdline_options import check_cmdline_options, run_command
+from logger import init_logger, log_error, log_info, log_set_current_step
 
 
 def usage():
@@ -69,7 +67,6 @@ def main(argv):
 
     init_logger(projects_dir.sample_log_file(projects_home, tsv_name, sample_id), verbose)
     log_set_current_step("ngspyeasy_trimmomatic_job")
-
 
     tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
     if tsv_conf is None:
@@ -147,22 +144,8 @@ def run_trimmomatic(row, projects_home):
           trimmomatic_results + \
           trimmomatic_options
 
-    proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
-
-    stdout = []
-    for line in iter(proc.stdout.readline, ''):
-        sys.stdout.write(line)
-        sys.stdout.flush()
-        stdout.append(line)
-
-    log_debug("cmd: \n" + "".join(stdout))
-
-    if proc.returncode:
-        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
+    run_command(cmd)
 
 
 if __name__ == '__main__':
-    signal.signal(signal.SIGTERM, lambda *args: sys.exit(-signal.SIGTERM))
     main(sys.argv[1:])
