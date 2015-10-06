@@ -52,7 +52,7 @@ def run_command(cmd):
     log_debug("cmd to run: %s" % " ".join(cmd))
     proc = subprocess.Popen(
         ["/bin/bash", "-c",
-         ["BASHRC_PATH=`python /ngspyeasy/bin/fix_bashrc.py`; source $BASHRC_PATH; echo $CLASSPATH;" + " ".join(cmd)]],
+         ["python /ngspyeasy/bin/fix_bashrc.py; source $BASHRC_FIXED; echo $CLASSPATH;" + " ".join(cmd)]],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
