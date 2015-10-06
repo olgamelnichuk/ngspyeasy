@@ -104,6 +104,9 @@ class TsvConfigRow:
     def trim(self):
         return self.value_at(columns.TRIM)
 
+    def aligner(self):
+        return self.value_at(columns.ALIGNER)
+
     def ncpu(self):
         return self.value_at(columns.NCPU)
 

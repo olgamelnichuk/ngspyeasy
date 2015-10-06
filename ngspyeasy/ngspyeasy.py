@@ -14,6 +14,7 @@ from ngspyeasy_initiate_project import ngspyeasy_initiate_project
 from ngspyeasy_initiate_fastq import ngspyeasy_initiate_fastq
 from ngspyeasy_fastqc import ngspyeasy_fastqc
 from ngspyeasy_trimmomatic import ngspyeasy_trimmomatic
+from ngspyeasy_alignment import ngspyeasy_alignment
 
 
 def usage():
@@ -107,7 +108,7 @@ def ngspyeasy(tsv_conf, projects_home):
     dependencies = dict()
     ngspyeasy_fastqc(tsv_conf, projects_home, dependencies)
     ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies)
-    # ngspyeasy_alignment.run_all(tsv_config, ngs_projects_dir)
+    ngspyeasy_alignment(tsv_conf, projects_home, dependencies)
     # ngspyeasy_realign.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_bsqr.run_all(tsv_config, ngs_projects_dir)
     # ngspyeasy_variant_calling.run_all(tsv_config, ngs_projects_dir)
