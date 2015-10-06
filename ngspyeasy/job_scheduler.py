@@ -82,7 +82,7 @@ class JobScheduler(Thread):
                     self.logger.debug("[scheduler]: job_to_run: %s", job_id)
                     self.logger.debug("[scheduler]: command_to_run: [[\n%s \n]]", job_command)
 
-                    proc = subprocess.Popen(["/bin/bash", "-c", job_command], env=os.environ.copy())
+                    proc = subprocess.Popen(["/bin/bash", "-c", job_command], stdin=subprocess.PIPE, env=os.environ.copy())
                     self.processes.append((proc, job_command, job_id))
 
             self.update_processes()
