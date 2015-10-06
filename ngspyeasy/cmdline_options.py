@@ -2,7 +2,7 @@
 import subprocess
 import sys
 
-from logger import log_debug, log_error
+from logger import log_debug, log_error, log_info
 import os.path
 from projects_dir import config_full_path, config_dir
 
@@ -55,11 +55,14 @@ def run_command(cmd):
                             stderr=subprocess.STDOUT)
 
     lines = []
-    for line in iter(proc.stdout.readline, b''):
-        sys.stdout.write(line)
-        sys.stdout.flush()
-        lines.append(line)
-    proc.stdout.close()
+    try:
+        for line in iter(proc.stdout.readline, b''):
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            lines.append(line)
+        proc.stdout.close()
+    except KeyboardInterrupt:
+        log_info("KeyboardInterrupt received")
 
     log_debug("cmd: \n" + ''.join(lines))
 
