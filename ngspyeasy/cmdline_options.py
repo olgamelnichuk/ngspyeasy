@@ -52,6 +52,9 @@ def run_command(cmd):
     log_debug("cmd to run: %s" % " ".join(cmd))
     proc = subprocess.Popen(
         ["/bin/bash", "-c",
+         # ~/.bashrc can contain environment variables valuable for running the command; unfortunately it doesn't
+         # run automatically in the docker container if bash runs in non-interactive mode (without '-i' flag). Read
+         # the .bashrc source for more details.
          "python /ngspyeasy/bin/fix_bashrc.py; source ~/.bashrc_fixed; echo $CLASSPATH; " + " ".join(cmd)],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
