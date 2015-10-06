@@ -82,6 +82,8 @@ class JobScheduler(Thread):
                     self.logger.debug("[scheduler]: job_to_run: %s", job_id)
                     self.logger.debug("[scheduler]: command_to_run: [[\n%s \n]]", job_command)
 
+                    # WARNING! using '-i' option with bash will create interactive shell which will have parent's stdin
+                    # and get the SIGINT first..
                     proc = subprocess.Popen(["/bin/bash", "-c", job_command], env=os.environ.copy())
                     self.processes.append((proc, job_command, job_id))
 
