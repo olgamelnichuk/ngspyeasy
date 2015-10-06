@@ -1,6 +1,6 @@
 #!/usr/bin/env python
 
-import os
+import os.path
 import docker
 
 
@@ -25,4 +25,4 @@ def path_of_fixed_bashrc():
 
 
 if __name__ == '__main__':
-    os.environ["BASHRC_FIXED"] = path_of_fixed_bashrc()
+    print path_of_fixed_bashrc()
