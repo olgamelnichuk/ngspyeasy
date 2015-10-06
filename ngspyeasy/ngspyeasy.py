@@ -72,18 +72,18 @@ def main(argv):
     if tsv_conf is None:
         exit_with_error("Invalid TSV config. See logs for details...")
 
-    retcode = 0
     try:
         scheduler = job_scheduler.JobScheduler(os.path.join(projects_dir.log_dir(projects_home), "job_scheduler.log"))
         scheduler.start()
+    except Exception, e:
+        log_exception(e)
+        sys.exit(1)
 
-        try:
-            ngspyeasy(tsv_conf, projects_home)
+    retcode = 0
+    try:
+        ngspyeasy(tsv_conf, projects_home)
 
-        except Exception, e:
-            log_exception(e)
-            job_scheduler.stop()
-            retcode = 1
+        log_info("All jobs have been submitted.")
 
         while True:
             threads = threading.enumerate()
@@ -94,6 +94,7 @@ def main(argv):
 
     except Exception, e:
         log_exception(e)
+        job_scheduler.stop()
         retcode = 1
 
     log_info("Exit(%d)", retcode)
@@ -114,7 +115,9 @@ def ngspyeasy(tsv_conf, projects_home):
 
 
 def signal_handler(signum, frame):
+    log_info("Got %s signal" % str(signum))
     job_scheduler.stop()
+
 
 if __name__ == '__main__':
     signal.signal(signal.SIGINT, signal_handler)
