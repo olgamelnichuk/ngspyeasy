@@ -50,7 +50,7 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
 
 def run_command(cmd):
     log_debug("cmd to run: %s" % " ".join(cmd))
-    proc = subprocess.Popen(["/bin/bash", "-i", "-c", "source ~/.bashrc; " + " ".join(cmd)],
+    proc = subprocess.Popen(["/bin/bash", "-c", "python /ngspyeasy/bin/fix_bashrc.py;source ~/.bashrc_fixed; " + " ".join(cmd)],
                             stdout=subprocess.PIPE,
                             stderr=subprocess.STDOUT)
 

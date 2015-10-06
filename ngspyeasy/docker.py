@@ -8,7 +8,7 @@ NGS_PROJECTS = HOME + "/ngs_projects"
 
 NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 
-DOCKER_OPTS = "--sig-proxy=true -i -v /opt/ngspyeasy:/ngspyeasy:ro"
+DOCKER_OPTS = "-v /opt/ngspyeasy:/ngspyeasy:ro"
 
 
 def docker_cmd(name, image, cmd, projects_home, resources_home, pipeman=True):
