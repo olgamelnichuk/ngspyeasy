@@ -50,9 +50,11 @@ def check_tsv_config_file_option(tsv_config_file, projects_home):
 
 def run_command(cmd):
     log_debug("cmd to run: %s" % " ".join(cmd))
-    proc = subprocess.Popen(["/bin/bash", "-c", " ".join(cmd)],
-                            stdout=subprocess.PIPE,
-                            stderr=subprocess.STDOUT)
+    proc = subprocess.Popen(
+        ["/bin/bash", "-c",
+         ["BASHRC_PATH=`python /ngspyeasy/bin/fix_bashrc.py`; source $BASHRC_PATH; echo $CLASSPATH;" + " ".join(cmd)]],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
 
     lines = []
     try:
