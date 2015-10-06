@@ -82,20 +82,19 @@ def main(argv):
     retcode = 0
     try:
         ngspyeasy(tsv_conf, projects_home)
-
-        log_info("All jobs have been submitted.")
-
-        while True:
-            threads = threading.enumerate()
-            if len(threads) == 1: break
-            for t in threads:
-                if t != threading.currentThread():
-                    t.join(1)
-
     except Exception, e:
         log_exception(e)
         job_scheduler.stop()
         retcode = 1
+
+    log_info("All jobs have been submitted.")
+
+    while True:
+        threads = threading.enumerate()
+        if len(threads) == 1: break
+        for t in threads:
+            if t != threading.currentThread():
+                t.join(1)
 
     log_info("Exit(%d)", retcode)
     sys.exit(retcode)
@@ -115,7 +114,7 @@ def ngspyeasy(tsv_conf, projects_home):
 
 
 def signal_handler(signum, frame):
-    log_info("Got %s signal" % str(signum))
+    log_info("Got SIGINT(%s) signal" % str(signum))
     job_scheduler.stop()
 
 
