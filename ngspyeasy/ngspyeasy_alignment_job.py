@@ -31,7 +31,7 @@ def exit_with_error(msg):
 
 def main(argv):
     try:
-        opts, args = getopt.getopt(argv, "hvc:d:i:p:", ["help"])
+        opts, args = getopt.getopt(argv, "hvc:d:i:t:", ["help"])
         if len(opts) == 0:
             usage()
             sys.exit(1)
