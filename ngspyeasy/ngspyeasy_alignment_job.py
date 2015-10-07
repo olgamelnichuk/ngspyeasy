@@ -107,7 +107,8 @@ def run_alignment(row, projects_home, task):
 def find_platform_unit(fastq_file):
     cmd = "zcat %s | head -1 | sed 's/:/\\t/' - | cut -f 1 | sed 's/@//g' - " % fastq_file
     log_debug("platform_info=[%s]" % cmd)
-    return subprocess.check_output(cmd, shell=True, preexec_fn=lambda: signal(SIGPIPE, SIG_DFL))
+    out = subprocess.check_output(cmd, shell=True, preexec_fn=lambda: signal(SIGPIPE, SIG_DFL))
+    return out.strip()
 
 
 if __name__ == '__main__':
