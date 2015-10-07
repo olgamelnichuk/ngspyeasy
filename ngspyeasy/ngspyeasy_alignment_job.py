@@ -1,16 +1,18 @@
 #!/usr/bin/env python
 import getopt
+import subprocess
 import sys
+from ngspyeasy import sample_data
 
 import projects_dir
 import tsv_config
 from cmdline_options import check_cmdline_options
-from logger import init_logger, log_error, log_set_current_step
+from logger import init_logger, log_error, log_set_current_step, log_info
 
 
 def usage():
     print """
-Usage:  ngspyeasy_alignment_job -c <config_file> -d <project_directory> -i <sample_id> -p <part_tag>
+Usage:  ngspyeasy_alignment_job -c <config_file> -d <project_directory> -i <sample_id> -t <task>
 
 Options:
         -c  STRING  configuration file
@@ -18,7 +20,7 @@ Options:
         -v  NULL    verbose
         -h  NULL    show this message
         -i  STRING sample id
-        -p  STRING part_tag (e.g. for stampy alignment part tags are: ['stampy_bwa', 'stampy_stampy', 'stampy_picard1', 'stampy_picard2'])
+        -t  STRING task name (e.g. for stampy alignment tasks are: ['stampy_bwa', 'stampy_stampy', 'stampy_picard1', 'stampy_picard2'])
 """
 
 
@@ -43,7 +45,7 @@ def main(argv):
     ngs_projects_dir = None
     verbose = False
     sample_id = None
-    part_tag = None
+    task = None
     for opt, val in opts:
         if opt in ("-h", "--help"):
             usage()
@@ -56,8 +58,8 @@ def main(argv):
             verbose = True
         elif opt == "-i":
             sample_id = val
-        elif opt == "-p":
-            part_tag = val
+        elif opt == "-t":
+            task = val
         else:
             assert False, "unhandled option"
 
@@ -73,21 +75,25 @@ def main(argv):
         exit_with_error("Invalid TSV config. See logs for details...")
 
     try:
-        ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, part_tag)
+        ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task)
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
 
 
-def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, part_tag=None):
+def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
         rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
 
     for row in rows2run:
-        run_alignment(row, projects_home, part_tag)
+        run_alignment(row, projects_home, task)
 
 
-def run_alignment(row, projects_home, part_tag):
-    # TODO
-    pass
+def run_alignment(row, projects_home, task):
+    sample = sample_data.create(row, projects_home)
+
+    platform_unit = subprocess.check_output(
+        "zcat %s | head -1 | sed 's/:/\t/' - | cut -f 1 | sed 's/@//g' - " % sample.fastq_files()[0])
+
+    log_info("platform_unit='%s'" % platform_unit)
