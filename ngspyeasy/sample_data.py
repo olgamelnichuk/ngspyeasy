@@ -48,13 +48,13 @@ def create(row, projects_home):
 
     for fastq_file in fastq:
         if not os.path.isfile(fastq_file):
-            raise IOError("File does not exist: %s", fastq_file)
+            raise IOError("FastQ file not found: %s", fastq_file)
 
     fastq_normalized = map(lambda x: normalize_fastq(x), fastq)
     fastq_types = set(map(lambda x: x.type, fastq_normalized))
 
     if len(fastq_types) > 1:
-        raise ValueError("Fastqc file formats are not the same: %s" % str(fastq_types))
+        raise ValueError("FastQ file formats are not the same: %s" % str(fastq_types))
 
     return SampleData(row, sample_dir, fastq_normalized)
 

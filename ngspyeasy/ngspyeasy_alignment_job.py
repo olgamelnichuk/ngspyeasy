@@ -97,6 +97,8 @@ def run_alignment(row, projects_home, task):
 
     sample = sample_data.create(row, projects_home)
 
+    log_info("FastQ files: %s" % sample.fastq_files())
+
     platform_unit = subprocess.check_output(
         "zcat %s | head -1 | sed 's/:/\t/' - | cut -f 1 | sed 's/@//g' - " % sample.fastq_files()[0])
 
