@@ -2,7 +2,7 @@
 import getopt
 import subprocess
 import sys
-from ngspyeasy import sample_data
+import sample_data
 
 import projects_dir
 import tsv_config
