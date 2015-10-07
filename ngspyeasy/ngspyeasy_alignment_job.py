@@ -63,6 +63,9 @@ def main(argv):
         else:
             assert False, "unhandled option"
 
+    log_info("Command line arguments: (-c, '%s') (-d, '%s') (-i, '%s') (-t, '%s') (-v, '%s')" % (
+    tsv_config_file, ngs_projects_dir, sample_id, task, str(verbose)))
+
     (tsv_name, projects_home, errmsg) = check_cmdline_options(tsv_config_file, ngs_projects_dir)
     if errmsg:
         exit_with_error(errmsg)
