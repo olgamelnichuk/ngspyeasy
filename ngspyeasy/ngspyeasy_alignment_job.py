@@ -93,7 +93,7 @@ def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
 
 def run_alignment(row, projects_home, task):
     log_info("Running alignmnent job (SAMPLE_ID='%s', ALIGNMENT='%s', GENOMEBUILD='%s')" % (
-        row.sample_id(), row.alignment(), row.genomebuild()))
+        row.sample_id(), row.aligner(), row.genomebuild()))
 
     sample = sample_data.create(row, projects_home)
 
