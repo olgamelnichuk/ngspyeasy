@@ -73,7 +73,7 @@ def config_full_path(projects_home, tsv_name):
     return os.path.join(config_dir(projects_home), tsv_name)
 
 
-def fastq_full_path(sample_dir, filename):
+def fastq_path(sample_dir, filename):
     return os.path.join(sample_fastq_dir(sample_dir), filename)
 
 

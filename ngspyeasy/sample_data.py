@@ -44,7 +44,7 @@ def create(row, projects_home):
     sample_dir = projects_dir.sample_dir(projects_home, row.project_id(), row.sample_id())
 
     fastq = [row.fastq1(), row.fastq2()]
-    fastq = [projects_dir.fastq_full_path(sample_dir, x) for x in fastq]
+    fastq = [projects_dir.fastq_path(sample_dir, x) for x in fastq]
 
     for fastq_file in fastq:
         if not os.path.isfile(fastq_file):
