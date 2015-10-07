@@ -63,7 +63,6 @@ def main(argv):
         else:
             assert False, "unhandled option"
 
-
     (tsv_name, projects_home, errmsg) = check_cmdline_options(tsv_config_file, ngs_projects_dir)
     if errmsg:
         exit_with_error(errmsg)
@@ -99,10 +98,20 @@ def run_alignment(row, projects_home, task):
 
     log_info("FastQ files: %s" % sample.fastq_files())
 
-    platform_unit = subprocess.check_output(
-        "zcat %s | head -1 | sed 's/:/\t/' - | cut -f 1 | sed 's/@//g' - " % sample.fastq_files()[0])
+    platform_unit = find_platform_unit(sample.fastq_files()[0])
 
     log_info("platform_unit='%s'" % platform_unit)
+
+
+def find_platform_unit(fastq_file):
+    p1 = subprocess.Popen(["zcat %s" % fastq_file], stdout=subprocess.PIPE)
+    p2 = subprocess.Popen(["head -1"], stdin=p1.stdout, stdout=subprocess.PIPE)
+    p3 = subprocess.Popen(["sed 's/:/\\t/' - "], stdin=p2.stdout, stdout=subprocess.PIPE)
+    p4 = subprocess.Popen(["cut -f 1"], stdin=p3.stdout, stdout=subprocess.PIPE)
+    p5 = subprocess.Popen(["sed 's/@//g' - "], stdin=p4.stdout, stdout=subprocess.PIPE)
+
+    return p5.communicate()[0]
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
