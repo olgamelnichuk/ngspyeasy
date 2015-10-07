@@ -121,3 +121,6 @@ class TsvConfigRow:
 
     def dna_prep_library_id(self):
         return self.value_at(columns.DNA_PREP_LIBRARY_ID)
+
+    def ngs_platform(self):
+        return self.value_at(columns.NGS_PLATFORM)

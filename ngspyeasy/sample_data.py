@@ -90,3 +90,12 @@ class SampleData(object):
             [r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.trim() + "_" + str(x), suffix])
                    for x in [1, 2]]
         return [os.path.join(self.fastq_dir(), x) for x in results]
+
+    def bam_prefix(self):
+        r = self.row
+        return ".".join([r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.ngs_platform(), r.trim(), r.aligner(),
+                         r.genomebuild()])
+
+    def alignments_path(self, filename):
+        dir = projects_dir.sample_alignments_dir(self.sample_dir)
+        return os.path.join(dir, filename)
