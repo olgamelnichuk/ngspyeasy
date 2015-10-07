@@ -20,7 +20,7 @@ Options:
         -v  NULL    verbose
         -h  NULL    show this message
         -i  STRING sample id
-        -t  STRING task name (e.g. for stampy alignment tasks are: ['stampy_bwa', 'stampy_stampy', 'stampy_picard1', 'stampy_picard2'])
+        -t  STRING task name (e.g. for stampy aligner tasks are: ['stampy_bwa', 'stampy_stampy', 'stampy_picard1', 'stampy_picard2'])
 """
 
 
@@ -92,7 +92,7 @@ def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
 
 
 def run_alignment(row, projects_home, task):
-    log_info("Running alignmnent job (SAMPLE_ID='%s', ALIGNMENT='%s', GENOMEBUILD='%s')" % (
+    log_info("Running alignmnent job (SAMPLE_ID='%s', ALIGNER='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), row.genomebuild()))
 
     sample = sample_data.create(row, projects_home)
