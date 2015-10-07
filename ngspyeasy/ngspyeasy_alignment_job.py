@@ -104,11 +104,11 @@ def run_alignment(row, projects_home, task):
 
 
 def find_platform_unit(fastq_file):
-    p1 = subprocess.Popen(["zcat %s" % fastq_file], stdout=subprocess.PIPE)
-    p2 = subprocess.Popen(["head -1"], stdin=p1.stdout, stdout=subprocess.PIPE)
-    p3 = subprocess.Popen(["sed 's/:/\\t/' - "], stdin=p2.stdout, stdout=subprocess.PIPE)
-    p4 = subprocess.Popen(["cut -f 1"], stdin=p3.stdout, stdout=subprocess.PIPE)
-    p5 = subprocess.Popen(["sed 's/@//g' - "], stdin=p4.stdout, stdout=subprocess.PIPE)
+    p1 = subprocess.Popen("zcat %s" % fastq_file, stdout=subprocess.PIPE)
+    p2 = subprocess.Popen("head -1", stdin=p1.stdout, stdout=subprocess.PIPE)
+    p3 = subprocess.Popen("sed 's/:/\\t/' - ", stdin=p2.stdout, stdout=subprocess.PIPE)
+    p4 = subprocess.Popen("cut -f 1", stdin=p3.stdout, stdout=subprocess.PIPE)
+    p5 = subprocess.Popen("sed 's/@//g' - ", stdin=p4.stdout, stdout=subprocess.PIPE)
 
     return p5.communicate()[0]
 
