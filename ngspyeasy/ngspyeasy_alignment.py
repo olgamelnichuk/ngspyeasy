@@ -5,7 +5,7 @@ import projects_dir
 from settings import NGSEASYVERSION
 from docker import docker_cmd
 from logger import log_set_current_step, log_info
-from ngspyeasy import job_id_generator
+import job_id_generator
 
 
 def ngspyeasy_alignment(tsv_conf, projects_home, dependencies):
