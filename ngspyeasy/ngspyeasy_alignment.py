@@ -28,10 +28,10 @@ def ngspyeasy_alignment(tsv_conf, projects_home, dependencies):
             commands = [("compbio/ngseasy-novoalign:" + NGSEASYVERSION, cmd)]
         elif aligner_type == "stampy":
             commands = [
-                ("compbio/ngseasy-bwa:" + NGSEASYVERSION, cmd + ["-p", "stampy_bwa"]),
-                ("compbio/ngseasy-stampy:" + NGSEASYVERSION, cmd + ["-p", "stampy_stampy"]),
-                ("compbio/ngseasy-picardtools:" + NGSEASYVERSION, cmd + ["-p", "stampy_picard1"]),
-                ("compbio/ngseasy-picardtools:" + NGSEASYVERSION, cmd + ["-p", "stampy_picard2"])
+                ("compbio/ngseasy-bwa:" + NGSEASYVERSION, cmd + ["-t", "stampy_bwa"]),
+                ("compbio/ngseasy-stampy:" + NGSEASYVERSION, cmd + ["-t", "stampy_stampy"]),
+                ("compbio/ngseasy-picardtools:" + NGSEASYVERSION, cmd + ["-t", "stampy_picard1"]),
+                ("compbio/ngseasy-picardtools:" + NGSEASYVERSION, cmd + ["-t", "stampy_picard2"])
             ]
         elif aligner_type == "bowtie2":
             commands = [("compbio/ngseasy-bowtie2:" + NGSEASYVERSION, cmd)]
