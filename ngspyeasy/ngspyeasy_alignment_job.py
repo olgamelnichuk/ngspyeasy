@@ -63,8 +63,6 @@ def main(argv):
         else:
             assert False, "unhandled option"
 
-    log_info("Command line arguments: (-c, '%s') (-d, '%s') (-i, '%s') (-t, '%s') (-v, '%s')" % (
-    tsv_config_file, ngs_projects_dir, sample_id, task, str(verbose)))
 
     (tsv_name, projects_home, errmsg) = check_cmdline_options(tsv_config_file, ngs_projects_dir)
     if errmsg:
@@ -103,3 +101,6 @@ def run_alignment(row, projects_home, task):
         "zcat %s | head -1 | sed 's/:/\t/' - | cut -f 1 | sed 's/@//g' - " % sample.fastq_files()[0])
 
     log_info("platform_unit='%s'" % platform_unit)
+
+if __name__ == '__main__':
+    main(sys.argv[1:])
