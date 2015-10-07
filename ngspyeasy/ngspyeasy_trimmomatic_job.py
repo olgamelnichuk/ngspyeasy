@@ -89,7 +89,7 @@ def ngspyeasy_trimmomatic_job(tsv_conf, projects_home, sample_id):
 
 
 def run_trimmomatic(row, projects_home):
-    log_info("Trimmomatic Job (SAMPLE_ID='%s', TRIM='%s', GENOMEBUILD='%s')" % (
+    log_info("Running Trimmomatic job (SAMPLE_ID='%s', TRIM='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.trim(), row.genomebuild()))
 
     if row.genomebuild() == "b37":

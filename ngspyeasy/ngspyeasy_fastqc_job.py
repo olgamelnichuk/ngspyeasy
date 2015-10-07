@@ -88,7 +88,7 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
 
 
 def run_fastqc(row, projects_home):
-    log_info("FastQC Job (SAMPLE_ID='%s')" % row.sample_id())
+    log_info("Running FastQC job (SAMPLE_ID='%s', FASTQC='%s')" % (row.sample_id(), row.fastqc()))
 
     sample = sample_data.create(row, projects_home)
 

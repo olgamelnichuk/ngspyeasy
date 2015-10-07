@@ -101,6 +101,9 @@ class TsvConfigRow:
     def fastq2(self):
         return self.value_at(columns.FASTQ2)
 
+    def fastqc(self):
+        return self.value_at(columns.FASTQC)
+
     def trim(self):
         return self.value_at(columns.TRIM)
 
