@@ -180,8 +180,9 @@ def run_alignment(row, projects_home, task):
         script.add_variables(K_STATS=sample.alignments_path(bam_prefix + ".K.stats"))
 
     if row.aligner() == "stampy":
+        tmp_bam = sample.alignments_path(bam_prefix + ".tmp.bam")
         script.add_variables(
-            TMP_BAM=sample.alignments_path(bam_prefix + ".tmp.bam"),
+            TMP_BAM=tmp_bam,
             TMP_BAM_BAI=sample.alignments_path(bam_prefix + ".tmp.bam.bai"),
             DUPEMARK_TMP_BAM=sample.alignments_path(bam_prefix + ".dupemk.tmp.bam"),
             DUPEMARK_TMP_BAM_BAI=sample.alignments_path(bam_prefix + ".dupemk.tmp.bam.bai"),
@@ -195,8 +196,8 @@ def run_alignment(row, projects_home, task):
             raise ValueError("Unknown stampy task: '%s'" % task)
 
         if task == "stampy":
-            if not os.path.isfile(d["TMP_BAM"]):
-                raise IOError("Tmp BAM file not found: %s" % d["TMP_BAM"])
+            if not os.path.isfile(tmp_bam):
+                raise IOError("Tmp BAM file not found: %s" % tmp_bam)
 
     if row.aligner() == "bowtie2":
         script.add_variables(
