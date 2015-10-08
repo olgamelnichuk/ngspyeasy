@@ -2,13 +2,14 @@
 
 import getopt
 import sys
+from shutils import run_command
 
 import os
 import docker
 import tsv_config
 import projects_dir
 import sample_data
-from cmdline_options import check_cmdline_options, run_command
+from cmdline_options import check_cmdline_options
 from logger import init_logger, log_error, log_info, log_set_current_step
 
 
@@ -144,7 +145,7 @@ def run_trimmomatic(row, projects_home):
           trimmomatic_results + \
           trimmomatic_options
 
-    run_command(cmd)
+    run_command(cmd, logger)
 
 
 if __name__ == '__main__':

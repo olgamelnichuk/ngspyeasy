@@ -2,12 +2,13 @@
 
 import getopt
 import sys
+from shutils import run_command
 
 import os
 import sample_data
 import projects_dir
 import tsv_config
-from cmdline_options import check_cmdline_options, run_command
+from cmdline_options import check_cmdline_options
 from logger import init_logger, log_error, log_info, log_set_current_step
 
 
@@ -108,7 +109,7 @@ def run_fastqc(row, projects_home):
            "--dir", sample.tmp_dir(),
            "--outdir", sample.fastq_dir()] + sample.fastq_files()
 
-    run_command(cmd)
+    run_command(cmd, logger)
 
 
 if __name__ == '__main__':

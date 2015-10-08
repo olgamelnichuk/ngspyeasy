@@ -4,7 +4,7 @@ import subprocess
 import sys
 from cmdline_options import run_command
 import os
-
+from string import Template
 
 def log(msg):
     print msg
@@ -32,11 +32,14 @@ def main():
         retcode = proc.returncode
 
     log(output)
+    t  = Template("${A} and ${B} and $C").safe_substitute(A="a", B="b")
+    print t
+
+
     sys.exit(retcode)
 
 
-def main1():
-    run_command(["sleep 60"])
+
 
 if __name__ == '__main__':
-    main1()
+    main()
