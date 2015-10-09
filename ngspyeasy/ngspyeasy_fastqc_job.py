@@ -8,7 +8,7 @@ import os
 import sample_data
 import projects_dir
 import tsv_config
-from cmdline_options import check_cmdline_options
+from cmdargs import check_cmdline_options
 from logger import init_logger, log_error, log_info, log_set_current_step
 
 

@@ -1,9 +1,9 @@
 #!/usr/bin/env python
 
 import csv
+
 import os.path
 from utils import Enum
-from logger import log_warn, log_error
 
 columns = Enum('PROJECT_ID', 'SAMPLE_ID', 'FASTQ1', 'FASTQ2', 'PROJECT_DIR', 'DNA_PREP_LIBRARY_ID', 'NGS_PLATFORM',
                'NGS_TYPE', 'BAIT', 'CAPTURE', 'GENOMEBUILD', 'FASTQC', 'TRIM', 'REALN', 'BSQR', 'ALIGNER', 'VARCALLER',
@@ -11,15 +11,12 @@ columns = Enum('PROJECT_ID', 'SAMPLE_ID', 'FASTQ1', 'FASTQ2', 'PROJECT_DIR', 'DN
 
 
 def parse(tsvfile):
-
     if not os.path.exists(tsvfile):
-        log_error("[TSV parser]: file %s doesn't exist", tsvfile)
-        return None
+        raise IOError("File %s does not exist" % tsvfile)
 
     filename = os.path.basename(tsvfile)
 
     if os.stat(tsvfile).st_size == 0:
-        log_warn("[TSV parser]: file %s is empty", tsvfile)
         return TsvConfig([], filename)
 
     rows = []
@@ -29,8 +26,8 @@ def parse(tsvfile):
             for row in reader:
                 rows.append(row)
         except csv.Error as e:
-            log_error('file %s, line %d: %s' % (tsvfile, reader.line_num, e))
-            return None
+            raise ValueError('TSV Format Error: file %s, line %d: %s' % (tsvfile, reader.line_num, e))
+
     return TsvConfig(rows, filename)
 
 
@@ -77,6 +74,9 @@ class TsvConfig:
 
     def filename(self):
         return self.config_file_name
+
+    def stats(self):
+        return "(filename='%s', rows='%s', cols='%s')" % (self.filename(), self.row_size(), self.col_size())
 
 
 class TsvConfigRow:

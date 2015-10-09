@@ -3,16 +3,15 @@ import sys
 import logging
 import os.path
 
-CURRENT_STEP = ["ngspyeasy"]
-
+LOGGER_NAME = "ngspyeasy"
 
 def init_logger(logfile, verbose):
     log_dir = os.path.dirname(logfile)
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
 
-    logger = logging.getLogger()
-    formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s : %(message)s')
+    logger = logging.getLogger(LOGGER_NAME)
+    formatter = logging.Formatter('%(asctime)s %(threadName)s %(name)s %(levelname)s: %(message)s')
 
     file_handler = logging.FileHandler(logfile)
     file_handler.setFormatter(formatter)
@@ -23,35 +22,8 @@ def init_logger(logfile, verbose):
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
     logger.addHandler(file_handler)
     logger.addHandler(stream_handler)
+    return logger
 
 
 def get_logger():
-    return logging.getLogger()
-
-
-def log_exception(e):
-    get_logger().exception(e)
-
-
-def log_error(msg, *args):
-    get_logger().error(with_step(msg % args if args else msg))
-
-
-def log_debug(msg, *args):
-    get_logger().debug(with_step(msg % args if args else msg))
-
-
-def log_info(msg, *args):
-    get_logger().info(with_step(msg % args if args else msg))
-
-
-def log_warn(msg, *args):
-    get_logger().warn(with_step(msg % args if args else msg))
-
-
-def log_set_current_step(step):
-    CURRENT_STEP[0] = step
-
-
-def with_step(msg):
-    return "[" + CURRENT_STEP[0] + "]: " + str(msg)
+    return logging.getLogger(LOGGER_NAME)

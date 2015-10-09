@@ -9,7 +9,7 @@ import docker
 import tsv_config
 import projects_dir
 import sample_data
-from cmdline_options import check_cmdline_options
+from cmdargs import check_cmdline_options
 from logger import init_logger, log_error, log_info, log_set_current_step
 
 

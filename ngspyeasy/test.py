@@ -2,7 +2,7 @@
 
 import subprocess
 import sys
-from cmdline_options import run_command
+from cmdargs import run_command
 import os
 from string import Template
 

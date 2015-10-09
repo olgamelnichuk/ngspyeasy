@@ -1,14 +1,12 @@
 #!/usr/bin/env python
 import sys
 import multiprocessing
-import shlex
 import subprocess
 import time
 import logging
 from threading import Thread
-
 from Queue import Queue
-from logger import log_debug
+
 from job_dependency_tree import JobDependencyTree
 import os
 
@@ -37,18 +35,18 @@ class JobScheduler(Thread):
         self.timeout = timeout
 
     def create_logger(self, logfile):
-        logger = logging.getLogger("JobScheduler")
-        logger.setLevel(logging.DEBUG)
-        formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s %(message)s')
+        logger = logging.getLogger("ngspyeasy.scheduler")
+        #logger.setLevel(logging.DEBUG)
+        #formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s %(message)s')
 
-        if logfile:
-            file_handler = logging.FileHandler(logfile, mode='w')
-            file_handler.setFormatter(formatter)
-            logger.addHandler(file_handler)
-        else:
-            stream_handler = logging.StreamHandler(sys.stdout)
-            stream_handler.setFormatter(formatter)
-            logger.addHandler(stream_handler)
+        #if logfile:
+        #    file_handler = logging.FileHandler(logfile, mode='w')
+        #    file_handler.setFormatter(formatter)
+        #    logger.addHandler(file_handler)
+       # else:
+         #   stream_handler = logging.StreamHandler(sys.stdout)
+         #   stream_handler.setFormatter(formatter)
+          #  logger.addHandler(stream_handler)
 
         return logger
 
@@ -134,9 +132,7 @@ class JobScheduler(Thread):
 
 def submit(id, command=None, dependencies=None):
     global job_requests
-    log_debug("job_request_submit: (%s, %s)", id, command)
     job_requests.put((id, dependencies, command))
-    log_debug("job_requests_size: %d", job_requests.qsize())
 
 
 def stop():

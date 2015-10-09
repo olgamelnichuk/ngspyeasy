@@ -3,7 +3,7 @@
 import os
 import unittest
 import tempfile
-from ngspyeasy.cmdline_options import check_cmdline_options
+from ngspyeasy.cmdargs import check_cmdline_options
 
 
 class CommandLineOptionsTest(unittest.TestCase):
