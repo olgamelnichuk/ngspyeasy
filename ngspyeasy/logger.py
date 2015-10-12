@@ -3,14 +3,16 @@ import sys
 import logging
 import os.path
 
-LOGGER_NAME = "ngspyeasy"
+def logger_name(name=None):
+    return "ngspyeasy" + ("" if name is None else "." + name)
 
-def init_logger(logfile, verbose):
+
+def init_logger(logfile, verbose, name=None):
     log_dir = os.path.dirname(logfile)
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
 
-    logger = logging.getLogger(LOGGER_NAME)
+    logger = logging.getLogger(logger_name(name))
     formatter = logging.Formatter('%(asctime)s %(threadName)s %(name)s %(levelname)s: %(message)s')
 
     file_handler = logging.FileHandler(logfile)
@@ -25,5 +27,5 @@ def init_logger(logfile, verbose):
     return logger
 
 
-def get_logger():
-    return logging.getLogger(LOGGER_NAME)
+def get_logger(name):
+    return logging.getLogger(logger_name(name))

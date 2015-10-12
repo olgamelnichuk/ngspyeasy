@@ -1,82 +1,60 @@
 #!/usr/bin/env python
-
-import getopt
+import argparse
 import sys
-from shutils import run_command
 
+from ngspyeasy import cmdargs
+from shutils import run_command
 import os
 import sample_data
 import projects_dir
 import tsv_config
-from cmdargs import check_cmdline_options
-from logger import init_logger, log_error, log_info, log_set_current_step
+from logger import init_logger, get_logger
 
-
-def usage():
-    print """
-Usage:  ngspyeasy_fastqc_job -c <config_file> -d <project_directory> -i <sample_id>
-
-Options:
-        -c  STRING  configuration file
-        -d  STRING  project directory
-        -v  NULL    verbose
-        -h  NULL    show this message
-        -i  STRING sample id
-"""
-
-
-def exit_with_error(msg):
-    print >> sys.stderr, "ERROR:" + msg
-    sys.exit(1)
+LOGGER_NAME = "fastqc"
 
 
 def main(argv):
+    parser = argparse.ArgumentParser(description="Trimmomatic Job")
+    parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
+                        help="TSV configuration file name")
+    parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
+                        help="ngs_projects directory path")
+    parser.add_argument("-i", "--sample_id", dest="sample_id", help="sample_id to run trimmomatic on")
+    parser.add_argument("-t", "--task", dest="task", required=True, help="trimmomatic task: [trimmomatic | fastqc]")
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
+    parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
+
+    args = parser.parse_args(argv)
+
+    projects_home = projects_dir.ProjectsDir(args.projects_dir)
+    log_file = projects_home.sample_log_file(args.config, args.sample_id)
+    print "Opening log file: %s" % log_file
+
+    logger = init_logger(log_file, args.verbose, LOGGER_NAME)
+    logger.info("Starting...")
+    logger.debug("Command line arguments: %s" % args)
+
+    tsv_config_path = projects_home.config_path(args.config)
+    logger.info("Reading TSV config: %s" % tsv_config_path)
     try:
-        opts, args = getopt.getopt(argv, "hvc:d:i:", ["help"])
-        if len(opts) == 0:
-            usage()
-            sys.exit(1)
-
-    except getopt.GetoptError, err:
-        print str(err)
-        usage()
-        sys.exit(2)
-
-    tsv_config_file = None
-    ngs_projects_dir = None
-    verbose = False
-    sample_id = None
-    for opt, val in opts:
-        if opt in ("-h", "--help"):
-            usage()
-            sys.exit()
-        elif opt == "-c":
-            tsv_config_file = val
-        elif opt == "-d":
-            ngs_projects_dir = val
-        elif opt == "-v":
-            verbose = True
-        elif opt == "-i":
-            sample_id = val
-        else:
-            assert False, "unhandled option"
-
-    (tsv_name, projects_home, errmsg) = check_cmdline_options(tsv_config_file, ngs_projects_dir)
-    if errmsg:
-        exit_with_error(errmsg)
-
-    init_logger(projects_dir.sample_log_file(projects_home, tsv_name, sample_id), verbose)
-    log_set_current_step("ngspyeasy_fastqc_job")
-
-    tsv_conf = tsv_config.parse(projects_dir.config_full_path(projects_home, tsv_name))
-    if tsv_conf is None:
-        exit_with_error("Invalid TSV config. See logs for details...")
-
-    try:
-        ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id)
-    except Exception as ex:
-        log_error(ex)
+        tsv_conf = tsv_config.parse(tsv_config_path)
+    except (IOError, ValueError) as e:
+        logger.error(e)
         sys.exit(1)
+
+    try:
+        ngspyeasy_fastqc_job(tsv_conf, projects_home, args.sample_id)
+    except Exception as ex:
+        logger.error(ex)
+        sys.exit(1)
+
+
+def log_info(msg):
+    get_logger(LOGGER_NAME).info(msg)
+
+
+def log_debug(msg):
+    get_logger(LOGGER_NAME).debug(msg)
 
 
 def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
@@ -109,7 +87,7 @@ def run_fastqc(row, projects_home):
            "--dir", sample.tmp_dir(),
            "--outdir", sample.fastq_dir()] + sample.fastq_files()
 
-    run_command(cmd, logger)
+    run_command(cmd, get_logger(LOGGER_NAME))
 
 
 if __name__ == '__main__':

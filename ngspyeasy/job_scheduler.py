@@ -3,7 +3,7 @@ import sys
 import multiprocessing
 import subprocess
 import time
-import logging
+from logger import get_logger
 from threading import Thread
 from Queue import Queue
 
@@ -14,9 +14,9 @@ job_requests = Queue(-1)  # infinite shared job queue
 
 
 class JobScheduler(Thread):
-    def __init__(self, logfile=None, timeout=60):
+    def __init__(self, timeout=60):
         super(JobScheduler, self).__init__()
-        self.logger = self.create_logger(logfile)
+        self.logger = get_logger("scheduller")
         self.logger.debug("[scheduler]: job_scheduler_init")
 
         numcores = multiprocessing.cpu_count()  # min=8
@@ -33,22 +33,6 @@ class JobScheduler(Thread):
         self.max_processes = numjobsallowed
         self.stopped = False
         self.timeout = timeout
-
-    def create_logger(self, logfile):
-        logger = logging.getLogger("ngspyeasy.scheduler")
-        #logger.setLevel(logging.DEBUG)
-        #formatter = logging.Formatter('%(asctime)s %(threadName)s %(levelname)s %(message)s')
-
-        #if logfile:
-        #    file_handler = logging.FileHandler(logfile, mode='w')
-        #    file_handler.setFormatter(formatter)
-        #    logger.addHandler(file_handler)
-       # else:
-         #   stream_handler = logging.StreamHandler(sys.stdout)
-         #   stream_handler.setFormatter(formatter)
-          #  logger.addHandler(stream_handler)
-
-        return logger
 
     def run(self):
         global job_requests

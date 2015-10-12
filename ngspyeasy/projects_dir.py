@@ -14,7 +14,7 @@ class ProjectsDir(object):
     def root(self):
         return self.projects_home
 
-    def sample_log_file(self, tsv_name, sample_id):
+    def sample_log_file(self, tsv_name, sample_id="ALL_SAMPLES"):
         log_name = tsv_name + '@' + str(sample_id)
         return os.path.join(self.log_dir(), 'ngspyeasy.' + VERSION + '.' + log_name + '.log')
 
@@ -124,3 +124,6 @@ class SampleDir(object):
 
     def fastq_path(self, filename):
         return os.path.join(self.fastq_dir(), filename)
+
+    def alignments_path(self, filename):
+        return os.path.join(self.alignments_dir(), filename)

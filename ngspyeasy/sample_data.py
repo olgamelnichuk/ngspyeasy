@@ -41,17 +41,18 @@ def normalize_fastq(path):
 
 
 def create(row, projects_home):
-    sample_dir = projects_dir.sample_dir(projects_home, row.project_id(), row.sample_id())
+    sample_dir = projects_dir.SampleDir(
+        projects_home.sample_dir(row.project_id(), row.sample_id()))
 
     fastq = [row.fastq1(), row.fastq2()]
-    fastq = [projects_dir.fastq_path(sample_dir, x) for x in fastq]
+    fastq = [sample_dir.fastq_path(x) for x in fastq]
 
     for fastq_file in fastq:
         if not os.path.isfile(fastq_file):
             raise IOError("FastQ file not found: %s", fastq_file)
 
-    fastq_normalized = map(lambda x: normalize_fastq(x), fastq)
-    fastq_types = set(map(lambda x: x.type, fastq_normalized))
+    fastq_normalized = [normalize_fastq(x) for x in fastq]
+    fastq_types = set([x.type for x in fastq_normalized])
 
     if len(fastq_types) > 1:
         raise ValueError("FastQ file formats are not the same: %s" % str(fastq_types))
@@ -66,17 +67,17 @@ class SampleData(object):
         self.row = row
 
     def tmp_dir(self):
-        return projects_dir.sample_tmp_dir(self.sample_dir)
+        return self.sample_dir.tmp_dir()
 
     def fastq_dir(self):
-        return projects_dir.sample_fastq_dir(self.sample_dir)
+        return self.sample_dir.fastq_dir()
 
     def fastq_files(self):
         return [x.path for x in self.fastq]
 
     def fastqc_results(self):
         results = ["_".join(x.name + ["fastqc.html"]) for x in self.fastq]
-        return [os.path.join(self.fastq_dir(), x) for x in results]
+        return [self.sample_dir.fastq_path(x) for x in results]
 
     def trimmomatic_paired_results(self):
         return self.trimmomatic_results("filtered.fastq.gz")
@@ -89,7 +90,7 @@ class SampleData(object):
         results = [".".join(
             [r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.trim() + "_" + str(x), suffix])
                    for x in [1, 2]]
-        return [os.path.join(self.fastq_dir(), x) for x in results]
+        return [self.sample_dir.fastq_path(x) for x in results]
 
     def bam_prefix(self):
         r = self.row
@@ -97,5 +98,4 @@ class SampleData(object):
                          r.genomebuild()])
 
     def alignments_path(self, filename):
-        dir = projects_dir.sample_alignments_dir(self.sample_dir)
-        return os.path.join(dir, filename)
+        return self.sample_dir.alignments_path(filename)

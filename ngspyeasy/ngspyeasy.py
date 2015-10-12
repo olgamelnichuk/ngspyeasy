@@ -9,34 +9,33 @@ import job_id_generator
 from docker import docker_cmd
 from settings import NGSEASYVERSION
 import projects_dir
-import os
 import job_scheduler
 import tsv_config
 from logger import init_logger, get_logger
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description='Python version of NGSeasy pipeline.')
-    parser.add_argument('init', nargs='?')
-    parser.add_argument('fastqc', nargs='?')
-    parser.add_argument('trimmomatic', nargs='?')
-    parser.add_argument('alignment', nargs='?')
-    parser.add_argument('realign', nargs='?')
-    parser.add_argument('bsqr', nargs='?')
-    parser.add_argument('variant-calling', nargs='?')
+    parser = argparse.ArgumentParser(description="Python version of NGSeasy pipeline.")
+    parser.add_argument("init", nargs="?")
+    parser.add_argument("fastqc", nargs="?")
+    parser.add_argument("trimmomatic", nargs="?")
+    parser.add_argument("alignment", nargs="?")
+    parser.add_argument("realign", nargs="?")
+    parser.add_argument("bsqr", nargs="?")
+    parser.add_argument("variant-calling", nargs="?")
 
-    parser.add_argument('-c', '--config', dest='config', required=True, type=cmdargs.path_basename,
-                        help='TSV configuration file name')
-    parser.add_argument('-d', '--projects-dir', dest='projects_dir', required=True, type=cmdargs.existed_directory_path,
-                        help='ngs_projects directory path')
-    parser.add_argument('-v', '--verbose', dest='verbose', action='store_true', help='turn ON verbose mode')
-    parser.add_argument('--version', action='version', version='%(prog)s 0.1', help='print software version')
+    parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
+                        help="TSV configuration file name")
+    parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
+                        help="ngs_projects directory path")
+    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
+    parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
 
     args = parser.parse_args(argv)
 
     projects_home = projects_dir.ProjectsDir(args.projects_dir)
     log_file = projects_home.main_log_file(args.config)
-    print 'Opening log file: %s' % log_file
+    print "Opening log file: %s" % log_file
 
     logger = init_logger(log_file, args.verbose)
     logger.info("Starting...")
@@ -51,33 +50,36 @@ def main(argv):
         sys.exit(1)
 
     logger.info("TSV config stats: %s" % tsv_conf.stats())
-    logger.info("Starting job scheduler...")
 
-    try:
-        scheduler = job_scheduler.JobScheduler(os.path.join(projects_home.log_dir(), "job_scheduler.log"))
-        scheduler.start()
-    except Exception, e:
-        logger.exception(e)
-        sys.exit(1)
+    if not args.init:
+        try:
+            logger.info("Starting job scheduler...")
+            scheduler = job_scheduler.JobScheduler()
+            scheduler.start()
+        except Exception, e:
+            logger.exception(e)
+            sys.exit(1)
 
     retcode = 0
+    dependencies = dict()
+    verbose = args.verbose
     try:
         if args.init:
-            ngspyeasy_init(tsv_conf, projects_home, logger)
+            ngspyeasy_init(tsv_conf, projects_home)
         elif args.fastqc:
-            ngspyeasy_fastqc(tsv_conf, projects_home, logger)
+            ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose)
         elif args.trimmomatic:
-            ngspyeasy_trimmomatic(tsv_conf, projects_home, logger)
+            ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose)
         elif args.alignment:
-            ngspyeasy_alignment(tsv_conf, projects_home, logger)
+            ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose)
         elif args.realign:
-            ngspyeasy_realign(tsv_conf, projects_home, logger)
+            ngspyeasy_realign(tsv_conf, projects_home, dependencies, verbose)
         elif args.bsqr:
-            ngspyeasy_bsqr(tsv_conf, projects_home, logger)
+            ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose)
         elif args.variant_calling:
-            ngspyeasy_variant_calling(tsv_conf, projects_home, logger)
+            ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose)
         else:
-            ngspyeasy(tsv_conf, projects_home, logger)
+            ngspyeasy(tsv_conf, projects_home, dependencies, verbose)
         logger.info("All jobs have been submitted.")
     except Exception as e:
         logger.exception(e)
@@ -91,149 +93,157 @@ def main(argv):
             if t != threading.currentThread():
                 t.join(1)
 
-    logger.info("Exit(%d)", retcode)
+    logger.info("Exit(retcode=%d)", retcode)
     sys.exit(retcode)
 
 
-def ngspyeasy(tsv_conf, projects_home, logger):
-    ngspyeasy_init(tsv_conf, projects_home, logger)
-
-    dependencies = dict()
-    ngspyeasy_fastqc(tsv_conf, projects_home, logger, dependencies)
-    ngspyeasy_trimmomatic(tsv_conf, projects_home, logger, dependencies)
-    ngspyeasy_alignment(tsv_conf, projects_home, logger, dependencies)
-    ngspyeasy_realign(tsv_conf, projects_home, logger, dependencies)
-    ngspyeasy_bsqr(tsv_conf, projects_home, logger, dependencies)
-    ngspyeasy_variant_calling(tsv_conf, projects_home, logger, dependencies)
+def log_info(msg):
+    get_logger().info(msg)
 
 
-def ngspyeasy_init(tsv_conf, projects_home, logger):
-    logger.info("Initiating project...")
-    projects_home.init_structure(tsv_conf, logger)
-
-    logger.info("Checking raw FastQ files...")
-    projects_home.check_fastq(tsv_conf, logger)
+def log_debug(msg):
+    get_logger().debug(msg)
 
 
-def ngspyeasy_fastqc(tsv_conf, projects_home, logger, dependencies=None):
-    logger.info("Submitting FastQC jobs...")
+def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
+    ngspyeasy_init(tsv_conf, projects_home)
 
-    if dependencies is None:
-        dependencies = dict()
+    ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose)
+    ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose)
+    ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose)
+    ngspyeasy_realign(tsv_conf, projects_home, dependencies, verbose)
+    ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose)
+    ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose)
+
+
+def ngspyeasy_init(tsv_conf, projects_home):
+    log_info("Initiating project...")
+    projects_home.init_structure(tsv_conf)
+
+    log_info("Checking raw FastQ files...")
+    projects_home.check_fastq(tsv_conf)
+
+
+def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting FastQC jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
-        cmd = ["python /ngspyeasy/bin/ngspyeasy_fastqc_job.py", "-v", "-c", tsv_conf.filename(), "-d",
-               "/home/pipeman/ngs_projects", "-i", sample_id]
-
-        submit("fastqc", sample_id, projects_home, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, cmd, logger,
-               dependencies)
+        cmd = JobCommand("ngspyeasy_fastqc_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
+        submit(cmd, "fastqc", "compbio/ngseasy-fastqc", projects_home, dependencies)
 
 
-def ngspyeasy_trimmomatic(tsv_conf, projects_home, logger, dependencies=None):
-    logger.info("Submitting Trimmomatic jobs...")
-
-    if dependencies is None:
-        dependencies = dict()
+def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting Trimmomatic jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
         trim_type = row.trim()
 
         if trim_type == "no-trim":
-            logger.info("[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED" % (trim_type, sample_id))
+            log_info("[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED" % (trim_type, sample_id))
             continue
 
         if trim_type not in ["atrim", "btrim"]:
             raise ValueError("Unknown trimmomatic type: %s" % trim_type)
 
-        cmd = ["python /ngspyeasy/bin/ngspyeasy_trimmomatic_job.py", "-v", "-c", tsv_conf.filename(), "-d",
-               "/home/pipeman/ngs_projects", "-i", sample_id]
+        cmd = JobCommand("ngspyeasy_trimmomatic_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 
-        submit("trimomatic", sample_id, projects_home, "compbio/ngseasy-trimmomatic:" + NGSEASYVERSION, cmd, logger,
-               dependencies)
+        submit(cmd.with_task("trimmomatic"), "trim", "compbio/ngseasy-trimmomatic",
+               projects_home, dependencies)
 
-        cmd = ["python /ngspyeasy/bin/ngspyeasy_trimmomatic_fastqc_job.py", "-v", "-c", tsv_conf.filename(), "-d",
-               "/home/pipeman/ngs_projects", "-i", sample_id]
-
-        submit("trimomatic_fastqc", sample_id, projects_home, "compbio/ngseasy-fastqc:" + NGSEASYVERSION, cmd, logger,
-               dependencies)
+        submit(cmd.with_task("fastqc"), "trim_fastqc", "compbio/ngseasy-fastqc",
+               projects_home, dependencies)
 
 
-def ngspyeasy_alignment(tsv_conf, projects_home, logger, dependencies=None):
-    logger.ifno("Submitting Alignment jobs...")
-
-    if dependencies is None:
-        dependencies = dict()
+def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting Alignment jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
         aligner_type = row.aligner()
 
-        cmd = ["python /ngspyeasy/bin/ngspyeasy_alignment_job.py", "-v", "-c", tsv_conf.filename(), "-d",
-               "/home/pipeman/ngs_projects", "-i", sample_id]
+        cmd = JobCommand("ngspyeasy_alignment_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 
         if aligner_type == "no-align":
-            logger.info("[%s] No alignment jobs to be run for sample: '%s'." % (aligner_type, sample_id))
+            log_info("[%s] No alignment jobs to be run for sample: '%s'." % (aligner_type, sample_id))
             continue
         elif aligner_type == "bwa":
-            commands = [("compbio/ngseasy-bwa:" + NGSEASYVERSION, cmd)]
+            submit(cmd, "bwa", "compbio/ngseasy-bwa", projects_home, dependencies)
         elif aligner_type == "novoalign":
-            commands = [("compbio/ngseasy-novoalign:" + NGSEASYVERSION, cmd)]
+            submit(cmd, "novalign", "compbio/ngseasy-novoalign", projects_home, dependencies)
         elif aligner_type == "stampy":
-            commands = [
-                ("compbio/ngseasy-bwa:" + NGSEASYVERSION, cmd + ["-t", "bwa"]),
-                ("compbio/ngseasy-stampy:" + NGSEASYVERSION, cmd + ["-t", "stampy"]),
-                ("compbio/ngseasy-picardtools:" + NGSEASYVERSION, cmd + ["-t", "picard_cleansam"]),
-                ("compbio/ngseasy-picardtools:" + NGSEASYVERSION, cmd + ["-t", "picard_addorreplacereadgroups"])
-            ]
+            submit(cmd.with_task("bwa"), "stampy_bwa", "compbio/ngseasy-bwa", projects_home, dependencies)
+            submit(cmd.with_task("stampy"), "stampy_stampy", "compbio/ngseasy-bwa", projects_home, dependencies)
+            submit(cmd.with_task("picard_"), "stampy_picard_cleansam", "compbio/ngseasy-picardtools", projects_home,
+                   dependencies)
+            submit(cmd.with_task("picard_"), "stampy_picard_addorreplacereadgroups", "compbio/ngseasy-picardtools",
+                   projects_home, dependencies)
         elif aligner_type == "bowtie2":
-            commands = [("compbio/ngseasy-bowtie2:" + NGSEASYVERSION, cmd)]
+            submit(cmd, "bowtie2", "compbio/ngseasy-bowtie2", projects_home, dependencies)
         elif aligner_type == "snap":
-            commands = [("compbio/ngseasy-snap:" + NGSEASYVERSION, cmd)]
+            submit(cmd, "snap", "compbio/ngseasy-snap", projects_home, dependencies)
         else:
             raise ValueError("Unknown aligner type: %s" % aligner_type)
 
-        for (image, command) in commands:
-            submit("alignement", sample_id, projects_home, image, command, logger, dependencies)
+
+def ngspyeasy_realign(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting Realign jobs...")
+    log_info("Coming soon...")
 
 
-def ngspyeasy_realign(tsv_conf, projects_home, logger, dependencies=None):
-    logger.info("Submitting Realign jobs...")
-    logger.info("Coming soon...")
+def ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting BSQR jobs...")
+    log_info("Coming soon...")
 
 
-def ngspyeasy_bsqr(tsv_conf, projects_home, logger, dependencies=None):
-    logger.info("Submitting BSQR jobs...")
-    logger.info("Coming soon...")
+def ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting Variant Calling jobs...")
+    log_info("Coming soon...")
 
 
-def ngspyeasy_variant_calling(tsv_conf, projects_home, logger, dependencies=None):
-    logger.info("Submitting Variant Calling jobs...")
-    logger.info("Coming soon...")
+def submit(command, tag, image, projects_home, dependencies):
+    image += ":%s" % NGSEASYVERSION
+    job_id = job_id_generator.get_next([tag, command.sample_id])
+    prev_job_ids = [x for x in [dependencies.get(command.sample_id, None)] if x is not None]
 
+    log_debug(
+        "Submit job(sample_id='%s', job_id='%s', dependencies='%s')" % (command.sample_id, job_id, prev_job_ids))
 
-def submit(source, sample_id, projects_home, docker_image, cmd, logger, dependencies):
-    job_id = job_id_generator.get_next([source, sample_id])
-    prev_job_ids = [x for x in [dependencies.get(sample_id, None)] if x is not None]
-
-    logger.debug(
-        "Submit job(sample_id='%s', job_id='%s', dependencies='%s')" % (sample_id, job_id, prev_job_ids))
-
-    logger.debug(
-        "Submit job(docker_image=%s, cmd=%s)" % (docker_image, cmd))
+    log_debug(
+        "Submit job(docker_image=%s, cmd=%s)" % (image, command.cmd()))
 
     job_scheduler.submit(
-        job_id, docker_cmd(job_id, docker_image, " ".join(cmd), projects_home.root(),
-                           projects_home.resources_dir(), pipeman=False), prev_job_ids)
-    dependencies[sample_id] = job_id
+        job_id,
+        docker_cmd(job_id, image, command.cmd(), projects_home.root(), projects_home.resources_dir(), pipeman=False),
+        prev_job_ids)
+    dependencies[command.sample_id] = job_id
 
 
 def signal_handler(signum, frame):
-    get_logger().info("Got SIGINT(%s) signal" % str(signum))
+    log_info("Got SIGINT(%s) signal" % str(signum))
     job_scheduler.stop()
 
 
-if __name__ == '__main__':
+if __name__ == "__main__":
     signal.signal(signal.SIGINT, signal_handler)
     main(sys.argv[1:])
+
+
+class JobCommand(object):
+    def __init__(self, executable, config_name, sample_id, **kwargs):
+        self.executable = executable
+        self.sample_id = sample_id
+        self.config_name = config_name
+        self.verbose = kwargs.get("verbose", False)
+        self.task = kwargs.get("task", None)
+
+    def with_task(self, task):
+        return JobCommand(self.executable, self.config_name, self.sample_id, verbose=self.verbose, task=task)
+
+    def cmd(self, ):
+        cmd = ["python /ngspyeasy/bin/%s" % self.executable, "-v" if self.verbose else "", "-c", self.config_name, "-d",
+               "/home/pipeman/ngs_projects", "-i", self.sample_id]
+        if self.task:
+            cmd += ["-t", self.task]
+        return " ".join(cmd)
