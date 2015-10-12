@@ -3,6 +3,7 @@ import sys
 import logging
 import os.path
 
+
 def logger_name(name=None):
     return "ngspyeasy" + ("" if name is None else "." + name)
 
@@ -27,5 +28,5 @@ def init_logger(logfile, verbose, name=None):
     return logger
 
 
-def get_logger(name):
+def get_logger(name=None):
     return logging.getLogger(logger_name(name))
