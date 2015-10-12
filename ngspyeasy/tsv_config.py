@@ -116,6 +116,9 @@ class TsvConfigRow:
     def bsqr(self):
         return self.value_at(columns.BSQR)
 
+    def varcaller(self):
+        return self.value_at(columns.VARCALLER)
+
     def ncpu(self):
         return self.value_at(columns.NCPU)
 
