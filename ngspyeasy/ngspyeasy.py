@@ -73,7 +73,7 @@ def main(argv):
         elif args.alignment:
             ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose)
         elif args.realign:
-            ngspyeasy_realign(tsv_conf, projects_home, dependencies, verbose)
+            ngspyeasy_realn(tsv_conf, projects_home, dependencies, verbose)
         elif args.bsqr:
             ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose)
         elif args.variant_calling:
@@ -111,7 +111,7 @@ def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
     ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose)
     ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose)
     ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose)
-    ngspyeasy_realign(tsv_conf, projects_home, dependencies, verbose)
+    ngspyeasy_realn(tsv_conf, projects_home, dependencies, verbose)
     ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose)
     ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose)
 
@@ -187,19 +187,75 @@ def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose):
             raise ValueError("Unknown aligner type: %s" % aligner_type)
 
 
-def ngspyeasy_realign(tsv_conf, projects_home, dependencies, verbose):
-    log_info("Submitting Realign jobs...")
-    log_info("Coming soon...")
+def ngspyeasy_realn(tsv_conf, projects_home, dependencies, verbose):
+    log_info("Submitting realignment jobs...")
+
+    for row in tsv_conf.all_rows():
+        sample_id = row.sample_id()
+        realn_type = row.realn()
+
+        cmd = JobCommand("ngspyeasy_realn_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
+
+        if realn_type == "no-realn":
+            log_info("[%s] Skipping Indel Realignment for sample: '%s'." % (realn_type, sample_id))
+            continue
+        elif realn_type == "bam-realn":
+            submit(cmd, "bam_realn", "compbio/ngseasy-glia", projects_home, dependencies)
+        elif realn_type == "gatk-realn":
+            submit(cmd, "gtalk_realn", "compbio/ngseasy-gatk", projects_home, dependencies)
+        else:
+            raise ValueError("Unknown realign type: %s" % realn_type)
 
 
 def ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose):
-    log_info("Submitting BSQR jobs...")
-    log_info("Coming soon...")
+    log_info("Submitting base quality score recalibration jobs...")
+
+    for row in tsv_conf.all_rows():
+        sample_id = row.sample_id()
+        bsqr_type = row.bsqr()
+
+        cmd = JobCommand("ngspyeasy_bsqr_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
+
+        if bsqr_type == "no-bsqr":
+            log_info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (bsqr_type, sample_id))
+            continue
+        elif bsqr_type == "bam-bsqr":
+            submit(cmd, "bam_bsqr", "compbio/ngseasy-base", projects_home, dependencies)
+        elif bsqr_type == "gatk-bsqr":
+            submit(cmd, "gatk_bsqr", "compbio/ngseasy-gatk", projects_home, dependencies)
+        else:
+            raise ValueError("Unknown bsqr type: %s" % bsqr_type)
 
 
 def ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose):
     log_info("Submitting Variant Calling jobs...")
-    log_info("Coming soon...")
+
+    for row in tsv_conf.all_rows():
+        sample_id = row.sample_id()
+        vc_type = row.varcaller()
+
+        cmd = JobCommand("ngspyeasy_vc_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
+
+        submit(cmd.with_task("vc_init"), "vc_init", "compbio/ngseasy-base", projects_home, dependencies)
+
+        if vc_type == "freebayes-parallel":
+            submit(cmd, vc_type, "compbio/ngseasy-freebayes", projects_home, dependencies)
+        elif vc_type == "freebayes-default":
+            submit(cmd, vc_type, "compbio/ngseasy-freebayes", projects_home, dependencies)
+        elif vc_type == "platypus":
+            submit(cmd, vc_type, "compbio/ngseasy-platypus", projects_home, dependencies)
+        elif vc_type == "platypus-default":
+            submit(cmd, vc_type, "compbio/ngseasy-platypus", projects_home, dependencies)
+        elif vc_type == "UnifiedGenotyper":
+            submit(cmd, vc_type, "compbio/ngseasy-gatk", projects_home, dependencies)
+        elif vc_type == "HaplotypeCaller":
+            submit(cmd, vc_type, "compbio/ngseasy-gatk", projects_home, dependencies)
+        elif vc_type == "ensemble":
+            submit(cmd.with_task("freebayes"), vc_type, "compbio/ngseasy-freebayes", projects_home, dependencies)
+            submit(cmd.with_task("platypus"), vc_type, "compbio/ngseasy-platypus", projects_home, dependencies)
+            submit(cmd.with_task("HaplotypeCaller"), vc_type, "compbio/ngseasy-gatk", projects_home, dependencies)
+        else:
+            raise ValueError("Unknown variant calling type: %s" % vc_type)
 
 
 def submit(command, tag, image, projects_home, dependencies):
@@ -220,7 +276,7 @@ def submit(command, tag, image, projects_home, dependencies):
     dependencies[command.sample_id] = job_id
 
 
-def signal_handler(signum, frame):
+def signal_handler(signum):
     log_info("Got SIGINT(%s) signal" % str(signum))
     job_scheduler.stop()
 

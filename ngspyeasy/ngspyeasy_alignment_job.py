@@ -13,17 +13,18 @@ import projects_dir
 import tsv_config
 from logger import init_logger, get_logger
 
-LOGGER_NAME = "alignment"
+LOGGER_NAME = "alignment_job"
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description="Trimmomatic Job")
+    parser = argparse.ArgumentParser(description="Alignment Job")
     parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
                         help="TSV configuration file name")
     parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
                         help="ngs_projects directory path")
     parser.add_argument("-i", "--sample_id", dest="sample_id", help="sample_id to run trimmomatic on")
-    parser.add_argument("-t", "--task", dest="task", required=True, help="trimmomatic task: [trimmomatic | fastqc]")
+    parser.add_argument("-t", "--task", dest="task", required=True,
+                        help="stampy task: [bwa | stampy | picard_cleansam | picard_addorreplacereadgroups]")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
     parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
 

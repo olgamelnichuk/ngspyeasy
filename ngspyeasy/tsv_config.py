@@ -110,6 +110,12 @@ class TsvConfigRow:
     def aligner(self):
         return self.value_at(columns.ALIGNER)
 
+    def realn(self):
+        return self.value_at(columns.REALN)
+
+    def bsqr(self):
+        return self.value_at(columns.BSQR)
+
     def ncpu(self):
         return self.value_at(columns.NCPU)
 
