@@ -295,7 +295,7 @@ def submit(command, tag, image, projects_home, dependencies):
     dependencies[command.sample_id] = job_id
 
 
-def signal_handler(signum):
+def signal_handler(signum, frame):
     log_info("Got SIGINT(%s) signal" % str(signum))
     job_scheduler.stop()
 
