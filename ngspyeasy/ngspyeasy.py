@@ -176,7 +176,7 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose):
 
 
 def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose):
-    log_info("Submitting Alignment jobs...")
+    log_info("Submitting alignment jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -247,7 +247,7 @@ def ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose):
 
 
 def ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose):
-    log_info("Submitting Variant Calling jobs...")
+    log_info("Submitting variant calling jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
