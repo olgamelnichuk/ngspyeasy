@@ -22,7 +22,7 @@ def main(argv):
     parser.add_argument("alignment", nargs="?")
     parser.add_argument("realign", nargs="?")
     parser.add_argument("bsqr", nargs="?")
-    parser.add_argument("variant-calling", nargs="?")
+    parser.add_argument("variant_calling", nargs="?")
 
     parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
                         help="TSV configuration file name")
