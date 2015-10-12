@@ -80,7 +80,6 @@ def main(argv):
             ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose)
         else:
             ngspyeasy(tsv_conf, projects_home, dependencies, verbose)
-        logger.info("All jobs have been submitted.")
     except Exception as e:
         logger.exception(e)
         job_scheduler.stop()
@@ -88,7 +87,8 @@ def main(argv):
 
     while True:
         threads = threading.enumerate()
-        if len(threads) == 1: break
+        if len(threads) == 1:
+            break
         for t in threads:
             if t != threading.currentThread():
                 t.join(1)
@@ -118,10 +118,10 @@ def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
 
 def ngspyeasy_init(tsv_conf, projects_home):
     log_info("Initiating project...")
-    projects_home.init_structure(tsv_conf)
+    projects_home.init_structure(tsv_conf, get_logger())
 
     log_info("Checking raw FastQ files...")
-    projects_home.check_fastq(tsv_conf)
+    projects_home.check_fastq(tsv_conf, get_logger())
 
 
 def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose):
