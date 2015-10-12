@@ -71,7 +71,7 @@ def run_trimmomatic(row, projects_home, task):
     log_info("Running Trimmomatic job (SAMPLE_ID='%s', TRIM='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.trim(), row.genomebuild()))
 
-    if row.trim not in ["atrim", "btrim", "no-trim"]:
+    if row.trim() not in ["atrim", "btrim", "no-trim"]:
         raise ValueError("Unrecognised TRIM option. Should be one of [atrim] [btrim] or [no-trim]: '%s'" % row.trim())
 
     if row.trim() == "no-trim":
