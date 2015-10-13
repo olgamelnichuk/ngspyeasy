@@ -13,6 +13,18 @@ from logger import init_logger, get_logger
 LOGGER_NAME = "fastqc_job"
 
 
+def log_info(msg):
+    get_logger(LOGGER_NAME).info(msg)
+
+
+def log_debug(msg):
+    get_logger(LOGGER_NAME).debug(msg)
+
+
+def log_error(msg):
+    get_logger(LOGGER_NAME).error(msg)
+
+
 def main(argv):
     parser = argparse.ArgumentParser(description="FastQC Job")
     parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
@@ -29,31 +41,23 @@ def main(argv):
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
     print "Opening log file: %s" % log_file
 
-    logger = init_logger(log_file, args.verbose, LOGGER_NAME)
-    logger.info("Starting...")
-    logger.debug("Command line arguments: %s" % args)
+    init_logger(log_file, args.verbose, LOGGER_NAME)
+    log_info("Starting...")
+    log_debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
-    logger.info("Reading TSV config: %s" % tsv_config_path)
+    log_info("Reading TSV config: %s" % tsv_config_path)
     try:
         tsv_conf = tsv_config.parse(tsv_config_path)
     except (IOError, ValueError) as e:
-        logger.error(e)
+        log_error(e)
         sys.exit(1)
 
     try:
         ngspyeasy_fastqc_job(tsv_conf, projects_home, args.sample_id)
     except Exception as ex:
-        logger.error(ex)
+        log_error(ex)
         sys.exit(1)
-
-
-def log_info(msg):
-    get_logger(LOGGER_NAME).info(msg)
-
-
-def log_debug(msg):
-    get_logger(LOGGER_NAME).debug(msg)
 
 
 def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
