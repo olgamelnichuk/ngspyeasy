@@ -74,7 +74,7 @@ def run_fastqc(row, projects_home):
 
     sample = sample_data.create(row, projects_home)
 
-    fastqc_results = sample.fastqc_results()
+    fastqc_results = sample.fastqc_output()
     log_info("Checking if FastQC results already exist: %s" % fastqc_results)
 
     not_exist = filter(lambda x: not os.path.isfile(x), fastqc_results)

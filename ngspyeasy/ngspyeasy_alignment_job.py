@@ -10,6 +10,7 @@ from ngspyeasy import cmdargs
 from shutils import script_from_template, run_command
 import os
 import sample_data
+import genome_build
 import projects_dir
 import tsv_config
 from logger import init_logger, get_logger
@@ -89,25 +90,12 @@ def run_alignment(row, projects_home, task):
     if row.aligner() not in ["bwa", "novoalign", "stampy", "bowtie2", "snap"]:
         raise ValueError("Unknown aligner value: '%s'" % row.aligner())
 
-    ngs_resources = projects_home.resources_dir()
+    genome = genome_build.select(row.genomebuild(), projects_home)
+    if genome is None:
+        raise ValueError("No genome selected. Choose one of [b37] or [hg19]")
 
-    if row.genomebuild() == "b37":
-        refdir = os.path.join(ngs_resources, "reference_genomes_b37")
-        genome_index = os.path.join(refdir, "human_g1k_v37")
-    elif row.genomebuild() == "hg19":
-        refdir = os.path.join(ngs_resources, "reference_genomes_hg19")
-        genome_index = os.path.join(refdir, "ucsc.hg19")
-    elif row.genomebuild() == "hs37d5":
-        refdir = os.path.join(ngs_resources, "reference_genomes_hs37d5")
-        genome_index = os.path.join(refdir, "hs37d5")
-    elif row.genomebuild() == "hs38DH":
-        refdir = os.path.join(ngs_resources, "/reference_genomes_hs38DH")
-        genome_index = os.path.join(refdir, "hs38DH")
-    else:
-        raise ValueError("No genome selected. Exiting. Choose one of [b37] or [hg19]")
-
-    log_info("Genome build index: %s" % genome_index)
-    log_info("Genome build dir: %s " % refdir)
+    log_info("Genome build index: %s" % genome.genome_index())
+    log_info("Genome build dir: %s " % genome.refdir())
 
     sample = sample_data.create(row, projects_home)
 
@@ -115,7 +103,7 @@ def run_alignment(row, projects_home, task):
         fastq = sample.fastq_files()
         log_info("TRIM set to '%s'. Using raw FastQ data: %s" % (row.trim(), fastq))
     elif row.trim in ["atrim", "btrim"]:
-        fastq = sample.trimmomatic_paired_results()
+        fastq = sample.trimmomatic_paired_output()
         not_exist = [x for x in fastq if not os.path.isfile(x)]
         if len(not_exist) > 0:
             raise ValueError("Trimmed FastQC Data does not exist: %s" % not_exist)
@@ -126,11 +114,11 @@ def run_alignment(row, projects_home, task):
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "alignment", row.aligner(), task + ".tmpl.sh")
 
-    log_info("Using template file: %s" % template_path)
+    log_debug("Using script template file: %s" % template_path)
 
     script = script_from_template(template_path)
 
-    log_info("Script template to run: %s" % script.source())
+    log_debug("Script template to run: %s" % script.source())
 
     bam_prefix = sample.bam_prefix()
     platform_unit = find_platform_unit(fastq[0])
@@ -144,15 +132,15 @@ def run_alignment(row, projects_home, task):
         RUNDATE=datetime.datetime.now().strftime("%d%m%y%H%M%S"),
         FQ1=fastq[0],
         FQ2=fastq[1],
-        GENOMEINDEX=genome_index,
-        DISCORDANT_SAM=sample.alignments_path(bam_prefix + ".discordant.sam"),
-        DISCORDANT_BAM=sample.alignments_path(bam_prefix + ".discordant.bam"),
-        SPLITREAD_SAM=sample.alignments_path(bam_prefix + ".splitread.sam"),
-        SPLITREAD_BAM=sample.alignments_path(bam_prefix + ".splitread.bam"),
-        UNMAPPED_FASTQ=sample.alignments_path(bam_prefix + ".unmapped.fastq"),
-        DUPEMK_BAM=sample.alignments_path(bam_prefix + ".dupemk.bam"),
-        DUPEMK_FLAGSTAT_REPORT=sample.reports_path(bam_prefix + ".dupemk.bam.flagstat"),
-        DUPEMK_BED_REPORT=sample.reports_path(bam_prefix + ".dupemk.bed"),
+        GENOMEINDEX=genome.genome_index(),
+        DISCORDANT_SAM=sample.discordant_sam(),
+        DISCORDANT_BAM=sample.discordant_bam(),
+        SPLITREAD_SAM=sample.splitread_sam(),
+        SPLITREAD_BAM=sample.splitread_bam(),
+        UNMAPPED_FASTQ=sample.unmapped_fastq(),
+        DUPEMK_BAM=sample.dupl_mark_bam(),
+        DUPEMK_FLAGSTAT_REPORT=sample.dupl_mark_bam_flagstat(),
+        DUPEMK_BED_REPORT=sample.dupl_mark_bed(),
         TMP_DIR=sample.tmp_dir(),
         ALIGNNMENTS_DIR=sample.alignments_dir()
     )
@@ -187,7 +175,7 @@ def run_alignment(row, projects_home, task):
         )
 
     if row.aligner() == "snap":
-        script.add_variables(REFDIR=refdir)
+        script.add_variables(REFDIR=genome.refdir())
 
     log_debug("Script template variables:\n %s" % "\n".join(script.variable_assignments()))
 

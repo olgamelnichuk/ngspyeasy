@@ -5,10 +5,10 @@ import sys
 from ngspyeasy import cmdargs
 from shutils import run_command
 import os
-import docker
 import tsv_config
 import projects_dir
 import sample_data
+import genome_build
 from logger import init_logger, get_logger
 
 LOGGER_NAME = "trimmomatic_job"
@@ -94,7 +94,7 @@ def run_trimmomatic(row, projects_home, task):
 def run_fastqc_task(row, projects_home):
     sample = sample_data.create(row, projects_home)
 
-    fastq_files = sample.trimmomatic_paired_results() + sample.trimmomatic_unpaired_results()
+    fastq_files = sample.trimmomatic_paired_output() + sample.trimmomatic_unpaired_output()
     not_exist = filter(lambda x: not os.path.isfile(x), fastq_files)
 
     if len(not_exist) != 0:
@@ -115,19 +115,14 @@ def run_fastqc_task(row, projects_home):
 def run_trimmomatic_task(row, projects_home):
     sample = sample_data.create(row, projects_home)
 
-    if row.genomebuild() == "b37":
-        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_b37/contaminant_list.fa"
-    elif row.genomebuild() == "hg19":
-        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_hg19/contaminant_list.fa"
-    elif row.genomebuild() == "hs37d5":
-        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_hs37d5/contaminant_list.fa"
-    elif row.genomebuild() == "hs38DH":
-        adapter_fa = docker.NGS_RESOURCES + "/reference_genomes_hs38DH/contaminant_list.fa"
-    else:
+    genome = genome_build.select(row.genomebuild(), projects_home)
+    if genome is None:
         raise ValueError("Unknown GENOMEBUILD value: '%s'" % row.genomebuild())
 
-    pe = sample.trimmomatic_paired_results()
-    ue = sample.trimmomatic_unpaired_results()
+    adapter_fa = genome.adapter_fa()
+
+    pe = sample.trimmomatic_paired_output()
+    ue = sample.trimmomatic_unpaired_output()
     trimmomatic_results = [pe[0], ue[0], pe[1], ue[1]]
     log_info("Checking if Trimmomatic data already exists: %s" % trimmomatic_results)
 
