@@ -101,7 +101,7 @@ def run_fastqc_task(row, projects_home):
 
     cmd = ["/usr/local/pipeline/FastQC/fastqc",
            "--threads", "4",
-           "--extract"
+           "--extract",
            "--quiet",
            "--dir", sample.tmp_dir(),
            "--outdir", sample.fastq_dir()] + fastq_files
