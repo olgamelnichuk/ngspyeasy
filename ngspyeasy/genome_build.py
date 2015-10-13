@@ -8,7 +8,7 @@ def select(gb, projects_home):
             projects_home.resource_path("reference_genomes_b37"),
             GENOMEINDEX="human_g1k_v37",
             REFFASTA="human_g1k_v37.fasta",
-            DBSNP="dbsnp_138.b37.recab",
+            DBSNP_RECAB="dbsnp_138.b37.recab",
             KNOWN_INDELS="Mills_and_1000G_gold_standard.indels.b37.vcf",
             KNOWN_SNPS_1000G="1000G_phase1.snps.high_confidence.b37.vcf",
             KNOWN_SNPS_OMNI="1000G_omni2.5.b37.vcf",
@@ -19,7 +19,7 @@ def select(gb, projects_home):
             projects_home.resource_path("reference_genomes_hg19"),
             GENOMEINDEX="ucsc.hg19",
             REFFASTA="ucsc.hg19.fasta",
-            DBSNP="dbsnp_138.hg19.recab",
+            DBSNP_RECAB="dbsnp_138.hg19.recab",
             KNOWN_INDELS="Mills_and_1000G_gold_standard.indels.hg19.sites.vcf.gz",
             KNOWN_SNPS_1000G="1000G_phase1.snps.high_confidence.hg19.sites.vcf",
             KNOWN_SNPS_OMNI="1000G_omni2.5.hg19.sites.vcf",
@@ -55,13 +55,13 @@ class GenomeBuild(object):
     def ref_fasta(self):
         return self.path_to(self.args.get("REFFASTA", None))
 
-    def dbsnp(self):
-        return self.path_to(self.args.get("DBSNP", None))
+    def dbsnp_recab(self):
+        return self.path_to(self.args.get("DBSNP_RECAB", None))
 
     def known_indels(self):
         return self.path_to(self.args.get("KNOWN_INDELS", None))
 
-    def known_snps_100g(self):
+    def known_snps_1000g(self):
         return self.path_to(self.args.get("KNOWN_SNPS_1000G", None))
 
     def known_snps_omni(self):

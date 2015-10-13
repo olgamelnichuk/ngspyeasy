@@ -65,6 +65,9 @@ class SampleData(object):
     def fastq_dir(self):
         return self.dir.fastq_dir()
 
+    def alignments_dir(self):
+        return self.dir.alignments_dir()
+
     def fastq_path(self, filename):
         return os.path.join(self.dir.fastq_dir(), filename)
 
@@ -127,8 +130,17 @@ class SampleData(object):
     def dupl_mark_bed(self):
         return self.reports_path(self.bam_prefix() + ".dupemk.bed")
 
-    def dupl_mark_realn_bam(self):
-        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.bam" % self.row.realn())
+    def dupl_mark_realn_bam(self, realn=None):
+        realn = self.row.realn() if realn is None else realn
+        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.bam" % realn)
+
+    def dupl_mark_realn_bsqr_bam(self, realn=None):
+        realn = self.row.realn() if realn is None else realn
+        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.%s.bam" % (realn, self.row.bsqr()))
+
+    def dupl_mark_bsqr_bam(self, bsqr=None):
+        bsqr = self.row.bsqr() if bsqr is None else bsqr
+        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.bam" % bsqr)
 
     def dupl_mark_realn_bam_flagstat(self):
         return self.reports_path(self.bam_prefix() + ".dupemk.%s.bam.flagstat" % self.row.realn())

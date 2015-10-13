@@ -83,12 +83,12 @@ def run_alignment(row, projects_home, task):
     log_info("Running alignmnent job (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
+    if row.aligner() not in ["bwa", "novoalign", "stampy", "bowtie2", "snap", "no-align"]:
+        raise ValueError("Unknown aligner value: '%s'" % row.aligner())
+
     if row.aligner() == "no-align":
         log_info("[%s] Skipping alignment" % row.aligner())
         return
-
-    if row.aligner() not in ["bwa", "novoalign", "stampy", "bowtie2", "snap"]:
-        raise ValueError("Unknown aligner value: '%s'" % row.aligner())
 
     genome = genome_build.select(row.genomebuild(), projects_home)
     if genome is None:
