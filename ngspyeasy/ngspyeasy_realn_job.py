@@ -72,10 +72,10 @@ def run_realn(row, projects_home):
         log_info("[%s] Skipping Indel Realignment for sample: '%s'" % (row.realn(), row.sample_id()))
         return
 
-    sample = sample_data.create(row, projects_home)
+    realn_data = sample_data.create(row, projects_home).realn_data()
 
-    if os.path.isfile(sample.dupl_mark_realn_bam()):
-        log_info("Skipping Indel Realignment. Looks like you already ran it: %s" % sample.dupl_mark_realn_bam())
+    if os.path.isfile(realn_data.dupl_mark_realn_bam()):
+        log_info("Skipping Indel Realignment. Looks like you already ran it: %s" % realn_data.dupl_mark_realn_bam())
         return
 
     genome = genome_build.select(row.genomebuild(), projects_home)
@@ -95,9 +95,10 @@ def run_realn(row, projects_home):
 
     log_debug("Script template to run: %s" % script.source())
 
-    bam_prefix = sample.bam_prefix()
-    dupl_mark_bed = sample.dupl_mark_bed()
-    dupl_mark_bam = sample.dupl_mark_bam()
+    bam_prefix = realn_data.bam_prefix()
+    alignment_data = realn_data.alignment_data()
+    dupl_mark_bed = alignment_data.dupl_mark_bed()
+    dupl_mark_bam = alignment_data.dupl_mark_bam()
 
     if not os.path.isfile(dupl_mark_bed):
         raise IOError("Can't find mark duplication bed file: %s " % dupl_mark_bed)
@@ -112,15 +113,15 @@ def run_realn(row, projects_home):
         CHROMS="${chroms}",
         REFFASTA=genome.ref_fasta(),
         KNOWN_INDELS=genome.known_indels(),
-        DUPEMARK_REALN_BAM=sample.dupl_mark_realn_bam(),
-        DUPEMARK_REALN_FLAGSTAT=sample.dupl_mark_realn_bam_flagstat(),
-        DUPEMARK_REALN_BED=sample.dupl_mark_realn_bed(),
-        TMP_DIR=sample.tmp_dir()
+        DUPEMARK_REALN_BAM=realn_data.dupl_mark_realn_bam(),
+        DUPEMARK_REALN_FLAGSTAT=realn_data.dupl_mark_realn_bam_flagstat(),
+        DUPEMARK_REALN_BED=realn_data.dupl_mark_realn_bed(),
+        TMP_DIR=realn_data.tmp_dir()
     )
 
     if row.realn() == "gatk-realn":
         script.add_variables(
-            DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS=sample.reports_path(
+            DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS=realn_data.reports_path(
                 bam_prefix + ".dupemk.bam.ForIndelRealigner.intervals")
         )
 

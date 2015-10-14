@@ -64,41 +64,82 @@ def run_vc(row, projects_home, task):
     log_info("Running variant caller job (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
-    options = ["freebayes-parallel", "freebayes-default", "platypus", "platypus-default", "UnifiedGenotyper",
-               "HaplotypeCaller", "ensemble", "no-vc"]
-
-    if row.varcaller() not in options:
-        raise ValueError(
-            "Unrecognised VARCALLER option '%s'. Should be one of %s" % (row.varcaller(), options))
-
     if row.varcaller() == "no-vc":
         log_info("[%s] Skipping variant calling for sample: '%s'" % (row.varcaller(), row.sample_id()))
         return
 
-    genome = genome_build.select(row.genomebuild(), projects_home)
-    if genome.known_indels() is None:
+    methods = {
+        "freebayes-parallel": freebayes_parallel,
+        "freebayes-default": freebayes_default,
+        "platypus": platypus,
+        "platypus-default": platypus_default,
+        "UnifiedGenotyper": unified_genotyper,
+        "HaplotypeCaller": haplotype_caller,
+        "ensemble": ensemble
+    }
+
+    vc_options = methods.keys()
+
+    if row.varcaller() not in vc_options:
         raise ValueError(
-            "No genome selected for sample '%s'. GENOMEBUILD value is '%s', but it should be one of [b37, hg19]" %
-            row.genomebuild())
+            "Unrecognised VARCALLER option '%s'. Should be one of %s" % (row.varcaller(), vc_options))
 
-    log_info("Genome build selected: '%s'" % genome.refdir())
+    (prepare if task == "prepare" else methods.get(row.varcaller()))(row, projects_home, task)
 
-    sample = sample_data.create(row, projects_home)
 
-    if row.realn() == "no-realn" and row.bsqr() == "no-bsqr":
-        bam_file = sample.dupl_mark_bam()
-        filtered_bam = sample.dupl_mark_filtered_bam()
-    else:
-        bam_file = sample.dupl_mark_realn_bsqr_bam()
-        filtered_bam = sample.dupl_mark_realn_bsqr_filtered_bam()
+def select_genomebuild(row, projects_home):
+    genomebuild = genome_build.select(row.genomebuild(), projects_home)
+    if genomebuild.known_indels() is None:
+        raise ValueError(
+            "No genome selected for sample '%s'. GENOMEBUILD value is '%s', but it should be one of [b37, hg19]" % (
+            row.sample_id(), row.genomebuild()))
+
+    log_info("Genome build selected: '%s'" % genomebuild.refdir())
+    return genomebuild
+
+
+def prepare(row, projects_home, task):
+    log_info("vc: prepare (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.varcaller(), task, row.genomebuild()))
+
+    sample = sample_data.create(row, projects_home).vc_data()
+    bam_file = sample.bam_file()
 
     if not os.path.isfile(bam_file):
         raise IOError("Can not find [%s] for Variant Calling." % bam_file)
 
+    genomebuild = select_genomebuild(row, projects_home)
     mapped_reads_bed = sample.reports_path(os.path.basename(bam_file) + ".mapped.reads.bed")
     callable_regions_bed = sample.reports_path(os.path.basename(bam_file) + ".genomecov.bed")
 
-    # TODO
+    #TODO
+
+def freebayes_parallel(row, projects_home, task):
+    pass
+
+
+def freebayes_default():
+    pass
+
+
+def platypus():
+    pass
+
+
+def platypus_default():
+    pass
+
+
+def unified_genotyper():
+    pass
+
+
+def haplotype_caller():
+    pass
+
+
+def ensemble():
+    pass
 
 
 if __name__ == '__main__':

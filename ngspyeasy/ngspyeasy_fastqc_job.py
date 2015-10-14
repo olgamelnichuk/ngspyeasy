@@ -62,9 +62,9 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
 def run_fastqc(row, projects_home):
     log_info("Running FastQC job (SAMPLE_ID='%s', FASTQC='%s')" % (row.sample_id(), row.fastqc()))
 
-    sample = sample_data.create(row, projects_home)
+    sample = sample_data.create(row, projects_home).fastq_data()
 
-    fastqc_results = sample.fastqc_output()
+    fastqc_results = sample.fastqc_htmls()
     log_info("Checking if FastQC results already exist: %s" % fastqc_results)
 
     not_exist = filter(lambda x: not os.path.isfile(x), fastqc_results)

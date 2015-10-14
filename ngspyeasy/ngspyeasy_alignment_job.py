@@ -84,13 +84,13 @@ def run_alignment(row, projects_home, task):
     log_info("Genome build index: %s" % genome.genome_index())
     log_info("Genome build dir: %s " % genome.refdir())
 
-    sample = sample_data.create(row, projects_home)
+    sample = sample_data.create(row, projects_home).alignment_data()
 
     if row.trim() == "no-trim":
         fastq = sample.fastq_files()
         log_info("TRIM set to '%s'. Using raw FastQ data: %s" % (row.trim(), fastq))
     elif row.trim in ["atrim", "btrim"]:
-        fastq = sample.trimmomatic_paired_output()
+        fastq = sample.paired_fastq()
         not_exist = [x for x in fastq if not os.path.isfile(x)]
         if len(not_exist) > 0:
             raise ValueError("Trimmed FastQC Data does not exist: %s" % not_exist)

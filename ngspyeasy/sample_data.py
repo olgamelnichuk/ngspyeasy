@@ -83,29 +83,53 @@ class SampleData(object):
     def fastq_files(self):
         return [self.dir.fastq_path(x) for x in self.fastq_names()]
 
-    def fastqc_output(self):
+    def bam_prefix(self):
+        r = self.row
+        return ".".join([r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.ngs_platform(), r.trim(), r.aligner(),
+                         r.genomebuild()])
+
+    def fastq_data(self):
+        return FastQCData(self.row, self.dir)
+
+    def trimmomatic_data(self):
+        return TrimmomaticData(self.row, self.dir)
+
+    def alignment_data(self):
+        return AlignmentData(self.row, self.dir)
+
+    def realn_data(self):
+        return RealnData(self.row, self.dir)
+
+    def bsqr_data(self):
+        return BsqrData(self.row, self.dir)
+
+    def vc_data(self):
+        return VarCallerData(self.row, self.dir)
+
+
+class FastQCData(SampleData):
+    def fastqc_htmls(self):
         parsed_names = [parsed_fastq_name(x) for x in self.fastq_names()]
         htmls = ["_".join(x.name + ["fastqc.html"]) for x in parsed_names]
-        return [self.dir.fastq_path(x) for x in htmls]
+        return [self.fastq_path(x) for x in htmls]
 
-    def trimmomatic_paired_output(self):
-        return self.trimmomatic_output("filtered.fastq.gz")
 
-    def trimmomatic_unpaired_output(self):
-        return self.trimmomatic_output("unpaired.fastq.gz")
+class TrimmomaticData(SampleData):
+    def paired_fastq(self):
+        return self.result_fastq("filtered.fastq.gz")
 
-    def trimmomatic_output(self, suffix):
+    def unpaired_fastq(self):
+        return self.result_fastq("unpaired.fastq.gz")
+
+    def result_fastq(self, suffix):
         r = self.row
         results = [".".join(
             [r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.trim() + "_" + str(x), suffix])
                    for x in [1, 2]]
         return [self.fastq_path(x) for x in results]
 
-    def bam_prefix(self):
-        r = self.row
-        return ".".join([r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.ngs_platform(), r.trim(), r.aligner(),
-                         r.genomebuild()])
 
+class AlignmentData(SampleData):
     def discordant_sam(self):
         return self.alignments_path(self.bam_prefix() + ".discordant.sam")
 
@@ -124,33 +148,50 @@ class SampleData(object):
     def dupl_mark_bam(self):
         return self.alignments_path(self.bam_prefix() + ".dupemk.bam")
 
-    def dupl_mark_filtered_bam(self):
-        return self.alignments_path(self.bam_prefix() + ".dupemk.filtered.bam")
-
     def dupl_mark_bam_flagstat(self):
         return self.reports_path(self.bam_prefix() + ".dupemk.bam.flagstat")
 
     def dupl_mark_bed(self):
         return self.reports_path(self.bam_prefix() + ".dupemk.bed")
 
+
+class RealnData(SampleData):
     def dupl_mark_realn_bam(self, realn=None):
         realn = self.row.realn() if realn is None else realn
         return self.alignments_path(self.bam_prefix() + ".dupemk.%s.bam" % realn)
 
+    def dupl_mark_realn_bam_flagstat(self, realn=None):
+        realn = self.row.realn() if realn is None else realn
+        return self.reports_path(self.bam_prefix() + ".dupemk.%s.bam.flagstat" % realn)
+
+    def dupl_mark_realn_bed(self, realn=None):
+        realn = self.row.realn() if realn is None else realn
+        return self.reports_path(self.bam_prefix() + ".dupemk.%s.bed" % realn)
+
+
+class BsqrData(SampleData):
     def dupl_mark_realn_bsqr_bam(self, realn=None):
         realn = self.row.realn() if realn is None else realn
         return self.alignments_path(self.bam_prefix() + ".dupemk.%s.%s.bam" % (realn, self.row.bsqr()))
 
-    def dupl_mark_realn_bsqr_filtered_bam(self, realn=None):
-        realn = self.row.realn() if realn is None else realn
-        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.%s.filtered.bam" % (realn, self.row.bsqr()))
+    def dupl_mark_bsqr_bam(self):
+        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.bam" % self.row.bsqr())
 
-    def dupl_mark_bsqr_bam(self, bsqr=None):
-        bsqr = self.row.bsqr() if bsqr is None else bsqr
-        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.bam" % bsqr)
 
-    def dupl_mark_realn_bam_flagstat(self):
-        return self.reports_path(self.bam_prefix() + ".dupemk.%s.bam.flagstat" % self.row.realn())
+class VarCallerData(SampleData):
+    def dupl_mark_filtered_bam(self):
+        return self.alignments_path(self.bam_prefix() + ".dupemk.filtered.bam")
 
-    def dupl_mark_realn_bed(self):
-        return self.reports_path(self.bam_prefix() + ".dupemk.%s.bed" % self.row.realn())
+    def dupl_mark_realn_bsqr_filtered_bam(self):
+        return self.alignments_path(
+            self.bam_prefix() + ".dupemk.%s.%s.filtered.bam" % (self.row.realn(), self.row.bsqr()))
+
+    def bam_file(self):
+        if self.row.realn() == "no-realn" and self.row().bsqr() == "no-bsqr":
+            return self.alignment_data().dupl_mark_bam()
+        return self.bsqr_data().dupl_mark_realn_bsqr_bam()
+
+    def filtered_bam_file(self):
+        if self.row.realn() == "no-realn" and self.row().bsqr() == "no-bsqr":
+            return self.dupl_mark_filtered_bam()
+        return self.dupl_mark_realn_bsqr_filtered_bam()

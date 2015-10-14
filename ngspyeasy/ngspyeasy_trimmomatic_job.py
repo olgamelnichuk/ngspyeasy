@@ -81,9 +81,9 @@ def run_trimmomatic(row, projects_home, task):
 
 
 def run_fastqc_task(row, projects_home):
-    sample = sample_data.create(row, projects_home)
+    sample = sample_data.create(row, projects_home).trimmomatic_data()
 
-    fastq_files = sample.trimmomatic_paired_output() + sample.trimmomatic_unpaired_output()
+    fastq_files = sample.paired_fastq() + sample.unpaired_fastq()
     not_exist = filter(lambda x: not os.path.isfile(x), fastq_files)
 
     if len(not_exist) != 0:
@@ -110,8 +110,8 @@ def run_trimmomatic_task(row, projects_home):
 
     adapter_fa = genome.adapter_fa()
 
-    pe = sample.trimmomatic_paired_output()
-    ue = sample.trimmomatic_unpaired_output()
+    pe = sample.paired_fastq()
+    ue = sample.unpaired_fastq()
     trimmomatic_results = [pe[0], ue[0], pe[1], ue[1]]
     log_info("Checking if Trimmomatic data already exists: %s" % trimmomatic_results)
 

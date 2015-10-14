@@ -80,7 +80,9 @@ def run_bsqr(row, projects_home):
 
     log_info("Genome build selected: '%s'" % genome.refdir())
 
-    sample = sample_data.create(row, projects_home)
+    bsqr_data = sample_data.create(row, projects_home).bsqr_data()
+    realn_data = bsqr_data.realn_data()
+    align_data = bsqr_data.alignment_data()
 
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "bsqr", row.bsqr(), row.bsqr() + ".tmpl.sh")
@@ -95,18 +97,18 @@ def run_bsqr(row, projects_home):
         NCPU=str(row.ncpu()),
         REFFASTA=genome.ref_fasta(),
         DBSNP_RECAB=genome.dbsnp_recab(),
-        TMP_DIR=sample.tmp_dir()
+        TMP_DIR=bsqr_data.tmp_dir()
     )
 
     if row.bsqr() == "bam-bsqr":
-        if os.path.isfile(sample.dupl_mark_realn_bam("bam-realn")):
-            bam_in = sample.dupl_mark_realn_bam("bam-realn")
-            bam_out = sample.dupl_mark_realn_bsqr_bam("bam-realn")
-        elif os.path.isfile(sample.dupl_mark_bam()):
-            bam_in = sample.dupl_mark_bam()
-            bam_out = sample.dupl_mark_bsqr_bam()
+        if os.path.isfile(realn_data.dupl_mark_realn_bam("bam-realn")):
+            bam_in = realn_data.dupl_mark_realn_bam("bam-realn")
+            bam_out = bsqr_data.dupl_mark_realn_bsqr_bam("bam-realn")
+        elif os.path.isfile(align_data.dupl_mark_bam()):
+            bam_in = align_data.dupl_mark_bam()
+            bam_out = bsqr_data.dupl_mark_bsqr_bam()
         else:
-            raise IOError("Can not find required BAM files in %s" % sample.alignments_dir())
+            raise IOError("Can not find required BAM files in %s" % bsqr_data.alignments_dir())
 
         log_info("BAM in: %s" % bam_in)
         log_info("BAM out: %s" % bam_out)
@@ -121,14 +123,14 @@ def run_bsqr(row, projects_home):
         )
 
     elif row.bsqr() == "gatk-bsqr":
-        if os.path.isfile(sample.dupl_mark_realn_bam("gatk-realn")):
-            bam_in = sample.dupl_mark_realn_bam("gatk-realn")
-            bam_out = sample.dupl_mark_realn_bsqr_bam("gatk-realn")
-        elif os.path.isfile(sample.dupl_mark_bam()):
-            bam_in = sample.dupl_mark_bam()
-            bam_out = sample.dupl_mark_bsqr_bam()
+        if os.path.isfile(realn_data.dupl_mark_realn_bam("gatk-realn")):
+            bam_in = realn_data.dupl_mark_realn_bam("gatk-realn")
+            bam_out = bsqr_data.dupl_mark_realn_bsqr_bam("gatk-realn")
+        elif os.path.isfile(align_data.dupl_mark_bam()):
+            bam_in = align_data.dupl_mark_bam()
+            bam_out = bsqr_data.dupl_mark_bsqr_bam()
         else:
-            raise IOError("Can not find required BAM files in %s" % sample.alignments_dir())
+            raise IOError("Can not find required BAM files in %s" % bsqr_data.alignments_dir())
 
         log_info("BAM in: %s" % bam_in)
         log_info("BAM out: %s" % bam_out)
@@ -144,7 +146,7 @@ def run_bsqr(row, projects_home):
             KNOWN_SNPS_b138=genome.known_snps_b138(),
             KNOWN_SNPS_OMNI=genome.known_snps_omni(),
             KNOWN_SNPS_1000G=genome.known_snps_1000g(),
-            RECAL_DATA_TABLE=sample.reports_path(sample.bam_prefix() + ".recal_data.table")
+            RECAL_DATA_TABLE=bsqr_data.reports_path(bsqr_data.bam_prefix() + ".recal_data.table")
         )
 
     log_debug("Script template variables:\n %s" % "\n".join(script.variable_assignments()))
