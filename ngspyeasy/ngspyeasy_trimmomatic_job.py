@@ -1,8 +1,7 @@
 #!/usr/bin/env python
-import argparse
 import sys
 
-from ngspyeasy import cmdargs
+import cmdargs
 from shutils import run_command
 import os
 import tsv_config
@@ -11,7 +10,7 @@ import sample_data
 import genome_build
 from logger import init_logger, get_logger
 
-LOGGER_NAME = "trimmomatic_job"
+LOGGER_NAME = "trimmomatic"
 
 
 def log_info(msg):
@@ -27,17 +26,7 @@ def log_error(msg):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description="Trimmomatic Job")
-    parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
-                        help="TSV configuration file name")
-    parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
-                        help="ngs_projects directory path")
-    parser.add_argument("-i", "--sample_id", dest="sample_id", help="sample_id to run trimmomatic on")
-    parser.add_argument("-t", "--task", dest="task", required=True, help="trimmomatic task: [trimmomatic | fastqc]")
-    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
-    parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
-
-    args = parser.parse_args(argv)
+    args = cmdargs.parse_job_args(argv, "Trimmomatic")
 
     projects_home = projects_dir.ProjectsDir(args.projects_dir)
     log_file = projects_home.sample_log_file(args.config, args.sample_id)

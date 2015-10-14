@@ -1,16 +1,16 @@
 #!/usr/bin/env python
-import argparse
-import os
 import sys
 
-from ngspyeasy import cmdargs
+import os
+
+import cmdargs
 import projects_dir
 import tsv_config
 import genome_build
 import sample_data
 from logger import init_logger, get_logger
 
-LOGGER_NAME = "variant_calling_job"
+LOGGER_NAME = "variant_calling"
 
 
 def log_info(msg):
@@ -26,17 +26,7 @@ def log_error(msg):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description="Variant Calling Job")
-    parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
-                        help="TSV configuration file name")
-    parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
-                        help="ngs_projects directory path")
-    parser.add_argument("-i", "--sample_id", dest="sample_id", help="sample_id to run job on")
-    parser.add_argument("-t", "--task", dest="task", required=True)
-    parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
-    parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
-
-    args = parser.parse_args(argv)
+    args = cmdargs.parse_job_args(argv, "Variant Calling")
 
     projects_home = projects_dir.ProjectsDir(args.projects_dir)
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
@@ -108,8 +98,7 @@ def run_vc(row, projects_home, task):
     mapped_reads_bed = sample.reports_path(os.path.basename(bam_file) + ".mapped.reads.bed")
     callable_regions_bed = sample.reports_path(os.path.basename(bam_file) + ".genomecov.bed")
 
-    #TODO
-
+    # TODO
 
 
 if __name__ == '__main__':
