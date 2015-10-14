@@ -124,6 +124,9 @@ class SampleData(object):
     def dupl_mark_bam(self):
         return self.alignments_path(self.bam_prefix() + ".dupemk.bam")
 
+    def dupl_mark_filtered_bam(self):
+        return self.alignments_path(self.bam_prefix() + ".dupemk.filtered.bam")
+
     def dupl_mark_bam_flagstat(self):
         return self.reports_path(self.bam_prefix() + ".dupemk.bam.flagstat")
 
@@ -137,6 +140,10 @@ class SampleData(object):
     def dupl_mark_realn_bsqr_bam(self, realn=None):
         realn = self.row.realn() if realn is None else realn
         return self.alignments_path(self.bam_prefix() + ".dupemk.%s.%s.bam" % (realn, self.row.bsqr()))
+
+    def dupl_mark_realn_bsqr_filtered_bam(self, realn=None):
+        realn = self.row.realn() if realn is None else realn
+        return self.alignments_path(self.bam_prefix() + ".dupemk.%s.%s.filtered.bam" % (realn, self.row.bsqr()))
 
     def dupl_mark_bsqr_bam(self, bsqr=None):
         bsqr = self.row.bsqr() if bsqr is None else bsqr
