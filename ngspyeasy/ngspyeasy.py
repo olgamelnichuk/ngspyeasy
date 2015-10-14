@@ -194,10 +194,10 @@ def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose):
         elif aligner_type == "stampy":
             submit(cmd.with_task("bwa"), "stampy_bwa", "compbio/ngseasy-bwa", projects_home, dependencies)
             submit(cmd.with_task("stampy"), "stampy_stampy", "compbio/ngseasy-bwa", projects_home, dependencies)
-            submit(cmd.with_task("picard_"), "stampy_picard_cleansam", "compbio/ngseasy-picardtools", projects_home,
-                   dependencies)
-            submit(cmd.with_task("picard_"), "stampy_picard_addorreplacereadgroups", "compbio/ngseasy-picardtools",
+            submit(cmd.with_task("picard_cleansam"), "stampy_picard_cleansam", "compbio/ngseasy-picardtools",
                    projects_home, dependencies)
+            submit(cmd.with_task("picard_addorreplacereadgroups"), "stampy_picard_addorreplacereadgroups",
+                   "compbio/ngseasy-picardtools", projects_home, dependencies)
         elif aligner_type == "bowtie2":
             submit(cmd, "bowtie2", "compbio/ngseasy-bowtie2", projects_home, dependencies)
         elif aligner_type == "snap":
