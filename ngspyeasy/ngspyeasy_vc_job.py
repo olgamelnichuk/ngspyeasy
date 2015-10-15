@@ -7,7 +7,7 @@ import cmdargs
 import projects_dir
 import tsv_config
 import genome_build
-import sample_data
+import sample
 from logger import init_logger, get_logger
 
 LOGGER_NAME = "variant_calling"
@@ -102,43 +102,58 @@ def prepare(row, projects_home, task):
     log_info("vc: prepare (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
-    sample = sample_data.create(row, projects_home).vc_data()
-    bam_file = sample.bam_file()
+    vc_data = sample.vc_data(row, projects_home)
+    bam_file = vc_data.vc_bam_in()
+    filtered_bam_file = vc_data.vc_filtered_bam()
 
     if not os.path.isfile(bam_file):
         raise IOError("Can not find [%s] for Variant Calling." % bam_file)
 
-    genomebuild = select_genomebuild(row, projects_home)
-    mapped_reads_bed = sample.reports_path(os.path.basename(bam_file) + ".mapped.reads.bed")
-    callable_regions_bed = sample.reports_path(os.path.basename(bam_file) + ".genomecov.bed")
+    mapped_reads_bed = vc_data.reports_path(os.path.basename(bam_file) + ".mapped.reads.bed")
+    genomecov_bed = vc_data.reports_path(os.path.basename(bam_file) + ".genomecov.bed")
+    if not os.path.isfile(mapped_reads_bed) or not os.path.isfile(genomecov_bed):
+        # run prepare/callable-regions script
+        #TODO
+        pass
 
-    #TODO
+    log_info("Mapped Reads %s" % mapped_reads_bed)
+    log_info("Callable Regions %s" % genomecov_bed)
+
+    if not os.path.isfile(filtered_bam_file):
+        # run prepare/filter-bam script
+        #TODO
+        pass
+
 
 def freebayes_parallel(row, projects_home, task):
+    log_info("Running Variant Calling job (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.varcaller(), task, row.genomebuild()))
+
+    genomebuild = select_genomebuild(row, projects_home)
     pass
 
 
-def freebayes_default():
+def freebayes_default(row, projects_home, task):
     pass
 
 
-def platypus():
+def platypus(row, projects_home, task):
     pass
 
 
-def platypus_default():
+def platypus_default(row, projects_home, task):
     pass
 
 
-def unified_genotyper():
+def unified_genotyper(row, projects_home, task):
     pass
 
 
-def haplotype_caller():
+def haplotype_caller(row, projects_home, task):
     pass
 
 
-def ensemble():
+def ensemble(row, projects_home, task):
     pass
 
 

@@ -6,7 +6,7 @@ from shutils import run_command
 import os
 import tsv_config
 import projects_dir
-import sample_data
+import sample
 import genome_build
 from logger import init_logger, get_logger
 
@@ -81,9 +81,9 @@ def run_trimmomatic(row, projects_home, task):
 
 
 def run_fastqc_task(row, projects_home):
-    sample = sample_data.create(row, projects_home).trimmomatic_data()
+    trim_data = sample.trimmomatic_data(row, projects_home)
 
-    fastq_files = sample.paired_fastq() + sample.unpaired_fastq()
+    fastq_files = trim_data.paired_fastq() + trim_data.unpaired_fastq()
     not_exist = filter(lambda x: not os.path.isfile(x), fastq_files)
 
     if len(not_exist) != 0:
@@ -96,13 +96,13 @@ def run_fastqc_task(row, projects_home):
            "--threads", "4",
            "--extract",
            "--quiet",
-           "--dir", sample.tmp_dir(),
-           "--outdir", sample.fastq_dir()] + fastq_files
+           "--dir", trim_data.tmp_dir(),
+           "--outdir", trim_data.fastq_dir()] + fastq_files
     run_command(cmd, get_logger(LOGGER_NAME))
 
 
 def run_trimmomatic_task(row, projects_home):
-    sample = sample_data.create(row, projects_home)
+    trim_data = sample.trimmomatic_data(row, projects_home)
 
     genome = genome_build.select(row.genomebuild(), projects_home)
     if genome is None:
@@ -110,8 +110,8 @@ def run_trimmomatic_task(row, projects_home):
 
     adapter_fa = genome.adapter_fa()
 
-    pe = sample.paired_fastq()
-    ue = sample.unpaired_fastq()
+    pe = trim_data.paired_fastq()
+    ue = trim_data.unpaired_fastq()
     trimmomatic_results = [pe[0], ue[0], pe[1], ue[1]]
     log_info("Checking if Trimmomatic data already exists: %s" % trimmomatic_results)
 
@@ -138,7 +138,7 @@ def run_trimmomatic_task(row, projects_home):
 
     cmd = ["java", "-XX:ParallelGCThreads=1", "-jar", "/usr/local/pipeline/Trimmomatic-0.32/trimmomatic-0.32.jar",
            "PE",
-           "-threads", row.ncpu()] + sample.fastq_files() + trimmomatic_results + trimmomatic_options
+           "-threads", row.ncpu()] + trim_data.fastq_files() + trimmomatic_results + trimmomatic_options
     run_command(cmd, get_logger(LOGGER_NAME))
 
 

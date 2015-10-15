@@ -4,7 +4,7 @@ import sys
 import cmdargs
 from shutils import run_command
 import os
-import sample_data
+import sample
 import projects_dir
 import tsv_config
 from logger import init_logger, get_logger
@@ -62,9 +62,13 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
 def run_fastqc(row, projects_home):
     log_info("Running FastQC job (SAMPLE_ID='%s', FASTQC='%s')" % (row.sample_id(), row.fastqc()))
 
-    sample = sample_data.create(row, projects_home).fastq_data()
+    fq_data = sample.fastqc_data(row, projects_home)
 
-    fastqc_results = sample.fastqc_htmls()
+    for fastq_file in fq_data.fastq_files():
+        if not os.path.isfile(fastq_file):
+            raise IOError("FastQ file not found: %s", fastq_file)
+
+    fastqc_results = fq_data.fastqc_htmls()
     log_info("Checking if FastQC results already exist: %s" % fastqc_results)
 
     not_exist = filter(lambda x: not os.path.isfile(x), fastqc_results)
@@ -77,8 +81,8 @@ def run_fastqc(row, projects_home):
     cmd = ["/usr/local/pipeline/FastQC/fastqc",
            "--threads", "2",
            "--extract",
-           "--dir", sample.tmp_dir(),
-           "--outdir", sample.fastq_dir()] + sample.fastq_files()
+           "--dir", fq_data.tmp_dir(),
+           "--outdir", fq_data.fastq_dir()] + fq_data.fastq_files()
 
     run_command(cmd, get_logger(LOGGER_NAME))
 

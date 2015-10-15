@@ -7,7 +7,7 @@ import sys
 import cmdargs
 from shutils import script_from_template, run_command
 import os
-import sample_data
+import sample
 import genome_build
 import projects_dir
 import tsv_config
@@ -84,19 +84,13 @@ def run_alignment(row, projects_home, task):
     log_info("Genome build index: %s" % genome.genome_index())
     log_info("Genome build dir: %s " % genome.refdir())
 
-    sample = sample_data.create(row, projects_home).alignment_data()
+    align_data = sample.alignment_data(row, projects_home)
+    fastq_files = align_data.trimmed_fastq_files()
+    not_exist = [x for x in fastq_files if not os.path.isfile(x)]
+    if len(not_exist) > 0:
+        raise ValueError("Required FastQ files do not exist: %s" % not_exist)
 
-    if row.trim() == "no-trim":
-        fastq = sample.fastq_files()
-        log_info("TRIM set to '%s'. Using raw FastQ data: %s" % (row.trim(), fastq))
-    elif row.trim in ["atrim", "btrim"]:
-        fastq = sample.paired_fastq()
-        not_exist = [x for x in fastq if not os.path.isfile(x)]
-        if len(not_exist) > 0:
-            raise ValueError("Trimmed FastQC Data does not exist: %s" % not_exist)
-        log_info("TRIM set to '%s'. Using trimmed FastQ data: %s" % (row.trim(), fastq))
-    else:
-        raise ValueError("Unknown TRIM value: '%s'" % row.trim())
+    log_info("(Sample='%s') FastQ files to be used in alignment: %s" % (row.sample_id(), fastq_files))
 
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "alignment", row.aligner(), task + ".tmpl.sh")
@@ -107,8 +101,8 @@ def run_alignment(row, projects_home, task):
 
     log_debug("Script template to run: %s" % script.source())
 
-    bam_prefix = sample.bam_prefix()
-    platform_unit = find_platform_unit(fastq[0])
+    bam_prefix = align_data.bam_prefix()
+    platform_unit = find_platform_unit(fastq_files[0])
 
     script.add_variables(
         NCPU=str(row.ncpu()),
@@ -117,33 +111,33 @@ def run_alignment(row, projects_home, task):
         NGS_PLATFORM=row.ngs_platform(),
         DNA_PREP_LIBRARY_ID=row.dna_prep_library_id(),
         RUNDATE=datetime.datetime.now().strftime("%d%m%y%H%M%S"),
-        FQ1=fastq[0],
-        FQ2=fastq[1],
+        FQ1=fastq_files[0],
+        FQ2=fastq_files[1],
         GENOMEINDEX=genome.genome_index(),
-        DISCORDANT_SAM=sample.discordant_sam(),
-        DISCORDANT_BAM=sample.discordant_bam(),
-        SPLITREAD_SAM=sample.splitread_sam(),
-        SPLITREAD_BAM=sample.splitread_bam(),
-        UNMAPPED_FASTQ=sample.unmapped_fastq(),
-        DUPEMK_BAM=sample.dupl_mark_bam(),
-        DUPEMK_FLAGSTAT_REPORT=sample.dupl_mark_bam_flagstat(),
-        DUPEMK_BED_REPORT=sample.dupl_mark_bed(),
-        TMP_DIR=sample.tmp_dir(),
-        ALIGNNMENTS_DIR=sample.alignments_dir()
+        DISCORDANT_SAM=align_data.discordant_sam(),
+        DISCORDANT_BAM=align_data.discordant_bam(),
+        SPLITREAD_SAM=align_data.splitread_sam(),
+        SPLITREAD_BAM=align_data.splitread_bam(),
+        UNMAPPED_FASTQ=align_data.unmapped_fastq(),
+        DUPEMK_BAM=align_data.dupl_mark_bam(),
+        DUPEMK_FLAGSTAT_REPORT=align_data.dupl_mark_bam_flagstat(),
+        DUPEMK_BED_REPORT=align_data.dupl_mark_bed(),
+        TMP_DIR=align_data.tmp_dir(),
+        ALIGNNMENTS_DIR=align_data.alignments_dir()
     )
 
     if row.aligner() == "novoalign":
-        script.add_variables(K_STATS=sample.alignments_path(bam_prefix + ".K.stats"))
+        script.add_variables(K_STATS=align_data.alignments_path(bam_prefix + ".K.stats"))
 
     if row.aligner() == "stampy":
-        tmp_bam = sample.alignments_path(bam_prefix + ".tmp.bam")
+        tmp_bam = align_data.alignments_path(bam_prefix + ".tmp.bam")
         script.add_variables(
             TMP_BAM=tmp_bam,
-            TMP_BAM_BAI=sample.alignments_path(bam_prefix + ".tmp.bam.bai"),
-            DUPEMARK_TMP_BAM=sample.alignments_path(bam_prefix + ".dupemk.tmp.bam"),
-            DUPEMARK_TMP_BAM_BAI=sample.alignments_path(bam_prefix + ".dupemk.tmp.bam.bai"),
-            DUPEMARK_CLEANSAM_BAM=sample.alignments_path(bam_prefix + ".dupemk.tmpcleansam.bam"),
-            DUPEMARK_CLEANSAM_BAM_BAI=sample.alignments_path(bam_prefix + ".dupemk.tmpcleansam.bam.bai"),
+            TMP_BAM_BAI=align_data.alignments_path(bam_prefix + ".tmp.bam.bai"),
+            DUPEMARK_TMP_BAM=align_data.alignments_path(bam_prefix + ".dupemk.tmp.bam"),
+            DUPEMARK_TMP_BAM_BAI=align_data.alignments_path(bam_prefix + ".dupemk.tmp.bam.bai"),
+            DUPEMARK_CLEANSAM_BAM=align_data.alignments_path(bam_prefix + ".dupemk.tmpcleansam.bam"),
+            DUPEMARK_CLEANSAM_BAM_BAI=align_data.alignments_path(bam_prefix + ".dupemk.tmpcleansam.bam.bai"),
             STAMPY_VERSION="stampy-1.0.27",
             PICARD_VERSION="picard-tools-1.128"
         )

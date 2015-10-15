@@ -2,7 +2,7 @@
 import sys
 
 import genome_build
-import sample_data
+import sample
 from shutils import script_from_template, run_command
 import os
 import cmdargs
@@ -72,7 +72,7 @@ def run_realn(row, projects_home):
         log_info("[%s] Skipping Indel Realignment for sample: '%s'" % (row.realn(), row.sample_id()))
         return
 
-    realn_data = sample_data.create(row, projects_home).realn_data()
+    realn_data = sample.realn_data(row, projects_home)
 
     if os.path.isfile(realn_data.dupl_mark_realn_bam()):
         log_info("Skipping Indel Realignment. Looks like you already ran it: %s" % realn_data.dupl_mark_realn_bam())
@@ -96,9 +96,8 @@ def run_realn(row, projects_home):
     log_debug("Script template to run: %s" % script.source())
 
     bam_prefix = realn_data.bam_prefix()
-    alignment_data = realn_data.alignment_data()
-    dupl_mark_bed = alignment_data.dupl_mark_bed()
-    dupl_mark_bam = alignment_data.dupl_mark_bam()
+    dupl_mark_bed = realn_data.dupl_mark_bed()
+    dupl_mark_bam = realn_data.dupl_mark_bam()
 
     if not os.path.isfile(dupl_mark_bed):
         raise IOError("Can't find mark duplication bed file: %s " % dupl_mark_bed)

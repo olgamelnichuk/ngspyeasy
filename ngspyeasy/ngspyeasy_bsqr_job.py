@@ -6,7 +6,7 @@ import os
 import cmdargs
 import projects_dir
 import tsv_config
-import sample_data
+import sample
 import genome_build
 from logger import init_logger, get_logger
 
@@ -80,9 +80,7 @@ def run_bsqr(row, projects_home):
 
     log_info("Genome build selected: '%s'" % genome.refdir())
 
-    bsqr_data = sample_data.create(row, projects_home).bsqr_data()
-    realn_data = bsqr_data.realn_data()
-    align_data = bsqr_data.alignment_data()
+    bsqr_data = sample.bsqr_data(row, projects_home)
 
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "bsqr", row.bsqr(), row.bsqr() + ".tmpl.sh")
@@ -100,45 +98,24 @@ def run_bsqr(row, projects_home):
         TMP_DIR=bsqr_data.tmp_dir()
     )
 
-    if row.bsqr() == "bam-bsqr":
-        if os.path.isfile(realn_data.dupl_mark_realn_bam("bam-realn")):
-            bam_in = realn_data.dupl_mark_realn_bam("bam-realn")
-            bam_out = bsqr_data.dupl_mark_realn_bsqr_bam("bam-realn")
-        elif os.path.isfile(align_data.dupl_mark_bam()):
-            bam_in = align_data.dupl_mark_bam()
-            bam_out = bsqr_data.dupl_mark_bsqr_bam()
-        else:
-            raise IOError("Can not find required BAM files in %s" % bsqr_data.alignments_dir())
+    bam_in = bsqr_data.bsqr_bam_in()
+    bam_out = bsqr_data.bsqr_bam_out()
+    log_info("BAM in: %s" % bam_in)
+    log_info("BAM out: %s" % bam_out)
 
-        log_info("BAM in: %s" % bam_in)
-        log_info("BAM out: %s" % bam_out)
+    if os.path.isfile(bam_out):
+        log_info("Already run bam recab..Skipping")
+        return
 
-        if os.path.isfile(bam_out):
-            log_info("Already run bam recab..Skipping")
-            return
+    if not os.path.isfile(bam_in):
+        raise IOError("Can not find required BAM file: %s" % bam_in)
 
-        script.add_variables(
-            BAM_IN=bam_in,
-            BAM_OUT=bam_out
-        )
+    script.add_variables(
+        BAM_IN=bam_in,
+        BAM_OUT=bam_out
+    )
 
-    elif row.bsqr() == "gatk-bsqr":
-        if os.path.isfile(realn_data.dupl_mark_realn_bam("gatk-realn")):
-            bam_in = realn_data.dupl_mark_realn_bam("gatk-realn")
-            bam_out = bsqr_data.dupl_mark_realn_bsqr_bam("gatk-realn")
-        elif os.path.isfile(align_data.dupl_mark_bam()):
-            bam_in = align_data.dupl_mark_bam()
-            bam_out = bsqr_data.dupl_mark_bsqr_bam()
-        else:
-            raise IOError("Can not find required BAM files in %s" % bsqr_data.alignments_dir())
-
-        log_info("BAM in: %s" % bam_in)
-        log_info("BAM out: %s" % bam_out)
-
-        if os.path.isfile(bam_out):
-            log_info("Already run GATK BSQR..Skipping")
-            return
-
+    if row.bsqr() == "gatk-bsqr":
         script.add_variables(
             BAM_IN=bam_in,
             BAM_OUT=bam_out,
@@ -152,6 +129,7 @@ def run_bsqr(row, projects_home):
     log_debug("Script template variables:\n %s" % "\n".join(script.variable_assignments()))
 
     run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
