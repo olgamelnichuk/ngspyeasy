@@ -13,8 +13,7 @@ time java -Xmx6g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisT
 -dcov 250 \
 --unsafe ALL \
 --genotype_likelihoods_model BOTH \
---genotyping_mode DISCOVERY \
---output_mode ${GTMODEGATK} && \
+--genotyping_mode DISCOVERY && \
 time cat ${RAW_VCF} | \
 vcffilter -f 'QUAL > 5' -s | \
 fix_ambiguous | \

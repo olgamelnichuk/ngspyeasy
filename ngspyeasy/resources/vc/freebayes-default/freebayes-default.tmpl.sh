@@ -5,7 +5,7 @@ time /usr/local/pipeline/freebayes/scripts/freebayes-parallel <(/usr/local/pipel
 -b ${FILTERED_BAM} \
 --min-repeat-entropy 1 \
 --genotype-qualities > ${RAW_VCF} && \
-time cat ${SOUTDocker}/vcf/${BAM_PREFIX}.raw.snps.indels.${VARCALLER}.vcf | \
+time cat ${RAW_VCF} | \
 vcffilter -f 'QUAL > 5' -s | \
 fix_ambiguous | \
 vcfallelicprimitives --keep-geno | \

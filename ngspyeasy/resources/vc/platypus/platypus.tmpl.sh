@@ -10,13 +10,13 @@ time python /usr/local/pipeline/Platypus/bin/Platypus.py callVariants \
 --assemble=1 \
 --assembleAll=1 \
 --assemblyRegionSize=1500 \
---minReads=${coverage_min}  \
+--minReads=${COVERAGE_MIN}  \
 --maxGOF=30 \
 --bufferSize=50000 \
 --maxReads=10000000 \
 --minPosterior=5 \
---minMapQual=${map_qual} \
---minBaseQual=${base_qual} \
+--minMapQual=${MAP_QUAL} \
+--minBaseQual=${BASE_QUAL} \
 --maxSize 10000 \
 --maxVariants=8 \
 --mergeClusteredVariants=1 \

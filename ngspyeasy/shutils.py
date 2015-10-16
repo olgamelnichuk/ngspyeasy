@@ -1,10 +1,11 @@
 #!/usr/bin/env python
 import tempfile
-import os
 from string import Template
-
 import subprocess
 import sys
+
+import os
+import stat
 
 
 def run_command(cmd, logger):
@@ -71,4 +72,7 @@ class ShellScript(object):
         file = tempfile.NamedTemporaryFile()
         file.write("\n".join(source))
         file.close()
+
+        st = os.stat(file.name)
+        os.chmod(file.name, st.st_mode | stat.S_IEXEC)
         return file.name

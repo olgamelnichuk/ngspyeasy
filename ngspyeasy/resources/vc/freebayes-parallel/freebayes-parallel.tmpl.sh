@@ -4,9 +4,9 @@ time /usr/local/pipeline/freebayes/scripts/freebayes-parallel <(/usr/local/pipel
 ${NCPU} \
 -f ${REFFASTA} \
 -b ${FILTERED_BAM} \
---min-coverage ${coverage_min} \
---min-mapping-quality ${map_qual} \
---min-base-quality ${base_qual} \
+--min-coverage ${COVERAGE_MIN} \
+--min-mapping-quality ${MAP_QUAL} \
+--min-base-quality ${BASE_QUAL} \
 --min-repeat-entropy 1 \
 --genotype-qualities > ${RAW_VCF} && \
 time cat ${RAW_VCF} | \

@@ -215,11 +215,16 @@ class VarCallerData(BsqrData):
     def vc_filtered_bam(self):
         return self.bsqr_bam_in().replace(".bam", ".filtered.bam")
 
-    def raw_vcf(self):
-        return self.vcf_path(self.bam_prefix() + ".raw.snps.indels.%s.vcf" % self.row().varcaller())
+    def raw_vcf(self, varcaller=None):
+        if varcaller is None:
+            varcaller = self.row().varcaller()
+        return self.vcf_path(self.bam_prefix() + ".raw.snps.indels.%s.vcf" % varcaller)
 
-    def raw_vcf_gz(self):
-        return self.raw_vcf() + ".gz"
+    def raw_vcf_gz(self, varcaller=None):
+        return self.raw_vcf(varcaller) + ".gz"
 
-    def vcf_gz(self):
-        return self.vcf_path(self.bam_prefix() + ".snps.indels.%s.vcf.gz" % self.row().varcaller())
+    def vcf_gz(self, varcaller):
+        if varcaller is None:
+            varcaller = self.row().varcaller()
+
+        return self.vcf_path(self.bam_prefix() + ".snps.indels.%s.vcf.gz" % varcaller)
