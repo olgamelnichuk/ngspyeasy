@@ -61,30 +61,42 @@ def ngspyeasy_trimmomatic_job(tsv_conf, projects_home, sample_id, task):
 
 
 def run_trimmomatic(row, projects_home, task):
-    log_info("Running Trimmomatic job (SAMPLE_ID='%s', TRIM='%s', GENOMEBUILD='%s')" % (
-        row.sample_id(), row.trim(), row.genomebuild()))
-
-    if row.trim() not in ["atrim", "btrim", "no-trim"]:
-        raise ValueError("Unrecognised TRIM option. Should be one of [atrim] [btrim] or [no-trim]: '%s'" % row.trim())
+    log_info("Running Trimmomatic job (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.trim(), task, row.genomebuild()))
 
     if row.trim() == "no-trim":
         log_info("[%s] Skipping quality control of raw fastq reads. NOT RECOMMENDED" % row.trim())
         return
 
-    if task not in ["trimmomatic", "fastqc"]:
-        raise ValueError("Unknown trimmomatic task: %s" % task)
+    callables = {
+        "atrim|trimmomatic": atrim,
+        "atrim|fastqc": fastqc,
+        "btrim|trimmomatic": btrim,
+        "btrim|fastqc": fastqc,
+    }
 
-    if task == "trimmomatic":
-        run_trimmomatic_task(row, projects_home)
-    if task == "fastqc":
-        run_fastqc_task(row, projects_home)
+    callables.get(row.trim() + "|" + task, unrecognized_options)(row, projects_home, task)
 
 
-def run_fastqc_task(row, projects_home):
+def unrecognized_options(row, projects_home, task):
+    if callable is None:
+        raise ValueError(
+            "Unrecognised options (TRIM='%s', TASK='%s')" % (row.trim(), task))
+
+
+def fastqc(row, projects_home, task):
+    log_debug("fastqc (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.trim(), task, row.genomebuild()))
+
     trim_data = sample.trimmomatic_data(row, projects_home)
+    fastqc_reports = trim_data.trim_fastqc_htmls()
+    not_exist = [x for x in fastqc_reports if not os.path.isfile(x)]
+    if len(not_exist) == 0:
+        log_info("FastQC results already exist. Skipping this part... %s" % fastqc_reports)
+        return
 
     fastq_files = trim_data.paired_fastq() + trim_data.unpaired_fastq()
-    not_exist = filter(lambda x: not os.path.isfile(x), fastq_files)
+    not_exist = [x for x in fastq_files if not os.path.isfile(x)]
 
     if len(not_exist) != 0:
         log_info("Can't proceed with (post Trimmomatic) FastQC as fastq files do not exist: %s" % not_exist)
@@ -101,8 +113,9 @@ def run_fastqc_task(row, projects_home):
     run_command(cmd, get_logger(LOGGER_NAME))
 
 
-def run_trimmomatic_task(row, projects_home):
-    trim_data = sample.trimmomatic_data(row, projects_home)
+def atrim(row, projects_home, task):
+    log_debug("atrim (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.trim(), task, row.genomebuild()))
 
     genome = genome_build.select(row.genomebuild(), projects_home)
     if genome is None:
@@ -110,35 +123,48 @@ def run_trimmomatic_task(row, projects_home):
 
     adapter_fa = genome.adapter_fa()
 
+    trim(row, projects_home, [
+        "LEADING:3",
+        "TRAILING:3",
+        "SLIDINGWINDOW:4:15",
+        "AVGQUAL:2",
+        "MINLEN:75",
+        "ILLUMINACLIP:" + adapter_fa + ":2:30:10:5:true"
+
+    ])
+
+
+def btrim(row, projects_home, task):
+    log_debug("btrim (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.trim(), task, row.genomebuild()))
+
+    trim(row, projects_home, [
+        "LEADING:3",
+        "TRAILING:3",
+        "SLIDINGWINDOW:4:15",
+        "AVGQUAL:2",
+        "MINLEN:75"
+    ])
+
+
+def trim(row, projects_home, options):
+    trim_data = sample.trimmomatic_data(row, projects_home)
+
     pe = trim_data.paired_fastq()
     ue = trim_data.unpaired_fastq()
-    trimmomatic_results = [pe[0], ue[0], pe[1], ue[1]]
-    log_info("Checking if Trimmomatic data already exists: %s" % trimmomatic_results)
+    trim_results = [pe[0], ue[0], pe[1], ue[1]]
 
-    not_exist = filter(lambda x: not os.path.isfile(x), trimmomatic_results)
+    not_exist = [x for x in trim_results if not os.path.isfile(x)]
     if len(not_exist) == 0:
-        log_info("Trimmomatic data already exists...skipping this bit")
+        log_info("Trimmomatic data already exists...skipping this bit: %s" % trim_results)
         return
 
     log_info("Running Trimmomatic tool...")
-    trimmomatic_options = ["LEADING:3",
-                           "TRAILING:3",
-                           "SLIDINGWINDOW:4:15",
-                           "AVGQUAL:2",
-                           "MINLEN:75"]
-
-    if row.trim() == "atrim":
-        log_info("TRIM set to '%s' - adaptor trim. Adaptor and read quality trimming" % row.trim())
-        trimmomatic_options = ["ILLUMINACLIP:" + adapter_fa + ":2:30:10:5:true"] + trimmomatic_options
-
-    if row.trim() == "btrim":
-        log_info("TRIM set to '%s' - basic trim. Just read quality trimming. No adaptor trimming" % row.trim())
-
-    log_info("Trimmomatic options:\n %s" % "\n".join(trimmomatic_options))
+    log_info("Trimmomatic options:\n %s" % "\n".join(options))
 
     cmd = ["java", "-XX:ParallelGCThreads=1", "-jar", "/usr/local/pipeline/Trimmomatic-0.32/trimmomatic-0.32.jar",
            "PE",
-           "-threads", row.ncpu()] + trim_data.fastq_files() + trimmomatic_results + trimmomatic_options
+           "-threads", row.ncpu()] + trim_data.fastq_files() + trim_results + options
     run_command(cmd, get_logger(LOGGER_NAME))
 
 
