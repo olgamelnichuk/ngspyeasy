@@ -62,6 +62,10 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
 def run_fastqc(row, projects_home):
     log_info("Running FastQC job (SAMPLE_ID='%s', FASTQC='%s')" % (row.sample_id(), row.fastqc()))
 
+    if row.fastqc() == "no-fastqc":
+        log_info("[%s] Skipping FastQC..." % row.fastqc())
+        return
+
     fq_data = sample.fastqc_data(row, projects_home)
 
     for fastq_file in fq_data.fastq_files():
