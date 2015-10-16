@@ -1,5 +1,6 @@
 #!/usr/bin/env python
 import sys
+
 from shutils import script_from_template, run_command
 
 import os
@@ -85,7 +86,10 @@ def run_vc(row, projects_home, task):
         "ensemble|bcbio-variation": ensemble_bcbio_variation
     }
 
-    (prepare if task == "prepare" else callables.get(row.varcaller() + "|" + task, unrecognized_options))(row, projects_home, task)
+    if task == "prepare":
+        prepare(row, projects_home, task)
+    else:
+        callables.get(row.varcaller() + "|" + task, unrecognized_options)(row, projects_home, task)
 
 
 def unrecognized_options(row, projects_home, task):
@@ -311,6 +315,7 @@ def ensemble_freebayes_parallel(row, projects_home, task):
                    VCF_GZ=vc_data.vcf_gz("freebayers_parallel"),
                    RAW_VCF_GZ=vc_data.raw_vcf_gz("freebayers_parallel"))
 
+
 def ensemble_platypus(row, projects_home, task):
     log_debug("ensemble_platypus (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
@@ -360,9 +365,10 @@ def ensemble_haplotype_caller(row, projects_home, task):
                    RAW_VCF_GZ=vc_data.raw_vcf_gz("HaplotypeCaller"),
                    TMP_DIR=vc_data.tmp_dir())
 
+
 def ensemble_bcbio_variation(row, projects_home, task):
     log_debug("ensemble_bcbio_variation (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
-    row.sample_id(), row.varcaller(), task, row.genomebuild()))
+        row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
@@ -390,6 +396,7 @@ def run_script(dir, file, **kwargs):
     script = script_from_template(template_path)
     script.add_variables(**kwargs)
     run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
+
 
 if __name__ == '__main__':
     main(sys.argv[1:])
