@@ -169,6 +169,15 @@ class AlignmentData(TrimmomaticData):
     def dupl_mark_bed(self):
         return self.reports_path(self.bam_prefix() + ".dupemk.bed")
 
+    def tmp_bam(self):
+        return self.alignments_path(self.bam_prefix() + ".tmp.bam")
+
+    def dupl_mark_tmp_bam(self):
+        return self.alignments_path(self.bam_prefix() + ".dupemk.tmp.bam")
+
+    def dupl_mark_tmp_cleansam_bam(self):
+        return self.alignments_path(self.bam_prefix() + ".dupemk.tmpcleansam.bam")
+
 
 class RealnData(AlignmentData):
     def dupl_mark_realn_bam(self):

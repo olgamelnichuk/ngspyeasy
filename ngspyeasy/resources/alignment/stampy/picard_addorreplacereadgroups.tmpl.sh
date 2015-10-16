@@ -17,8 +17,8 @@ sambamba flagstat -t ${NCPU} ${DUPEMARK_BAM} > ${DUPEMARK_FLAGSTAT_REPORT} && \
 bedtools bamtobed -i ${DUPEMARK_BAM} | bedtools merge > ${DUPEMARK_BED} && \
 rm -v ${DUPEMARK_TMPCLEANSAM_BAM} && \
 rm -v ${DUPEMARK_TMP_BAM} && \
-rm -v ${DUPEMARK_TMP_BAM_BAI} && \
-rm -v ${TMP_BAM_BAI} && \
+rm -v ${DUPEMARK_TMP_BAM}.bai && \
+rm -v ${TMP_BAM}.bai && \
 rm -v ${TMP_BAM} && \
-rm -v ${DUPEMARK_TMPCLEANSAM_BAM_BAI} && \
+rm -v ${DUPEMARK_TMPCLEANSAM_BAM}.bai && \
 chmod -R 777 ${ALIGNMENTS_DIR}/*
