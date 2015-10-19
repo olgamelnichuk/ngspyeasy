@@ -99,8 +99,7 @@ def fastqc(row, projects_home, task):
     not_exist = [x for x in fastq_files if not os.path.isfile(x)]
 
     if len(not_exist) != 0:
-        log_info("Can't proceed with (post Trimmomatic) FastQC as fastq files do not exist: %s" % not_exist)
-        return
+        raise IOError("Can't proceed with (post Trimmomatic) FastQC as fastq files do not exist: %s" % not_exist)
 
     log_info("Running (post Trimmomatic) FastQC tool...")
 
