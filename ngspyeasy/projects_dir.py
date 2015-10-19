@@ -122,3 +122,15 @@ class SampleDir(object):
     def log_dir(self):
         return os.path.join(self.sample_home, "run_logs")
 
+    def fastq_path(self, filename):
+        return os.path.join(self.fastq_dir(), filename)
+
+    def alignments_path(self, filename):
+        return os.path.join(self.alignments_dir(), filename)
+
+    def reports_path(self, filename):
+        return os.path.join(self.reports_dir(), filename)
+
+    def vcf_path(self, filename):
+        return os.path.join(self.vcf_dir(), filename)
+

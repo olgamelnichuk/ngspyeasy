@@ -1,6 +1,5 @@
 #!/usr/bin/env python
 
-import os
 import re
 import projects_dir
 from utils import Bunch
@@ -38,8 +37,7 @@ def parsed_fastq_name(fastq_name):
 
 
 def create(row, projects_home):
-    sample_dir = projects_dir.SampleDir(
-        projects_home.sample_dir(row.project_id(), row.sample_id()))
+    sample_dir = projects_home.sample_dir(row.project_id(), row.sample_id())
 
     for fastq_name in [row.fastq1(), row.fastq2()]:
         if parsed_fastq_name(fastq_name) is None:
@@ -72,31 +70,10 @@ def vc_data(row, projects_home):
     return VarCallerData(*create(row, projects_home))
 
 
-class SampleData(object):
+class SampleData(projects_dir.SampleDir):
     def __init__(self, row, sample_dir):
-        self._dir = sample_dir
+        super(SampleData, self).__init__(sample_dir)
         self._row = row
-
-    def tmp_dir(self):
-        return self._dir.tmp_dir()
-
-    def fastq_dir(self):
-        return self._dir.fastq_dir()
-
-    def alignments_dir(self):
-        return self._dir.alignments_dir()
-
-    def fastq_path(self, filename):
-        return os.path.join(self._dir.fastq_dir(), filename)
-
-    def alignments_path(self, filename):
-        return os.path.join(self._dir.alignments_dir(), filename)
-
-    def reports_path(self, filename):
-        return os.path.join(self._dir.reports_dir(), filename)
-
-    def vcf_path(self, filename):
-        return os.path.join(self._dir.vcf_dir(), filename)
 
     def fastq_names(self):
         return [self._row.fastq1(), self._row.fastq2()]
