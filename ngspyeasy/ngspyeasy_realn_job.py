@@ -45,28 +45,24 @@ def main(argv):
         sys.exit(1)
 
     try:
-        ngspyeasy_realn_job(tsv_conf, projects_home, args.sample_id)
+        ngspyeasy_realn_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
 
 
-def ngspyeasy_realn_job(tsv_conf, projects_home, sample_id):
+def ngspyeasy_realn_job(tsv_conf, projects_home, sample_id, task):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
-        rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
+        rows2run = [x for x in rows2run if x.sample_id() == sample_id]
 
     for row in rows2run:
-        run_realn(row, projects_home)
+        run_realn(row, projects_home, task)
 
 
-def run_realn(row, projects_home):
-    log_info("Running Realign job (SAMPLE_ID='%s', REALN='%s', GENOMEBUILD='%s')" % (
-        row.sample_id(), row.realn(), row.genomebuild()))
-
-    if row.realn() not in ["gatk-realn", "bam-realn", "no-realn"]:
-        raise ValueError(
-            "Unrecognised REALN option. Should be one of [bam-realn] [gatk-realn] or [no-realn]: '%s'" % row.realn())
+def run_realn(row, projects_home, task):
+    log_info("Running Realign job (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.realn(), task, row.genomebuild()))
 
     if row.realn() == "no-realn":
         log_info("[%s] Skipping Indel Realignment for sample: '%s'" % (row.realn(), row.sample_id()))
@@ -78,54 +74,80 @@ def run_realn(row, projects_home):
         log_info("Skipping Indel Realignment. Looks like you already ran it: %s" % realn_data.dupl_mark_realn_bam())
         return
 
-    genome = genome_build.select(row.genomebuild(), projects_home)
-    if genome.known_indels() is None:
+    genomebuild = select_genomebuild(row, projects_home)
+
+    callables = {
+        "bam-realn|no-task": bam_realn,
+        "gatk-realn|no-task": gatk_realn
+    }
+
+    callables.get(row.realn() + "|" + task, unrecognized_options)(row, task, realn_data, genomebuild)
+
+
+def unrecognized_options(row, task, *args):
+    if callable is None:
+        raise ValueError(
+            "Unrecognised REALN options (REALN='%s', TASK='%s')" % (row.realn(), task))
+
+
+def select_genomebuild(row, projects_home):
+    genomebuild = genome_build.select(row.genomebuild(), projects_home)
+    if genomebuild.known_indels() is None:
         raise ValueError(
             "No genome selected for sample '%s'. GENOMEBUILD value is '%s', but it should be one of [b37, hg19]" %
             row.genomebuild())
+    return genomebuild
 
-    log_info("Genome build selected: '%s'" % genome.refdir())
 
-    base_dir = os.path.dirname(__file__)
-    template_path = os.path.join(base_dir, "resources", "realn", row.realn(), row.realn() + ".tmpl.sh")
+def bam_realn(row, task, realn_data, genomebuild):
+    log_debug("bam_realn (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.realn(), task, row.genomebuild()))
 
-    log_debug("Using script template file: %s" % template_path)
+    run_script("bam-realn", "bam-realn.tmpl.sh", **common_script_params(realn_data, genomebuild))
 
-    script = script_from_template(template_path)
 
-    log_debug("Script template to run: %s" % script.source())
+def gatk_realn(row, task, realn_data, genomebuild):
+    log_debug("gatk_realn (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.realn(), task, row.genomebuild()))
 
-    bam_prefix = realn_data.bam_prefix()
-    dupl_mark_bed = realn_data.dupl_mark_bed()
-    dupl_mark_bam = realn_data.dupl_mark_bam()
+    params = dict(
+        DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS=realn_data.reports_path(
+            realn_data.bam_prefix() + ".dupemk.bam.ForIndelRealigner.intervals")
+    )
 
-    if not os.path.isfile(dupl_mark_bed):
-        raise IOError("Can't find mark duplication bed file: %s " % dupl_mark_bed)
+    params.update(**common_script_params(realn_data, genomebuild))
 
-    if not os.path.isfile(dupl_mark_bed):
-        raise IOError("Can't find mark duplication bam file: %s " % dupl_mark_bam)
+    run_script("gatk-realn", "gatk-realn.tmpl.sh", **params)
 
-    script.add_variables(
+
+def common_script_params(realn_data, genomebuild):
+    if not os.path.isfile(realn_data.dupl_mark_bam()):
+        raise IOError(
+            "Can't proceed with Indel Realignment as input bam doesn't exist: %s" % realn_data.dupl_mark_bam())
+
+    row = realn_data.row()
+    return dict(
         NCPU=str(row.ncpu()),
-        DUPEMARK_BED=dupl_mark_bed,
-        DUPEMARK_BAM=dupl_mark_bam,
+        DUPEMARK_BED=realn_data.dupl_mark_bed(),
+        DUPEMARK_BAM=realn_data.dupl_mark_bam(),
         CHROMS="${chroms}",
-        REFFASTA=genome.ref_fasta(),
-        KNOWN_INDELS=genome.known_indels(),
+        REFFASTA=genomebuild.ref_fasta(),
+        KNOWN_INDELS=genomebuild.known_indels(),
         DUPEMARK_REALN_BAM=realn_data.dupl_mark_realn_bam(),
         DUPEMARK_REALN_FLAGSTAT=realn_data.dupl_mark_realn_bam_flagstat(),
         DUPEMARK_REALN_BED=realn_data.dupl_mark_realn_bed(),
         TMP_DIR=realn_data.tmp_dir()
     )
 
-    if row.realn() == "gatk-realn":
-        script.add_variables(
-            DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS=realn_data.reports_path(
-                bam_prefix + ".dupemk.bam.ForIndelRealigner.intervals")
-        )
 
-    log_debug("Script template variables:\n %s" % "\n".join(script.variable_assignments()))
+def run_script(dir, scriptname, **kwargs):
+    base_dir = os.path.dirname(__file__)
+    template_path = os.path.join(base_dir, "resources", "realn", dir, scriptname)
 
+    log_debug("Using script template file: %s" % template_path)
+    log_debug("Script params: %s" % kwargs)
+    script = script_from_template(template_path)
+    script.add_variables(**kwargs)
     run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
 
 
