@@ -29,6 +29,7 @@ def main(argv):
     parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
                         help="ngs_projects directory path")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
+    parser.add_argument("--test", dest="test", action="store_true", help="turn ON test mode")
     parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
 
     args = parser.parse_args(argv)
@@ -54,7 +55,7 @@ def main(argv):
     if not args.init:
         try:
             logger.info("Starting job scheduler...")
-            scheduler = job_scheduler.JobScheduler()
+            scheduler = job_scheduler.JobScheduler(args.test)
             scheduler.start()
         except Exception, e:
             logger.exception(e)

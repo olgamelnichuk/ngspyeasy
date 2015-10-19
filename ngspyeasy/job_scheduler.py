@@ -1,12 +1,11 @@
 #!/usr/bin/env python
-import sys
 import multiprocessing
 import subprocess
 import time
-from logger import get_logger
 from threading import Thread
 from Queue import Queue
 
+from logger import get_logger
 from job_dependency_tree import JobDependencyTree
 import os
 
@@ -14,7 +13,7 @@ job_requests = Queue(-1)  # infinite shared job queue
 
 
 class JobScheduler(Thread):
-    def __init__(self, timeout=60):
+    def __init__(self, test_mode=False, timeout=60):
         super(JobScheduler, self).__init__()
         self.logger = get_logger("scheduller")
         self.logger.debug("[scheduler]: job_scheduler_init")
@@ -32,6 +31,7 @@ class JobScheduler(Thread):
         self.tree = JobDependencyTree()
         self.max_processes = numjobsallowed
         self.stopped = False
+        self.test_mode = test_mode
         self.timeout = timeout
 
     def run(self):
@@ -66,6 +66,8 @@ class JobScheduler(Thread):
 
                     # WARNING! using '-i' option with bash will create interactive shell which will have parent's stdin
                     # and get the SIGINT first..
+                    if self.test_mode:
+                        job_command = "pwd"
                     proc = subprocess.Popen(["/bin/bash", "-c", job_command], env=os.environ.copy())
                     self.processes.append((proc, job_command, job_id))
 
