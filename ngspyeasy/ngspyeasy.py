@@ -274,7 +274,7 @@ def submit(cmd, image, projects_home, dependencies, tag):
         "Submit job(sample_id='%s', job_id='%s', dependencies='%s')" % (cmd.sample_id, job_id, prev_job_ids))
 
     job_scheduler.submit(
-        job_id, docker.wrap(job_id, image, cmd, projects_home.root(), pipeman=False), prev_job_ids)
+        job_id, docker.wrap(job_id, image, cmd.as_string(), projects_home.root(), pipeman=False), prev_job_ids)
     dependencies[cmd.sample_id] = job_id
 
 
