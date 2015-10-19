@@ -40,7 +40,7 @@ class JobDependencyTree(object):
         return None, None
 
     def has_running_jobs(self):
-        job = self.bfs(lambda x: x.is_running() or x.is_new())
+        job = self.bfs(lambda x: x.is_running())
         return job is not None
 
     def bfs(self, predicate):
@@ -53,7 +53,7 @@ class JobDependencyTree(object):
             if predicate(curr):
                 return curr
 
-            queue.extend(set([x for x in curr.get_children() if x.is_done() or x.is_new()]) - visited)
+            queue.extend(set([x for x in curr.get_children() if x.is_done() or predicate(x)]) - visited)
 
         return None
 

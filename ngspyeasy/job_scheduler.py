@@ -16,10 +16,10 @@ class JobScheduler(Thread):
     def __init__(self, test_mode=False, timeout=60):
         super(JobScheduler, self).__init__()
         self.logger = get_logger("scheduller")
-        self.logger.debug("[scheduler]: job_scheduler_init")
+        self.logger.debug("job_scheduler_init")
 
         numcores = multiprocessing.cpu_count()  # min=8
-        self.logger.debug("[scheduler]: numcores=%d", numcores)
+        self.logger.debug("numcores=%d", numcores)
 
         if numcores < 2:
             raise RuntimeError("Number of available cores %d (< 2).", numcores)
@@ -41,15 +41,15 @@ class JobScheduler(Thread):
             while not job_requests.empty():
                 (req_id, req_dep, req_command) = job_requests.get()
                 job_requests.task_done()
-                self.logger.debug("[scheduler]: job_request_found: %s", req_id)
+                self.logger.debug("job_request_found: %s", req_id)
 
                 if req_id == "stop_all":
-                    self.logger.info("[scheduler]: (stop_all) message received. Preparing to stop...")
+                    self.logger.info("(stop_all) message received. Preparing to stop...")
                     self.stop_all = True
                     break
 
                 if req_id == "all_done":
-                    self.logger.info("[scheduler]: (all_done) message received")
+                    self.logger.info("(all_done) message received")
                     self.all_done = True
 
                 try:
@@ -61,16 +61,18 @@ class JobScheduler(Thread):
                     break
 
             if len(self.processes) < self.max_processes:
-                if self.all_done and not self.tree.has_running_jobs():
-                    break
-
                 (job_id, job_command) = self.tree.get()
-                if job_command is None:
-                    if job_id is not None:
-                        self.tree.done(job_id, 0)
+
+                if job_id is None and job_command is None:
+                    if self.all_done and not self.tree.has_running_jobs():
+                        self.logger.info("The job queue is empty. Preparing to stop..")
+                        break
+
+                elif job_command is None:
+                    self.tree.done(job_id, 0)
                 else:
-                    self.logger.debug("[scheduler]: job_to_run: %s", job_id)
-                    self.logger.debug("[scheduler]: command_to_run: [[\n%s \n]]", job_command)
+                    self.logger.debug("job_to_run: %s", job_id)
+                    self.logger.debug("command_to_run: [[\n%s \n]]", job_command)
 
                     # WARNING! using '-i' option with bash will create interactive shell which will have parent's stdin
                     # and get the SIGINT first..
@@ -81,7 +83,7 @@ class JobScheduler(Thread):
 
             self.update_processes()
 
-        self.logger.info("[scheduler]: stopping all running processes..")
+        self.logger.info("stopping all running processes..")
 
         waiting_time = 0
         while len(self.processes) > 0:
@@ -94,7 +96,7 @@ class JobScheduler(Thread):
                 self.update_processes()
             waiting_time += 0.5
 
-        self.logger.info("[scheduler]: all stopped")
+        self.logger.info("all stopped")
 
     def update_processes(self):
         unfinished = []
@@ -103,10 +105,10 @@ class JobScheduler(Thread):
             if ret is None:
                 unfinished.append((p, c, job_id))
             else:
-                self.logger.debug("[scheduler]: job_done: %s", job_id)
+                self.logger.debug("job_done: %s", job_id)
                 self.tree.done(job_id, ret)
                 if ret != 0:
-                    self.logger.error("[scheduler]: Command [[\n%s \n]] completed with error. See logs for details", c)
+                    self.logger.error("Command [[\n%s \n]] completed with error. See logs for details", c)
 
         self.processes = unfinished
 
@@ -116,7 +118,7 @@ class JobScheduler(Thread):
             ret = p.poll()
             if ret is None:
                 unfinished.append((p, c, job_id))
-                self.logger.error("[scheduler]: Terminating process after timeout (%d) [[\n%s \n]]", self.timeout, c)
+                self.logger.error("Terminating process after timeout (%d) [[\n%s \n]]", self.timeout, c)
                 if sigkill:
                     p.kill()
                 else:
