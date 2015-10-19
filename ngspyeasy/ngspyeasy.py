@@ -273,7 +273,8 @@ def submit(cmd, image, projects_home, dependencies, tag):
     prev_job_ids = [x for x in [dependencies.get(cmd.sample_id, None)] if x is not None]
 
     log_debug(
-        "Submit job(sample_id='%s', job_id='%s', dependencies='%s')" % (cmd.sample_id, job_id, prev_job_ids))
+        "Submit job(sample_id='%s', job_id='%s', dependencies='%s', cmd=[%s])" % (
+        cmd.sample_id, job_id, prev_job_ids, cmd.as_string()))
 
     job_scheduler.submit(
         job_id, docker.wrap(job_id, image, cmd.as_string(), projects_home.root(), pipeman=False), prev_job_ids)
