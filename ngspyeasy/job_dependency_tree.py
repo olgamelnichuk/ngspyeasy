@@ -33,23 +33,29 @@ class JobDependencyTree(object):
             parent.append_child(job)
 
     def get(self):
-        next_job = None
+        next_job = self.bfs(lambda x: x.is_new())
+        if next_job is not None:
+            next_job.start()
+            return next_job.get_id(), next_job.get_details()
+        return None, None
+
+    def has_running_jobs(self):
+        job = self.bfs(lambda x: x.is_running() or x.is_new())
+        return job is not None
+
+    def bfs(self, predicate):
         queue = [self.root]
         visited = set()
         while queue:
             curr = queue.pop(0)
             visited.add(curr)
 
-            if curr.is_new():
-                next_job = curr
-                break
+            if predicate(curr):
+                return curr
 
             queue.extend(set([x for x in curr.get_children() if x.is_done() or x.is_new()]) - visited)
 
-        if next_job is not None:
-            next_job.start()
-            return next_job.get_id(), next_job.get_details()
-        return None, None
+        return None
 
     def done(self, job_id, retcode):
         job = self.dict.get(job_id)

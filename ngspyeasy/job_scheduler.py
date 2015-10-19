@@ -30,13 +30,14 @@ class JobScheduler(Thread):
         self.processes = []
         self.tree = JobDependencyTree()
         self.max_processes = numjobsallowed
-        self.stopped = False
         self.test_mode = test_mode
         self.timeout = timeout
+        self.all_done = False
+        self.stop_all = False
 
     def run(self):
         global job_requests
-        while not self.stopped:
+        while not self.stop_all:
             while not job_requests.empty():
                 (req_id, req_dep, req_command) = job_requests.get()
                 job_requests.task_done()
@@ -44,18 +45,25 @@ class JobScheduler(Thread):
 
                 if req_id == "stop_all":
                     self.logger.info("[scheduler]: (stop_all) message received. Preparing to stop...")
-                    self.stopped = True
+                    self.stop_all = True
                     break
+
+                if req_id == "all_done":
+                    self.logger.info("[scheduler]: (all_done) message received")
+                    self.all_done = True
 
                 try:
                     self.tree.append(req_id, req_dep, req_command)
                 except ValueError, e:
                     self.logger.exception(e)
                     self.logger.info("[scheduler]: Preparing to stop...")
-                    self.stopped = True
+                    self.stop_all = True
                     break
 
             if len(self.processes) < self.max_processes:
+                if self.all_done and not self.tree.has_running_jobs():
+                    break
+
                 (job_id, job_command) = self.tree.get()
                 if job_command is None:
                     if job_id is not None:
@@ -123,3 +131,7 @@ def submit(id, command=None, dependencies=None):
 
 def stop():
     submit("stop_all")
+
+
+def all_done():
+    submit("all_done")

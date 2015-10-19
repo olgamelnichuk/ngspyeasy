@@ -81,6 +81,8 @@ def main(argv):
             ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose)
         else:
             ngspyeasy(tsv_conf, projects_home, dependencies, verbose)
+
+        job_scheduler.all_done()
     except Exception as e:
         logger.exception(e)
         job_scheduler.stop()
