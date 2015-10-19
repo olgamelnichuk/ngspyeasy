@@ -45,89 +45,103 @@ def main(argv):
         sys.exit(1)
 
     try:
-        ngspyeasy_bsqr_job(tsv_conf, projects_home, args.sample_id)
+        ngspyeasy_bsqr_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
         log_error(ex)
         sys.exit(1)
 
 
-def ngspyeasy_bsqr_job(tsv_conf, projects_home, sample_id):
+def ngspyeasy_bsqr_job(tsv_conf, projects_home, sample_id, task):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
-        rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
+        rows2run = [x for x in rows2run if x.sample_id() == sample_id]
 
     for row in rows2run:
-        run_bsqr(row, projects_home)
+        run_bsqr(row, projects_home, task)
 
 
-def run_bsqr(row, projects_home):
-    log_info("Running Base quality score recalibration job (SAMPLE_ID='%s', BSQR='%s', GENOMEBUILD='%s')" % (
-        row.sample_id(), row.bsqr(), row.genomebuild()))
-
-    if row.bsqr() not in ["gatk-bsqr", "bam-bsqr", "no-bsqr"]:
-        raise ValueError(
-            "Unrecognised BSQR option. Should be one of [bam-bsqr] [gatk-bsqr] or [no-bsqr]: '%s'" % row.realn())
+def run_bsqr(row, projects_home, task):
+    log_info("Running Base quality score recalibration job (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.bsqr(), task, row.genomebuild()))
 
     if row.bsqr() == "no-bsqr":
         log_info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (row.bsqr(), row.sample_id()))
         return
 
-    genome = genome_build.select(row.genomebuild(), projects_home)
-    if genome.known_indels() is None:
+    bsqr_data = sample.bsqr_data(row, projects_home)
+
+    if os.path.isfile(bsqr_data.bsqr_bam_out()):
+        log_info("Already run bam recab..Skipping %s" % bsqr_data.bsqr_bam_out())
+        return
+
+    if not os.path.isfile(bsqr_data.bsqr_bam_in()):
+        raise IOError("Can not find required BAM file: %s" % bsqr_data.bsqr_bam_in())
+
+    genomebuild = select_genomebuild(row, projects_home)
+
+    callables = {
+        "bam-bsqr|no-task": bam_bsqr,
+        "gatk-bsqr|no-task": gatk_bsqr,
+    }
+
+    callables.get(row.aligner() + "|" + task, unrecognized_options)(row, task, bsqr_data, genomebuild)
+
+
+def unrecognized_options(row, task, *args):
+    if callable is None:
+        raise ValueError(
+            "Unrecognised BSQR options (BSQR='%s', TASK='%s')" % (row.bsqr(), task))
+
+
+def select_genomebuild(row, projects_home):
+    genomebuild = genome_build.select(row.genomebuild(), projects_home)
+    if genomebuild.known_indels() is None:
         raise ValueError(
             "No genome selected for sample '%s'. GENOMEBUILD value is '%s', but it should be one of [b37, hg19]" %
             row.genomebuild())
+    return genomebuild
 
-    log_info("Genome build selected: '%s'" % genome.refdir())
 
-    bsqr_data = sample.bsqr_data(row, projects_home)
+def bam_bsqr(row, task, bsqr_data, genomebuild):
+    log_debug("bam_bsqr (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.bsqr(), task, row.genomebuild()))
 
+    run_script("bam-bsqr", "bam-bsqr.tmpl.sh",
+               NCPU=str(row.ncpu()),
+               TMP_DIR=bsqr_data.tmp_dir(),
+               BAM_IN=bsqr_data.bsqr_bam_in(),
+               BAM_OUT=bsqr_data.bsqr_bam_out(),
+               REFFASTA=genomebuild.ref_fasta(),
+               DBSNP_RECAB=genomebuild.dbsnp_recab())
+
+
+def gatk_bsqr(row, task, bsqr_data, genomebuild):
+    log_debug("gatk_bsqr (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
+        row.sample_id(), row.bsqr(), task, row.genomebuild()))
+
+    run_script("gatk-bsqr", "gatk-bsqr.tmpl.sh",
+               NCPU=str(row.ncpu()),
+               TMP_DIR=bsqr_data.tmp_dir(),
+               BAM_IN=bsqr_data.bsqr_bam_in(),
+               BAM_OUT=bsqr_data.bsqr_bam_out(),
+               REFFASTA=genomebuild.ref_fasta(),
+               DBSNP_RECAB=genomebuild.dbsnp_recab(),
+
+               KNOWN_INDELS=genomebuild.known_indels(),
+               KNOWN_SNPS_b138=genomebuild.known_snps_b138(),
+               KNOWN_SNPS_OMNI=genomebuild.known_snps_omni(),
+               KNOWN_SNPS_1000G=genomebuild.known_snps_1000g(),
+               RECAL_DATA_TABLE=bsqr_data.reports_path(bsqr_data.bam_prefix() + ".recal_data.table"))
+
+
+def run_script(dir, scriptname, **kwargs):
     base_dir = os.path.dirname(__file__)
-    template_path = os.path.join(base_dir, "resources", "bsqr", row.bsqr(), row.bsqr() + ".tmpl.sh")
+    template_path = os.path.join(base_dir, "resources", "bsqr", dir, scriptname)
 
     log_debug("Using script template file: %s" % template_path)
-
+    log_debug("Script params: %s" % kwargs)
     script = script_from_template(template_path)
-
-    log_debug("Script template to run: %s" % script.source())
-
-    script.add_variables(
-        NCPU=str(row.ncpu()),
-        REFFASTA=genome.ref_fasta(),
-        DBSNP_RECAB=genome.dbsnp_recab(),
-        TMP_DIR=bsqr_data.tmp_dir()
-    )
-
-    bam_in = bsqr_data.bsqr_bam_in()
-    bam_out = bsqr_data.bsqr_bam_out()
-    log_info("BAM in: %s" % bam_in)
-    log_info("BAM out: %s" % bam_out)
-
-    if os.path.isfile(bam_out):
-        log_info("Already run bam recab..Skipping")
-        return
-
-    if not os.path.isfile(bam_in):
-        raise IOError("Can not find required BAM file: %s" % bam_in)
-
-    script.add_variables(
-        BAM_IN=bam_in,
-        BAM_OUT=bam_out
-    )
-
-    if row.bsqr() == "gatk-bsqr":
-        script.add_variables(
-            BAM_IN=bam_in,
-            BAM_OUT=bam_out,
-            KNOWN_INDELS=genome.known_indels(),
-            KNOWN_SNPS_b138=genome.known_snps_b138(),
-            KNOWN_SNPS_OMNI=genome.known_snps_omni(),
-            KNOWN_SNPS_1000G=genome.known_snps_1000g(),
-            RECAL_DATA_TABLE=bsqr_data.reports_path(bsqr_data.bam_prefix() + ".recal_data.table")
-        )
-
-    log_debug("Script template variables:\n %s" % "\n".join(script.variable_assignments()))
-
+    script.add_variables(**kwargs)
     run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
 
 
