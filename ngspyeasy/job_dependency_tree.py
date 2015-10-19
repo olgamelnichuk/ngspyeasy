@@ -44,7 +44,7 @@ class JobDependencyTree(object):
                 next_job = curr
                 break
 
-            queue.extend(set(filter(lambda x: x.is_done() or x.is_new(), curr.get_children())) - visited)
+            queue.extend(set([x for x in curr.get_children() if x.is_done() or x.is_new()]) - visited)
 
         if next_job is not None:
             next_job.start()
