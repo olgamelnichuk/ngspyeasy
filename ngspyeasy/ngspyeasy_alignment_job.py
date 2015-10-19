@@ -305,7 +305,7 @@ def stampy_picard_addorreplacereadgroups(row, projects_home, task):
 
 def run_script(dir, scriptname, **kwargs):
     base_dir = os.path.dirname(__file__)
-    template_path = os.path.join(base_dir, "resources", dir, scriptname)
+    template_path = os.path.join(base_dir, "resources", "alignment", dir, scriptname)
 
     log_debug("Using script template file: %s" % template_path)
     log_debug("Script params: %s" % kwargs)

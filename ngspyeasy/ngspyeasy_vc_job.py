@@ -389,7 +389,7 @@ def ensemble_bcbio_variation(row, projects_home, task):
 
 def run_script(dir, file, **kwargs):
     base_dir = os.path.dirname(__file__)
-    template_path = os.path.join(base_dir, "resources", dir, file)
+    template_path = os.path.join(base_dir, "resources", "vc", dir, file)
 
     log_debug("Using script template file: %s" % template_path)
     log_debug("Script params: %s" % kwargs)
