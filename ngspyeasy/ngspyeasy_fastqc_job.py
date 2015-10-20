@@ -54,8 +54,8 @@ def main(argv):
         log_exception(ex)
         retcode = 1
     finally:
-        log_info("Chmod 0775 on everything under %s" % projects_home.root())
-        projects_home.chmod(0775)
+        log_info("Chmod 0666 on everything under %s" % projects_home.root())
+        projects_home.chmod(0666)
 
     sys.exit(retcode)
 
