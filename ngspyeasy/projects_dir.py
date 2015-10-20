@@ -51,10 +51,8 @@ class ProjectsDir(object):
 
     def fix_file_permissions(self, project_id, sample_id, logger):
         dir = self.sample_dir(project_id, sample_id)
-        dmode = 0777
-        fmode = 0666
-        logger.info("chmod -r %s %s %s" % (dmode, fmode, dir))
-        shcmd.chmod(dir, dmode, fmode)
+        logger.info("chmod -r 0777 0666 %s" % dir)
+        shcmd.chmod(dir, 0777, 0666)
 
     def init_structure(self, tsv_conf, logger):
         uniq_sample_dirs = uniq_set(
