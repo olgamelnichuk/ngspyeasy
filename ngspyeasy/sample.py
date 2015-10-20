@@ -100,7 +100,7 @@ class TrimmomaticData(FastQCData):
         return self.result_fastq("unpaired.fastq.gz")
 
     def result_fastq(self, suffix):
-        r = self._row()
+        r = self.row()
         results = [".".join(
             [r.sample_id(), r.ngs_type(), r.dna_prep_library_id(), r.trim() + "_" + str(x), suffix])
                    for x in [1, 2]]
