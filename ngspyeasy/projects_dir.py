@@ -80,7 +80,7 @@ class ProjectsDir(object):
             makedir_ifnotexist(sample_dir.log_dir())
 
         logger.info("Chmod 0775 on everything under %s" % self.root())
-        shcmd.chmod(self.root(), 0775, 0664)
+        self.chmod(0775)
 
     def check_fastq(self, tsv_conf, logger):
         logger.info("Checking if we need to move raw FastQ files...")
@@ -143,5 +143,3 @@ class SampleDir(object):
     def vcf_path(self, filename):
         return os.path.join(self.vcf_dir(), filename)
 
-    def fix_permissions(self):
-        shcmd.chmod(self.root(), 0777, 0666)
