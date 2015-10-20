@@ -8,6 +8,14 @@ import os
 import stat
 
 
+def chmod(dir, dmode, fmode):
+    for root, dirs, files in os.walk(dir):
+        for d in dirs:
+            os.chmod(os.path.join(root, d), dmode)
+        for f in files:
+            os.chmod(os.path.join(root, f), fmode)
+
+
 def run_command(cmd, logger):
     logger.debug("cmd to run: %s" % " ".join(cmd))
     proc = subprocess.Popen(

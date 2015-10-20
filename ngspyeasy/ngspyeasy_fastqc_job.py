@@ -2,7 +2,7 @@
 import sys
 
 import cmdargs
-from shutils import run_command
+from shcmd import run_command
 import os
 import sample
 import projects_dir
@@ -28,6 +28,10 @@ def log_exception(ex):
     get_logger(LOGGER_NAME).exception(ex)
 
 
+def fix_file_permissions(projects_home, row):
+    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), get_logger(LOGGER_NAME))
+
+
 def main(argv):
     args = cmdargs.parse_job_args(argv, "FastQC")
 
@@ -47,17 +51,11 @@ def main(argv):
         log_error(e)
         sys.exit(1)
 
-    retcode = 0
     try:
         ngspyeasy_fastqc_job(tsv_conf, projects_home, args.sample_id)
     except Exception as ex:
         log_exception(ex)
-        retcode = 1
-    finally:
-        log_info("Chmod 0666 on everything under %s" % projects_home.root())
-        projects_home.chmod(0666)
-
-    sys.exit(retcode)
+        sys.exit(1)
 
 
 def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
@@ -66,7 +64,10 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
         rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
 
     for row in rows2run:
-        run_fastqc(row, projects_home)
+        try:
+            run_fastqc(row, projects_home)
+        finally:
+            fix_file_permissions(projects_home, row)
 
 
 def run_fastqc(row, projects_home):

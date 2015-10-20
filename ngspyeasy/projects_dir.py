@@ -2,6 +2,7 @@
 
 import shutil
 
+import shcmd
 import os
 from utils import uniq_set
 from settings import VERSION
@@ -48,9 +49,12 @@ class ProjectsDir(object):
     def sample_dir(self, project_id, sample_id):
         return os.path.join(self.project_dir(project_id), sample_id)
 
-    def chmod(self, mode):
-        for r, d, f in os.walk(self.root()):
-            os.chmod(r, mode)
+    def fix_file_permissions(self, project_id, sample_id, logger):
+        dir = self.sample_dir(project_id, sample_id)
+        dmode = 0777
+        fmode = 0666
+        logger.info("chmod -r %s %s %s" % (dmode, fmode, dir))
+        shcmd.chmod(dir, dmode, fmode)
 
     def init_structure(self, tsv_conf, logger):
         uniq_sample_dirs = uniq_set(
@@ -76,7 +80,7 @@ class ProjectsDir(object):
             makedir_ifnotexist(sample_dir.log_dir())
 
         logger.info("Chmod 0775 on everything under %s" % self.root())
-        self.chmod(0775)
+        shcmd.chmod(self.root(), 0775, 0664)
 
     def check_fastq(self, tsv_conf, logger):
         logger.info("Checking if we need to move raw FastQ files...")
@@ -139,3 +143,5 @@ class SampleDir(object):
     def vcf_path(self, filename):
         return os.path.join(self.vcf_dir(), filename)
 
+    def fix_permissions(self):
+        shcmd.chmod(self.root(), 0777, 0666)
