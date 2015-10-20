@@ -48,6 +48,10 @@ class ProjectsDir(object):
     def sample_dir(self, project_id, sample_id):
         return os.path.join(self.project_dir(project_id), sample_id)
 
+    def chmod(self, mode):
+        for r, d, f in os.walk(self.root()):
+            os.chmod(r, mode)
+
     def init_structure(self, tsv_conf, logger):
         uniq_sample_dirs = uniq_set(
             [self.sample_dir(x.project_id(), x.sample_id()) for x in tsv_conf.all_rows()])
@@ -72,9 +76,7 @@ class ProjectsDir(object):
             makedir_ifnotexist(sample_dir.log_dir())
 
         logger.info("Chmod 0775 on everything under %s" % self.root())
-
-        for r, d, f in os.walk(self.root()):
-            os.chmod(r, 0775)
+        self.chmod(0775)
 
     def check_fastq(self, tsv_conf, logger):
         logger.info("Checking if we need to move raw FastQ files...")

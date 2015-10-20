@@ -28,6 +28,10 @@ def log_error(msg):
     get_logger(LOGGER_NAME).error(msg)
 
 
+def log_exception(ex):
+    get_logger(LOGGER_NAME).exception(ex)
+
+
 def main(argv):
     args = cmdargs.parse_job_args(argv, "Alignment")
 
@@ -47,11 +51,17 @@ def main(argv):
         log_error(e)
         sys.exit(1)
 
+    retcode = 0
     try:
         ngspyeasy_alignment_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
-        log_error(ex)
-        sys.exit(1)
+        log_exception(ex)
+        retcode = 1
+    finally:
+        log_info("Chmod 0775 on everything under %s" % projects_home.root())
+        projects_home.chmod(0775)
+
+    sys.exit(retcode)
 
 
 def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
