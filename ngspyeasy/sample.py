@@ -79,7 +79,7 @@ class SampleData(projects_dir.SampleDir):
         return [self._row.fastq1(), self._row.fastq2()]
 
     def row(self):
-        return self._row()
+        return self._row
 
 
 class FastQCData(SampleData):
