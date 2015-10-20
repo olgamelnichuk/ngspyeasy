@@ -1,19 +1,27 @@
 #!/usr/bin/env python
+import functools
 import tempfile
 from string import Template
 import subprocess
 import sys
+import itertools
 
 import os
 import stat
 
 
+def has_chmod_permissions(curr_uid, path):
+    return curr_uid == 0 or curr_uid == os.stat(path).st_uid
+
+
 def chmod(dir, dmode, fmode):
+    has_permissions = functools.partial(has_chmod_permissions, os.getuid())
     for root, dirs, files in os.walk(dir):
-        for d in dirs:
-            os.chmod(os.path.join(root, d), dmode)
-        for f in files:
-            os.chmod(os.path.join(root, f), fmode)
+        z = zip(dirs, itertools.repeat(dmode)) + zip(files, itertools.repeat(fmode))
+        for p, mode in z:
+            path = os.path.join(root, p)
+            if has_permissions(path):
+                os.chmod(path, mode)
 
 
 def run_command(cmd, logger):
