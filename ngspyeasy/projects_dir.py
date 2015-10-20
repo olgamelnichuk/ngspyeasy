@@ -24,6 +24,9 @@ class ProjectsDir(object):
     def config_path(self, tsv_name):
         return os.path.join(self.config_dir(), tsv_name)
 
+    def resource_path(self, name):
+        return os.path.join(self.resources_dir(), name)
+
     def log_dir(self):
         return os.path.join(self.projects_home, "run_log")
 
