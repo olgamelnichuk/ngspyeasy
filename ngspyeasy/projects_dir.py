@@ -80,7 +80,7 @@ class ProjectsDir(object):
             makedir_ifnotexist(sample_dir.log_dir())
 
         logger.info("Chmod 0775 on everything under %s" % self.root())
-        self.chmod(0775)
+        shcmd.chmod(self.root(), 0775, 0664)
 
     def check_fastq(self, tsv_conf, logger):
         logger.info("Checking if we need to move raw FastQ files...")
