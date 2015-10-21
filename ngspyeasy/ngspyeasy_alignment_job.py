@@ -138,9 +138,9 @@ def common_parameters(align_data, projects_home):
         SPLITREAD_SAM=align_data.splitread_sam(),
         SPLITREAD_BAM=align_data.splitread_bam(),
         UNMAPPED_FASTQ=align_data.unmapped_fastq(),
-        DUPEMK_BAM=align_data.dupl_mark_bam(),
-        DUPEMK_FLAGSTAT_REPORT=align_data.dupl_mark_bam_flagstat(),
-        DUPEMK_BED_REPORT=align_data.dupl_mark_bed(),
+        DUPEMARK_BAM=align_data.dupl_mark_bam(),
+        DUPEMARK_FLAGSTAT_REPORT=align_data.dupl_mark_bam_flagstat(),
+        DUPEMARK_BED_REPORT=align_data.dupl_mark_bed(),
         TMP_DIR=align_data.tmp_dir(),
         ALIGNNMENTS_DIR=align_data.alignments_dir()
     )
@@ -306,9 +306,9 @@ def stampy_picard_addorreplacereadgroups(row, projects_home, task):
                NGS_PLATFORM=row.ngs_platform(),
                DNA_PREP_LIBRARY_ID=row.dna_prep_library_id(),
                RUNDATE=datetime.datetime.now().strftime("%d%m%y%H%M%S"),
-               DUPEMK_BAM=align_data.dupl_mark_bam(),
-               DUPEMK_FLAGSTAT_REPORT=align_data.dupl_mark_bam_flagstat(),
-               DUPEMK_BED_REPORT=align_data.dupl_mark_bed(),
+               DUPEMARK_BAM=align_data.dupl_mark_bam(),
+               DUPEMARK_FLAGSTAT_REPORT=align_data.dupl_mark_bam_flagstat(),
+               DUPEMARK_BED_REPORT=align_data.dupl_mark_bed(),
                DUPEMARK_CLEANSAM_BAM=align_data.dupl_mark_tmp_cleansam_bam(),
                DUPEMARK_TMP_BAM=align_data.dupl_mark_tmp_bam(),
                TMP_DIR=align_data.tmp_dir())
