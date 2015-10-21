@@ -142,7 +142,7 @@ def common_parameters(align_data, projects_home):
         DUPEMARK_FLAGSTAT_REPORT=align_data.dupl_mark_bam_flagstat(),
         DUPEMARK_BED_REPORT=align_data.dupl_mark_bed(),
         TMP_DIR=align_data.tmp_dir(),
-        ALIGNNMENTS_DIR=align_data.alignments_dir()
+        ALIGNMENTS_DIR=align_data.alignments_dir()
     )
 
 
@@ -229,7 +229,7 @@ def stampy_bwa(row, projects_home, task):
                GENOMEINDEX=select_genome(row, projects_home).genome_index(),
                TMP_BAM=tmp_bam,
                TMP_DIR=align_data.tmp_dir(),
-               ALIGNNMENTS_DIR=align_data.alignments_dir())
+               ALIGNMENTS_DIR=align_data.alignments_dir())
 
 
 def stampy_stampy(row, projects_home, task):
@@ -259,7 +259,7 @@ def stampy_stampy(row, projects_home, task):
                DUPEMARK_TMP_BAM=align_data.dupl_mark_tmp_bam(),
                TMP_BAM=align_data.tmp_bam(),
                TMP_DIR=align_data.tmp_dir(),
-               ALIGNNMENTS_DIR=align_data.alignments_dir())
+               ALIGNMENTS_DIR=align_data.alignments_dir())
 
 
 def stampy_cleansam(row, projects_home, task):
