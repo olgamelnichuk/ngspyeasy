@@ -67,7 +67,7 @@ def run_command(cmd):
     log_debug("cmd:\n %s" % ''.join(lines))
 
     if proc.returncode:
-        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
+        log_error("Command [[\n%s\n]] failed. See logs for details" % " ".join(cmd))
 
 
 def script_from_template(template_path):
