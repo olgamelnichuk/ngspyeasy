@@ -121,7 +121,7 @@ def select_genomebuild(row, projects_home):
 
 
 def filter_duplicates(ngs_type):
-    return ngs_type == "TGS" or ngs_type == "WEX"
+    return 1 if ngs_type == "TGS" or ngs_type == "WEX" else 0
 
 
 def prepare(row, projects_home, task):
