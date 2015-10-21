@@ -212,7 +212,7 @@ class VarCallerData(BsqrData):
     def raw_vcf_gz(self, varcaller=None):
         return self.raw_vcf(varcaller) + ".gz"
 
-    def vcf_gz(self, varcaller):
+    def vcf_gz(self, varcaller=None):
         if varcaller is None:
             varcaller = self.row().varcaller()
 
