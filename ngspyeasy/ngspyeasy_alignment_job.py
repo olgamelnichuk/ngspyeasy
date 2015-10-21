@@ -105,8 +105,10 @@ def unrecognized_options(row, projects_home, task):
 def alignment_results_exist(align_data):
     bam_out = align_data.dupl_mark_bam()
     bam_bed = align_data.dupl_mark_bed()
-    if os.path.isfile(bam_out) and os.path.isfile(bam_bed):
+    exist = os.path.isfile(bam_out) and os.path.isfile(bam_bed)
+    if exist:
         log_info("Looks like aligned BAM file already exists [%s, %s] Skipping Alignment..." % (bam_out, bam_bed))
+    return exist
 
 
 def select_genome(row, projects_home):
