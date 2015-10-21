@@ -322,7 +322,9 @@ def run_script(dir, scriptname, **kwargs):
     log_debug("Script params: %s" % "\n".join("%s=%s" % (key, value) for (key, value) in kwargs.iteritems()))
     script = script_from_template(template_path)
     script.add_variables(**kwargs)
-    run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
+    script_file = script.to_temporary_file()
+    log_debug("Temporary script to run: %s" % script_file)
+    run_command(script_file, get_logger(LOGGER_NAME))
 
 
 def find_platform_unit(fastq_file):
