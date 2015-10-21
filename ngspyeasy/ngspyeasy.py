@@ -28,13 +28,15 @@ def main(argv):
                         help="TSV configuration file name")
     parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory_path,
                         help="ngs_projects directory path")
+    parser.add_argument("-r", "--resources-dir", dest="resources_dir", type=cmdargs.existed_directory_path,
+                        help="ngs_resources directory path")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
     parser.add_argument("--test", dest="test", action="store_true", help="turn ON test mode")
     parser.add_argument("--version", action="version", version="%(prog)s 0.1", help="print software version")
 
     args = parser.parse_args(argv)
 
-    projects_home = projects_dir.ProjectsDir(args.projects_dir)
+    projects_home = projects_dir.ProjectsDir(args.projects_dir, args.resources_dir)
     log_file = projects_home.main_log_file(args.config)
     print "Opening log file: %s" % log_file
 

@@ -9,8 +9,9 @@ from settings import VERSION
 
 
 class ProjectsDir(object):
-    def __init__(self, projects_home):
+    def __init__(self, projects_home, resources_home=None):
         self.projects_home = projects_home
+        self.resources_home = resources_home
 
     def root(self):
         return self.projects_home
@@ -41,7 +42,8 @@ class ProjectsDir(object):
         return os.path.join(self.raw_fastq_dir(), fastq_name)
 
     def resources_dir(self):
-        return os.path.join(self.projects_home, "ngseasy_resources")
+        return os.path.join(self.projects_home,
+                            "ngseasy_resources") if self.resources_home is None else self.resources_home
 
     def project_dir(self, project_id):
         return os.path.join(self.projects_home, project_id)
