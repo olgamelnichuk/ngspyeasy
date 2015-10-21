@@ -71,7 +71,7 @@ class ShellScript(object):
             self.vars[key] = value
 
     def variable_assignments(self):
-        return ["%s=\"%s\"" % (key, value) for (key, value) in self.vars]
+        return [("%s=\"%s\"" % (key, value)) for (key, value) in self.vars]
 
     def source(self):
         return self.lines[0:]
