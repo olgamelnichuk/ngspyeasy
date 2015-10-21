@@ -319,7 +319,7 @@ def run_script(dir, scriptname, **kwargs):
     template_path = os.path.join(base_dir, "resources", "alignment", dir, scriptname)
 
     log_debug("Using script template file: %s" % template_path)
-    log_debug("Script params: %s" % kwargs)
+    log_debug("Script params: %s" % "\n".join("%s=%s" % (key, value) for (key, value) in kwargs.iteritems()))
     script = script_from_template(template_path)
     script.add_variables(**kwargs)
     run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
