@@ -99,7 +99,7 @@ def run_fastqc(row, projects_home):
            "--dir", fq_data.tmp_dir(),
            "--outdir", fq_data.fastq_dir()] + fq_data.fastq_files()
 
-    run_command(cmd, get_logger(LOGGER_NAME))
+    run_command(cmd)
 
 
 if __name__ == '__main__':

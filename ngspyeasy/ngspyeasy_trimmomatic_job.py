@@ -120,7 +120,7 @@ def fastqc(row, projects_home, task):
            "--quiet",
            "--dir", trim_data.tmp_dir(),
            "--outdir", trim_data.fastq_dir()] + fastq_files
-    run_command(cmd, get_logger(LOGGER_NAME))
+    run_command(cmd)
 
 
 def atrim(row, projects_home, task):
@@ -175,7 +175,7 @@ def trim(row, projects_home, options):
     cmd = ["java", "-XX:ParallelGCThreads=1", "-jar", "/usr/local/pipeline/Trimmomatic-0.32/trimmomatic-0.32.jar",
            "PE",
            "-threads", row.ncpu()] + trim_data.fastq_files() + trim_results + options
-    run_command(cmd, get_logger(LOGGER_NAME))
+    run_command(cmd)
 
 
 if __name__ == '__main__':

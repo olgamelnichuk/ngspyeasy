@@ -5,7 +5,7 @@ import subprocess
 import sys
 
 import cmdargs
-from shcmd import script_from_template, run_command
+from shcmd import script_from_template
 import os
 import sample
 import genome_build
@@ -317,13 +317,11 @@ def stampy_picard_addorreplacereadgroups(row, projects_home, task):
 def run_script(dir, scriptname, **kwargs):
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "alignment", dir, scriptname)
-
     log_debug("Using script template file: %s" % template_path)
     log_debug("Script params: %s" % "\n".join("%s=%s" % (key, value) for (key, value) in kwargs.iteritems()))
     script = script_from_template(template_path)
     script.add_variables(**kwargs)
-    script_file = script.to_temporary_file(get_logger(LOGGER_NAME))
-    run_command(script_file, get_logger(LOGGER_NAME))
+    script.run()
 
 
 def find_platform_unit(fastq_file):

@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 import sys
 
-from shcmd import script_from_template, run_command
+from shcmd import script_from_template
 
 import os
 import cmdargs
@@ -401,12 +401,11 @@ def ensemble_bcbio_variation(row, projects_home, task):
 def run_script(dir, file, **kwargs):
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "vc", dir, file)
-
     log_debug("Using script template file: %s" % template_path)
     log_debug("Script params: %s" % kwargs)
     script = script_from_template(template_path)
     script.add_variables(**kwargs)
-    run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
+    script.run()
 
 
 if __name__ == '__main__':

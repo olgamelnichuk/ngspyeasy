@@ -8,6 +8,25 @@ import itertools
 
 import os
 import stat
+from logger import get_logger
+
+LOGGER_NAME = "shcmd"
+
+
+def log_info(msg):
+    get_logger(LOGGER_NAME).info(msg)
+
+
+def log_debug(msg):
+    get_logger(LOGGER_NAME).debug(msg)
+
+
+def log_error(msg):
+    get_logger(LOGGER_NAME).error(msg)
+
+
+def log_exception(ex):
+    get_logger(LOGGER_NAME).exception(ex)
 
 
 def has_chmod_permissions(curr_uid, path):
@@ -24,8 +43,8 @@ def chmod(dir, dmode, fmode):
                 os.chmod(path, mode)
 
 
-def run_command(cmd, logger):
-    logger.debug("cmd to run: %s" % " ".join(cmd))
+def run_command(cmd):
+    log_debug("cmd to run: %s" % " ".join(cmd))
     proc = subprocess.Popen(
         ["/bin/bash", "-c",
          # ~/.bashrc can contain environment variables valuable for running the command; unfortunately it doesn't
@@ -43,12 +62,12 @@ def run_command(cmd, logger):
             lines.append(line)
         proc.stdout.close()
     except KeyboardInterrupt:
-        logger.info("KeyboardInterrupt received")
+        log_info("KeyboardInterrupt received")
 
-    logger.debug("cmd:\n %s" % ''.join(lines))
+    log_debug("cmd:\n %s" % ''.join(lines))
 
     if proc.returncode:
-        logger.error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
+        log_error("Command [[\n%s\n]] failed. See logs for details", " ".join(cmd))
 
 
 def script_from_template(template_path):
@@ -76,6 +95,9 @@ class ShellScript(object):
     def source(self):
         return self.lines[0:]
 
+    def run(self):
+        run_command([self.to_temporary_file()])
+
     def to_temporary_file(self, validate=True):
         if validate:
             t = Template("".join(self.lines))
@@ -84,6 +106,8 @@ class ShellScript(object):
         source = ["#!/usr/bin/env bash"]
         source += self.variable_assignments()
         source += self.lines[1:] if len(self.lines) > 0 and self.lines[0].startswith("#!") else self.lines[0:]
+
+        log_debug("\n".join(source))
 
         file = tempfile.NamedTemporaryFile(delete=False)
         file.write("\n".join(source))

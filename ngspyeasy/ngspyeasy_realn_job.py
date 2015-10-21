@@ -3,7 +3,7 @@ import sys
 
 import genome_build
 import sample
-from shcmd import script_from_template, run_command
+from shcmd import script_from_template
 import os
 import cmdargs
 import projects_dir
@@ -154,12 +154,11 @@ def common_script_params(realn_data, genomebuild):
 def run_script(dir, scriptname, **kwargs):
     base_dir = os.path.dirname(__file__)
     template_path = os.path.join(base_dir, "resources", "realn", dir, scriptname)
-
     log_debug("Using script template file: %s" % template_path)
     log_debug("Script params: %s" % kwargs)
     script = script_from_template(template_path)
     script.add_variables(**kwargs)
-    run_command(script.to_temporary_file(), get_logger(LOGGER_NAME))
+    script.run()
 
 
 if __name__ == '__main__':
