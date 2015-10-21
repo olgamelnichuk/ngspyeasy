@@ -85,7 +85,7 @@ class ShellScript(object):
         source += self.variable_assignments()
         source += self.lines[1:] if len(self.lines) > 0 and self.lines[0].startswith("#!") else self.lines[0:]
 
-        file = tempfile.NamedTemporaryFile()
+        file = tempfile.NamedTemporaryFile(delete=False)
         file.write("\n".join(source))
         file.close()
 
