@@ -41,7 +41,8 @@ def select(gb, projects_home):
 class GenomeBuild(object):
     def __init__(self, ref_dir, **kwargs):
         self.ref_dir = ref_dir
-        self.args = dict().update(kwargs)
+        self.args = dict()
+        self.args.update(kwargs)
 
     def refdir(self):
         return self.ref_dir
