@@ -1,33 +1,11 @@
 #!/usr/bin/env python
 import functools
-import tempfile
-from string import Template
 import subprocess
 import sys
 import itertools
+from logger import log_debug, log_info
 
 import os
-import stat
-from logger import get_logger
-
-LOGGER_NAME = "shcmd"
-
-
-def log_info(msg):
-    get_logger(LOGGER_NAME).info(msg)
-
-
-def log_debug(msg):
-    get_logger(LOGGER_NAME).debug(msg)
-
-
-def log_error(msg):
-    get_logger(LOGGER_NAME).error(msg)
-
-
-def log_exception(ex):
-    get_logger(LOGGER_NAME).exception(ex)
-
 
 def has_chmod_permissions(curr_uid, path):
     return curr_uid == 0 or curr_uid == os.stat(path).st_uid
@@ -44,13 +22,14 @@ def chmod(dir, dmode, fmode):
 
 
 def run_command(cmd):
-    log_debug("cmd to run: %s" % " ".join(cmd))
+    cmd2run = " ".join(cmd) if isinstance(cmd, list) else cmd
+    log_debug("cmd to run: %s" % cmd2run)
     proc = subprocess.Popen(
         ["/bin/bash", "-c",
          # ~/.bashrc can contain environment variables valuable for running the command; unfortunately it doesn't
          # run automatically in the docker container if bash runs in non-interactive mode (without '-i' flag). Read
          # the .bashrc source for more details.
-         "python /ngspyeasy/bin/fix_bashrc.py; source ~/.bashrc_fixed; echo $CLASSPATH; " + " ".join(cmd)],
+         "python /ngspyeasy/bin/fix_bashrc.py; source ~/.bashrc_fixed; echo $CLASSPATH; " + cmd2run],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
@@ -66,53 +45,5 @@ def run_command(cmd):
 
     log_debug("cmd:\n %s" % ''.join(lines))
 
-    if proc.returncode:
-        log_error("Command [[\n%s\n]] failed. See logs for details" % " ".join(cmd))
-
-
-def script_from_template(template_path):
-    if not os.path.isfile(template_path):
-        raise IOError("Template file not found: %s" % template_path)
-
-    with open(template_path) as f:
-        lines = f.readlines()
-
-    return ShellScript(lines)
-
-
-class ShellScript(object):
-    def __init__(self, lines):
-        self.lines = [line.rstrip('\n') for line in lines]
-        self.vars = dict()
-
-    def add_variables(self, **kwargs):
-        for key, value in kwargs.iteritems():
-            self.vars[key] = value
-
-    def variable_assignments(self):
-        return ["%s=\"%s\"" % (key, value) for (key, value) in self.vars.iteritems()]
-
-    def source(self):
-        return self.lines[0:]
-
-    def run(self):
-        run_command([self.to_temporary_file()])
-
-    def to_temporary_file(self, validate=True):
-        if validate:
-            t = Template("".join(self.lines))
-            t.substitute(self.vars)
-
-        source = ["#!/usr/bin/env bash"]
-        source += self.variable_assignments()
-        source += self.lines[1:] if len(self.lines) > 0 and self.lines[0].startswith("#!") else self.lines[0:]
-
-        log_debug("\n".join(source))
-
-        file = tempfile.NamedTemporaryFile(delete=False)
-        file.write("\n".join(source))
-        file.close()
-
-        st = os.stat(file.name)
-        os.chmod(file.name, st.st_mode | stat.S_IEXEC)
-        return file.name
+    if proc.returncode > 0:
+        raise IOError("Command [[\n%s\n]] failed. See logs for details" % cmd2run)

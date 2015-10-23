@@ -1,7 +1,9 @@
 #!/usr/bin/env python
 import sys
 
-from shcmd import script_from_template
+import sh_template
+
+from shcmd import run_command
 
 import os
 import cmdargs
@@ -9,7 +11,7 @@ import projects_dir
 import tsv_config
 import genome_build
 import sample
-from logger import init_logger, get_logger
+from logger import init_logger, log_info, log_debug, log_error, log_exception
 
 LOGGER_NAME = "variant_calling"
 
@@ -18,24 +20,8 @@ MAP_QUAL = "20"
 COVERAGE_MIN = "2"
 
 
-def log_info(msg):
-    get_logger(LOGGER_NAME).info(msg)
-
-
-def log_debug(msg):
-    get_logger(LOGGER_NAME).debug(msg)
-
-
-def log_error(msg):
-    get_logger(LOGGER_NAME).error(msg)
-
-
-def log_exception(ex):
-    get_logger(LOGGER_NAME).exception(ex)
-
-
 def fix_file_permissions(projects_home, row):
-    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), get_logger(LOGGER_NAME))
+    projects_home.fix_file_permissions(row.project_id(), row.sample_id())
 
 
 def main(argv):
@@ -428,14 +414,9 @@ def ensemble_bcbio_variation(row, projects_home, task):
                HAPLOTYPE_CALLER_VCF_GZ=vc_data.vcf_gz("HaplotypeCaller"))
 
 
-def run_script(dir, file, **kwargs):
-    base_dir = os.path.dirname(__file__)
-    template_path = os.path.join(base_dir, "resources", "vc", dir, file + ".tmpl.sh")
-    log_debug("Using script template file: %s" % template_path)
-    log_debug("Script params: %s" % kwargs)
-    script = script_from_template(template_path)
-    script.add_variables(**kwargs)
-    script.run()
+def run_script(dir, filename, **kwargs):
+    tmpl = sh_template.load("vc", dir, filename)
+    run_command(tmpl.create_sh_file(**kwargs))
 
 
 if __name__ == '__main__':

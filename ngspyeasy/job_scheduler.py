@@ -15,7 +15,7 @@ job_requests = Queue(-1)  # infinite shared job queue
 class JobScheduler(Thread):
     def __init__(self, test_mode=False, timeout=60):
         super(JobScheduler, self).__init__()
-        self.logger = get_logger("scheduller")
+        self.logger = get_logger()
         self.logger.debug("job_scheduler_init")
 
         numcores = multiprocessing.cpu_count()  # min=8

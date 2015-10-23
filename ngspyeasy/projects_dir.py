@@ -6,6 +6,7 @@ import shcmd
 import os
 from utils import uniq_set
 from settings import VERSION
+from logger import log_info, log_debug
 
 
 class ProjectsDir(object):
@@ -56,16 +57,16 @@ class ProjectsDir(object):
         logger.info("chmod -r 0777 0666 %s" % dir)
         shcmd.chmod(dir, 0777, 0666)
 
-    def init_structure(self, tsv_conf, logger):
+    def init_structure(self, tsv_conf):
         uniq_sample_dirs = uniq_set(
             [self.sample_dir(x.project_id(), x.sample_id()) for x in tsv_conf.all_rows()])
 
-        logger.info("Checking the project directory structure...")
-        logger.debug("Sample dirs to be checked:\n %s", "\n".join(uniq_sample_dirs))
+        log_info("Checking the project directory structure...")
+        log_debug("Sample dirs to be checked:\n %s" % "\n".join(uniq_sample_dirs))
 
         def makedir_ifnotexist(dir):
             if not os.path.isdir(dir):
-                logger.info("Creating directory: %s" % dir)
+                log_info("Creating directory: %s" % dir)
                 os.makedirs(dir)
 
         for dir in uniq_sample_dirs:
@@ -82,28 +83,28 @@ class ProjectsDir(object):
         project_dirs = [self.project_dir(x) for x in uniq_set([y.project_id() for y in tsv_conf.all_rows()])]
 
         for d in project_dirs:
-            logger.info("Chmod 0775 on everything under %s" % d)
+            log_info("Chmod 0775 on everything under %s" % d)
             shcmd.chmod(d, 0775, 0664)
 
-    def check_fastq(self, tsv_conf, logger):
-        logger.info("Checking if we need to move raw FastQ files...")
+    def check_fastq(self, tsv_conf):
+        log_info("Checking if we need to move raw FastQ files...")
         for row in tsv_conf.all_rows():
             sample_dir = SampleDir(self.sample_dir(row.project_id(), row.sample_id()))
 
             for fq in [row.fastq1(), row.fastq2()]:
-                move_fastq(self.raw_fastq_path(fq), sample_dir.fastq_path(fq), logger)
+                move_fastq(self.raw_fastq_path(fq), sample_dir.fastq_path(fq))
 
 
-def move_fastq(source, dest, logger):
+def move_fastq(source, dest):
     if not os.path.isfile(dest):
-        logger.info("FastQ does not exist: %s. Checking if the raw FastQ exist..." % dest)
+        log_info("FastQ does not exist: %s. Checking if the raw FastQ exist..." % dest)
         if not os.path.isfile(source):
             raise IOError("FastQ file does not exist: %s" % source)
 
-        logger.info("Moving FastQ file: %s --> %s", source, dest)
+        log_info("Moving FastQ file: %s --> %s" % (source, dest))
         shutil.move(source, dest)
 
-    logger.info("OK (FastQ file exists: %s)" % dest)
+    log_info("OK (FastQ file exists: %s)" % dest)
 
 
 class SampleDir(object):

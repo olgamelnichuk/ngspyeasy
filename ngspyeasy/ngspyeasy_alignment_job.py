@@ -5,35 +5,18 @@ import subprocess
 import sys
 
 import cmdargs
-from shcmd import script_from_template
+from shcmd import run_command
+import sh_template
 import os
 import sample
 import genome_build
 import projects_dir
 import tsv_config
-from logger import init_logger, get_logger
-
-LOGGER_NAME = "alignment"
-
-
-def log_info(msg):
-    get_logger(LOGGER_NAME).info(msg)
-
-
-def log_debug(msg):
-    get_logger(LOGGER_NAME).debug(msg)
-
-
-def log_error(msg):
-    get_logger(LOGGER_NAME).error(msg)
-
-
-def log_exception(ex):
-    get_logger(LOGGER_NAME).exception(ex)
+from logger import init_logger, log_info, log_debug, log_error, log_exception
 
 
 def fix_file_permissions(projects_home, row):
-    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), get_logger(LOGGER_NAME))
+    projects_home.fix_file_permissions(row.project_id(), row.sample_id())
 
 
 def main(argv):
@@ -43,7 +26,7 @@ def main(argv):
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
     print "Opening log file: %s" % log_file
 
-    init_logger(log_file, args.verbose, LOGGER_NAME)
+    init_logger(log_file, args.verbose)
     log_info("Starting...")
     log_debug("Command line arguments: %s" % args)
 
@@ -316,14 +299,9 @@ def stampy_picard_addorreplacereadgroups(row, projects_home, task):
                TMP_DIR=align_data.tmp_dir())
 
 
-def run_script(dir, scriptname, **kwargs):
-    base_dir = os.path.dirname(__file__)
-    template_path = os.path.join(base_dir, "resources", "alignment", dir, scriptname)
-    log_debug("Using script template file: %s" % template_path)
-    log_debug("Script params: %s" % "\n".join("%s=%s" % (key, value) for (key, value) in kwargs.iteritems()))
-    script = script_from_template(template_path)
-    script.add_variables(**kwargs)
-    script.run()
+def run_script(dir, filename, **kwargs):
+    tmpl = sh_template.load("alignment", dir, filename)
+    run_command(tmpl.create_sh_file(**kwargs))
 
 
 def find_platform_unit(fastq_file):

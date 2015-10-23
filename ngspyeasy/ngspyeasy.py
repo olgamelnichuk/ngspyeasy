@@ -11,7 +11,7 @@ from settings import NGSEASYVERSION
 import projects_dir
 import job_scheduler
 import tsv_config
-from logger import init_logger, get_logger
+from logger import init_logger, log_info, log_debug
 
 
 def main(argv):
@@ -101,15 +101,6 @@ def main(argv):
     logger.info("Exit(retcode=%d)", retcode)
     sys.exit(retcode)
 
-
-def log_info(msg):
-    get_logger().info(msg)
-
-
-def log_debug(msg):
-    get_logger().debug(msg)
-
-
 def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
     ngspyeasy_init(tsv_conf, projects_home)
 
@@ -123,10 +114,10 @@ def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
 
 def ngspyeasy_init(tsv_conf, projects_home):
     log_info("Initiating project...")
-    projects_home.init_structure(tsv_conf, get_logger())
+    projects_home.init_structure(tsv_conf)
 
     log_info("Checking raw FastQ files...")
-    projects_home.check_fastq(tsv_conf, get_logger())
+    projects_home.check_fastq(tsv_conf)
 
 
 def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose, tag="fastqc"):

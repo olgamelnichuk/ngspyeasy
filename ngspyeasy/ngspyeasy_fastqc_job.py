@@ -7,29 +7,11 @@ import os
 import sample
 import projects_dir
 import tsv_config
-from logger import init_logger, get_logger
-
-LOGGER_NAME = "fastqc"
-
-
-def log_info(msg):
-    get_logger(LOGGER_NAME).info(msg)
-
-
-def log_debug(msg):
-    get_logger(LOGGER_NAME).debug(msg)
-
-
-def log_error(msg):
-    get_logger(LOGGER_NAME).error(msg)
-
-
-def log_exception(ex):
-    get_logger(LOGGER_NAME).exception(ex)
+from logger import init_logger, log_debug, log_info, log_error, log_exception
 
 
 def fix_file_permissions(projects_home, row):
-    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), get_logger(LOGGER_NAME))
+    projects_home.fix_file_permissions(row.project_id(), row.sample_id())
 
 
 def main(argv):
@@ -39,7 +21,7 @@ def main(argv):
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
     print "Opening log file: %s" % log_file
 
-    init_logger(log_file, args.verbose, LOGGER_NAME)
+    init_logger(log_file, args.verbose)
     log_info("Starting...")
     log_debug("Command line arguments: %s" % args)
 
