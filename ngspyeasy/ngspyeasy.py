@@ -63,7 +63,6 @@ def main(argv):
             logger.exception(e)
             sys.exit(1)
 
-    retcode = 0
     dependencies = dict()
     verbose = args.verbose
     try:
@@ -88,7 +87,6 @@ def main(argv):
     except Exception as e:
         logger.exception(e)
         job_scheduler.stop()
-        retcode = 1
 
     while True:
         threads = threading.enumerate()
@@ -98,8 +96,6 @@ def main(argv):
             if t != threading.currentThread():
                 t.join(1)
 
-    logger.info("Exit(retcode=%d)", retcode)
-    sys.exit(retcode)
 
 def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
     ngspyeasy_init(tsv_conf, projects_home)
