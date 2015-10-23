@@ -4,7 +4,7 @@ function transpose() {
     awk '
   {
       for (i=1; i<=NF; i++)  {
-          a[NR,i] = $i
+          a[NR,i] = $$i
       }
   }
   NF>p { p = NF }
@@ -16,7 +16,7 @@ function transpose() {
           }
           print str
       }
-  }' ${1}
+  }' $${1}
 }
 
 chroms=$(cut -f 1 ${DUPEMARK_BED} | uniq | transpose)
