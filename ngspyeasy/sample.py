@@ -107,7 +107,7 @@ class TrimmomaticData(FastQCData):
         return [self.fastq_path(x) for x in results]
 
     def trim_fastqc_htmls(self):
-        return [x.replace("fastq.gz", "fastqc.html") for x in self.unpaired_fastq() + self.paired_fastq()]
+        return [x.replace(".fastq.gz", "_fastqc.html") for x in self.unpaired_fastq() + self.paired_fastq()]
 
 
 class AlignmentData(TrimmomaticData):
