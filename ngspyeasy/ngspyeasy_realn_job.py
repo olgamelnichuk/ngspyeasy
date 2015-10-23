@@ -125,7 +125,6 @@ def common_script_params(realn_data, genomebuild):
         NCPU=str(row.ncpu()),
         DUPEMARK_BED=realn_data.dupl_mark_bed(),
         DUPEMARK_BAM=realn_data.dupl_mark_bam(),
-        CHROMS="${chroms}",
         REFFASTA=genomebuild.ref_fasta(),
         KNOWN_INDELS=genomebuild.known_indels(),
         DUPEMARK_REALN_BAM=realn_data.dupl_mark_realn_bam(),
