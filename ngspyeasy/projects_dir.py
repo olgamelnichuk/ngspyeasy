@@ -52,9 +52,9 @@ class ProjectsDir(object):
     def sample_dir(self, project_id, sample_id):
         return os.path.join(self.project_dir(project_id), sample_id)
 
-    def fix_file_permissions(self, project_id, sample_id, logger):
+    def fix_file_permissions(self, project_id, sample_id):
         dir = self.sample_dir(project_id, sample_id)
-        logger.info("chmod -r 0777 0666 %s" % dir)
+        logger().info("chmod -r 0777 0666 %s" % dir)
         shcmd.chmod(dir, 0777, 0666)
 
     def init_structure(self, tsv_conf):
