@@ -5,7 +5,7 @@ import time
 from threading import Thread
 from Queue import Queue
 
-from logger import get_logger
+from logger import logger
 from job_dependency_tree import JobDependencyTree
 import os
 
@@ -15,7 +15,7 @@ job_requests = Queue(-1)  # infinite shared job queue
 class JobScheduler(Thread):
     def __init__(self, test_mode=False, timeout=60):
         super(JobScheduler, self).__init__()
-        self.logger = get_logger()
+        self.logger = logger()
         self.logger.debug("job_scheduler_init")
 
         numcores = multiprocessing.cpu_count()  # min=8
