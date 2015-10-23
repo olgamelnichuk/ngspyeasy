@@ -1,5 +1,4 @@
 #!/usr/bin/env python
-import inspect
 import sys
 import logging
 
@@ -32,29 +31,9 @@ def console_handler():
     return handler
 
 
-def get_logger(name=None):
-    logger = logging.getLogger(name)
+def logger():
+    logger = logging.getLogger()
     if len(logger.handlers) == 0:
         logger.addHandler(console_handler())
         logger.setLevel(logging.DEBUG)
     return logger
-
-
-def log_debug(msg):
-    get_logger(__caller__()).debug(msg)
-
-
-def log_info(msg):
-    get_logger(__caller__()).info(msg)
-
-
-def log_error(msg):
-    get_logger(__caller__()).error(msg)
-
-
-def log_exception(ex):
-    get_logger(__caller__()).exception(ex)
-
-
-def __caller__():
-    return inspect.stack()[2][1]

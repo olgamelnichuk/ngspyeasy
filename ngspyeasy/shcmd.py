@@ -3,7 +3,7 @@ import functools
 import subprocess
 import sys
 import itertools
-from logger import log_debug, log_info
+from logger import logger
 
 import os
 
@@ -23,7 +23,7 @@ def chmod(dir, dmode, fmode):
 
 def run_command(cmd):
     cmd2run = " ".join(cmd) if isinstance(cmd, list) else cmd
-    log_debug("cmd to run: %s" % cmd2run)
+    logger().debug("cmd to run: %s" % cmd2run)
     proc = subprocess.Popen(
         ["/bin/bash", "-c",
          # ~/.bashrc can contain environment variables valuable for running the command; unfortunately it doesn't
@@ -41,9 +41,9 @@ def run_command(cmd):
             lines.append(line)
         proc.stdout.close()
     except KeyboardInterrupt:
-        log_info("KeyboardInterrupt received")
+        logger().info("KeyboardInterrupt received")
 
-    log_debug("cmd:\n %s" % ''.join(lines))
+    logger().debug("cmd:\n %s" % ''.join(lines))
 
     if proc.returncode > 0:
         raise IOError("Command [[\n%s\n]] failed. See logs for details" % cmd2run)

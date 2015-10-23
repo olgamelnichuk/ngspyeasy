@@ -9,7 +9,7 @@ import projects_dir
 import tsv_config
 import sample
 import genome_build
-from logger import init_logger, log_info, log_debug, log_error, log_exception
+from logger import init_logger, logger
 
 
 def fix_file_permissions(projects_home, row):
@@ -24,21 +24,21 @@ def main(argv):
     print "Opening log file: %s" % log_file
 
     init_logger(log_file, args.verbose)
-    log_info("Starting...")
-    log_debug("Command line arguments: %s" % args)
+    logger().info("Starting...")
+    logger().debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
-    log_info("Reading TSV config: %s" % tsv_config_path)
+    logger().info("Reading TSV config: %s" % tsv_config_path)
     try:
         tsv_conf = tsv_config.parse(tsv_config_path)
     except (IOError, ValueError) as e:
-        log_error(e)
+        logger().error(e)
         sys.exit(1)
 
     try:
         ngspyeasy_bsqr_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
-        log_exception(ex)
+        logger().exception(ex)
         sys.exit(1)
 
 
@@ -55,17 +55,18 @@ def ngspyeasy_bsqr_job(tsv_conf, projects_home, sample_id, task):
 
 
 def run_bsqr(row, projects_home, task):
-    log_info("Running Base quality score recalibration job (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().info(
+        "Running Base quality score recalibration job (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.bsqr(), task, row.genomebuild()))
 
     if row.bsqr() == "no-bsqr":
-        log_info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (row.bsqr(), row.sample_id()))
+        logger().info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (row.bsqr(), row.sample_id()))
         return
 
     bsqr_data = sample.bsqr_data(row, projects_home)
 
     if os.path.isfile(bsqr_data.bsqr_bam_out()):
-        log_info("Already run bam recab..Skipping %s" % bsqr_data.bsqr_bam_out())
+        logger().info("Already run bam recab..Skipping %s" % bsqr_data.bsqr_bam_out())
         return
 
     if not os.path.isfile(bsqr_data.bsqr_bam_in()):
@@ -97,7 +98,7 @@ def select_genomebuild(row, projects_home):
 
 
 def bam_bsqr(row, task, bsqr_data, genomebuild):
-    log_debug("bam_bsqr (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("bam_bsqr (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.bsqr(), task, row.genomebuild()))
 
     run_script("bam-bsqr", "bam-bsqr.tmpl.sh",
@@ -110,7 +111,7 @@ def bam_bsqr(row, task, bsqr_data, genomebuild):
 
 
 def gatk_bsqr(row, task, bsqr_data, genomebuild):
-    log_debug("gatk_bsqr (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("gatk_bsqr (SAMPLE_ID='%s', BSQR='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.bsqr(), task, row.genomebuild()))
 
     run_script("gatk-bsqr", "gatk-bsqr.tmpl.sh",

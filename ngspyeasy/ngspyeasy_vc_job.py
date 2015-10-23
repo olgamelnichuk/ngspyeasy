@@ -11,7 +11,7 @@ import projects_dir
 import tsv_config
 import genome_build
 import sample
-from logger import init_logger, log_info, log_debug, log_error, log_exception
+from logger import init_logger, logger
 
 LOGGER_NAME = "variant_calling"
 
@@ -31,22 +31,22 @@ def main(argv):
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
     print "Opening log file: %s" % log_file
 
-    init_logger(log_file, args.verbose, LOGGER_NAME)
-    log_info("Starting...")
-    log_debug("Command line arguments: %s" % args)
+    init_logger(log_file, args.verbose)
+    logger().info("Starting...")
+    logger().debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
-    log_info("Reading TSV config: %s" % tsv_config_path)
+    logger().info("Reading TSV config: %s" % tsv_config_path)
     try:
         tsv_conf = tsv_config.parse(tsv_config_path)
     except (IOError, ValueError) as e:
-        log_error(e)
+        logger().error(e)
         sys.exit(1)
 
     try:
         ngspyeasy_vc_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
-        log_exception(ex)
+        logger().exception(ex)
         sys.exit(1)
 
 
@@ -63,11 +63,11 @@ def ngspyeasy_vc_job(tsv_conf, projects_home, sample_id, task):
 
 
 def run_vc(row, projects_home, task):
-    log_info("Running variant caller job (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().info("Running variant caller job (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     if row.varcaller() == "no-vc":
-        log_info("[%s] Skipping variant calling for sample: '%s'" % (row.varcaller(), row.sample_id()))
+        logger().info("[%s] Skipping variant calling for sample: '%s'" % (row.varcaller(), row.sample_id()))
         return
 
     callables = {
@@ -102,7 +102,7 @@ def select_genomebuild(row, projects_home):
             "No genome selected for sample '%s'. GENOMEBUILD value is '%s', but it should be one of [b37, hg19]" % (
                 row.sample_id(), row.genomebuild()))
 
-    log_info("Genome build selected: '%s'" % genomebuild.refdir())
+    logger().info("Genome build selected: '%s'" % genomebuild.refdir())
     return genomebuild
 
 
@@ -111,7 +111,7 @@ def filter_duplicates(ngs_type):
 
 
 def prepare(row, projects_home, task):
-    log_debug("prepare (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("prepare (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
@@ -122,11 +122,11 @@ def prepare(row, projects_home, task):
 
     mapped_reads_bed = vc_data.reports_path(os.path.basename(bam_file) + ".mapped.reads.bed")
     genomecov_bed = vc_data.reports_path(os.path.basename(bam_file) + ".genomecov.bed")
-    log_info("Mapped Reads: %s" % mapped_reads_bed)
-    log_info("Callable Regions: %s" % genomecov_bed)
+    logger().info("Mapped Reads: %s" % mapped_reads_bed)
+    logger().info("Callable Regions: %s" % genomecov_bed)
 
     if not os.path.isfile(mapped_reads_bed) or not os.path.isfile(genomecov_bed):
-        log_info("Mapped Reads BED File and Callable Regions File do not exist. Generating...")
+        logger().info("Mapped Reads BED File and Callable Regions File do not exist. Generating...")
         run_script("prepare", "callable-regions.tmpl.sh",
                    NCPU=row.ncpu(),
                    BAM_FILE=bam_file,
@@ -134,10 +134,10 @@ def prepare(row, projects_home, task):
                    GENOMECOV_BED=genomecov_bed)
 
     filtered_bam_file = vc_data.vc_filtered_bam()
-    log_info("Filtered BAM file: %s" % filtered_bam_file)
+    logger().info("Filtered BAM file: %s" % filtered_bam_file)
 
     if not os.path.isfile(filtered_bam_file):
-        log_info("Filtered BAM file doesn't exist. Filtering BAM... (Q20 and proper_pair)")
+        logger().info("Filtered BAM file doesn't exist. Filtering BAM... (Q20 and proper_pair)")
         run_script("prepare", "filter-bam.tmpl.sh",
                    NCPU=row.ncpu(),
                    BAM_FILE=bam_file,
@@ -145,21 +145,21 @@ def prepare(row, projects_home, task):
 
 
 def freebayes_parallel(row, projects_home, task):
-    log_debug("freebayers_parallel (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("freebayers_parallel (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using freebayes-parallel..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using freebayes-parallel..." % vcf_gz)
     run_script(row.varcaller(), row.varcaller(),
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -173,21 +173,21 @@ def freebayes_parallel(row, projects_home, task):
 
 
 def freebayes_default(row, projects_home, task):
-    log_debug("freebayers_default (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("freebayers_default (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using freebayes-default..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using freebayes-default..." % vcf_gz)
     run_script(row.varcaller(), row.varcaller(),
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -198,21 +198,21 @@ def freebayes_default(row, projects_home, task):
 
 
 def platypus(row, projects_home, task):
-    log_debug("platypus (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("platypus (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using platypus..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using platypus..." % vcf_gz)
     run_script(row.varcaller(), row.varcaller(),
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -227,21 +227,21 @@ def platypus(row, projects_home, task):
 
 
 def platypus_default(row, projects_home, task):
-    log_debug("platypus-default (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("platypus-default (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using platypus-default..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using platypus-default..." % vcf_gz)
     run_script(row.varcaller(), row.varcaller(),
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -253,21 +253,21 @@ def platypus_default(row, projects_home, task):
 
 
 def unified_genotyper(row, projects_home, task):
-    log_debug("unified-genotyper (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("unified-genotyper (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using unified-genotyper..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using unified-genotyper..." % vcf_gz)
     run_script(row.varcaller(), row.varcaller(),
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -280,21 +280,21 @@ def unified_genotyper(row, projects_home, task):
 
 
 def haplotype_caller(row, projects_home, task):
-    log_debug("haplotype_caller (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("haplotype_caller (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using haplotype-caller..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using haplotype-caller..." % vcf_gz)
     run_script(row.varcaller(), row.varcaller(),
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -307,21 +307,21 @@ def haplotype_caller(row, projects_home, task):
 
 
 def ensemble_freebayes_parallel(row, projects_home, task):
-    log_debug("ensemble_freebayers_parallel (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("ensemble_freebayers_parallel (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz("freebayers_parallel")
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using ensemble.freebayes-parallel..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using ensemble.freebayes-parallel..." % vcf_gz)
     run_script(row.varcaller(), "freebayers",
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -335,21 +335,21 @@ def ensemble_freebayes_parallel(row, projects_home, task):
 
 
 def ensemble_platypus(row, projects_home, task):
-    log_debug("ensemble_platypus (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("ensemble_platypus (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz("platypus")
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using ensemble.platypus..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using ensemble.platypus..." % vcf_gz)
     run_script(row.varcaller(), "platypus",
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -364,21 +364,21 @@ def ensemble_platypus(row, projects_home, task):
 
 
 def ensemble_haplotype_caller(row, projects_home, task):
-    log_debug("ensemble_haplotype_caller (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("ensemble_haplotype_caller (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz("HaplotypeCaller")
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using haplotype-caller..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using haplotype-caller..." % vcf_gz)
     run_script(row.varcaller(), "HaplotypeCaller",
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
@@ -391,21 +391,21 @@ def ensemble_haplotype_caller(row, projects_home, task):
 
 
 def ensemble_bcbio_variation(row, projects_home, task):
-    log_debug("ensemble_bcbio_variation (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("ensemble_bcbio_variation (SAMPLE_ID='%s', VARCALLER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.varcaller(), task, row.genomebuild()))
 
     vc_data = sample.vc_data(row, projects_home)
     vcf_gz = vc_data.vcf_gz()
 
-    log_info("VCF file: %s" % vcf_gz)
+    logger().info("VCF file: %s" % vcf_gz)
 
     if os.path.isfile(vcf_gz):
-        log_info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
+        logger().info("VCF file (%s) exists. Skipping this bit.." % vcf_gz)
         return
 
     genomebuild = select_genomebuild(row, projects_home)
 
-    log_info("VCF file (%s) doesn't exist. Running Variant Calling using bcbio-variation-recall..." % vcf_gz)
+    logger().info("VCF file (%s) doesn't exist. Running Variant Calling using bcbio-variation-recall..." % vcf_gz)
     run_script(row.varcaller(), "bcbio-variation",
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),

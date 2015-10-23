@@ -11,7 +11,7 @@ from settings import NGSEASYVERSION
 import projects_dir
 import job_scheduler
 import tsv_config
-from logger import init_logger, log_info, log_debug
+from logger import init_logger, logger
 
 
 def main(argv):
@@ -113,15 +113,15 @@ def ngspyeasy(tsv_conf, projects_home, dependencies, verbose):
 
 
 def ngspyeasy_init(tsv_conf, projects_home):
-    log_info("Initiating project...")
+    logger().info("Initiating project...")
     projects_home.init_structure(tsv_conf)
 
-    log_info("Checking raw FastQ files...")
+    logger().info("Checking raw FastQ files...")
     projects_home.check_fastq(tsv_conf)
 
 
 def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose, tag="fastqc"):
-    log_info("Submitting FastQC jobs...")
+    logger().info("Submitting FastQC jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -131,7 +131,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose, tag="fastqc
             raise ValueError("Unknown fastqc type: %s" % fastqc_type)
 
         if fastqc_type == "no-fastqc":
-            log_info("[%s] No fastqc jobs to be run for sample: '%s'" % (fastqc_type, sample_id))
+            logger().info("[%s] No fastqc jobs to be run for sample: '%s'" % (fastqc_type, sample_id))
             continue
 
         cmd = docker.JobCommand("ngspyeasy_fastqc_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
@@ -139,7 +139,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose, tag="fastqc
 
 
 def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose, tag="trim"):
-    log_info("Submitting Trimmomatic jobs...")
+    logger().info("Submitting Trimmomatic jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -149,7 +149,8 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose, tag="t
             raise ValueError("Unknown trimmomatic type: %s" % trim_type)
 
         if trim_type == "no-trim":
-            log_info("[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED" % (trim_type, sample_id))
+            logger().info(
+                "[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED" % (trim_type, sample_id))
             continue
 
         cmd = docker.JobCommand("ngspyeasy_trimmomatic_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
@@ -160,7 +161,7 @@ def ngspyeasy_trimmomatic(tsv_conf, projects_home, dependencies, verbose, tag="t
 
 
 def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose, tag="align"):
-    log_info("Submitting alignment jobs...")
+    logger().info("Submitting alignment jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -169,7 +170,7 @@ def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose, tag="ali
         cmd = docker.JobCommand("ngspyeasy_alignment_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 
         if aligner_type == "no-align":
-            log_info("[%s] No alignment jobs to be run for sample: '%s'." % (aligner_type, sample_id))
+            logger().info("[%s] No alignment jobs to be run for sample: '%s'." % (aligner_type, sample_id))
             continue
         elif aligner_type == "bwa":
             submit(cmd, "compbio/ngseasy-bwa", projects_home, dependencies, tag)
@@ -190,7 +191,7 @@ def ngspyeasy_alignment(tsv_conf, projects_home, dependencies, verbose, tag="ali
 
 
 def ngspyeasy_realn(tsv_conf, projects_home, dependencies, verbose, tag="realn"):
-    log_info("Submitting realignment jobs...")
+    logger().info("Submitting realignment jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -199,7 +200,7 @@ def ngspyeasy_realn(tsv_conf, projects_home, dependencies, verbose, tag="realn")
         cmd = docker.JobCommand("ngspyeasy_realn_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 
         if realn_type == "no-realn":
-            log_info("[%s] Skipping Indel Realignment for sample: '%s'." % (realn_type, sample_id))
+            logger().info("[%s] Skipping Indel Realignment for sample: '%s'." % (realn_type, sample_id))
             continue
         elif realn_type == "bam-realn":
             submit(cmd, "compbio/ngseasy-glia", projects_home, dependencies, tag)
@@ -210,7 +211,7 @@ def ngspyeasy_realn(tsv_conf, projects_home, dependencies, verbose, tag="realn")
 
 
 def ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose, tag="bsqr"):
-    log_info("Submitting base quality score recalibration jobs...")
+    logger().info("Submitting base quality score recalibration jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -219,7 +220,7 @@ def ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose, tag="bsqr"):
         cmd = docker.JobCommand("ngspyeasy_bsqr_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 
         if bsqr_type == "no-bsqr":
-            log_info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (bsqr_type, sample_id))
+            logger().info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (bsqr_type, sample_id))
             continue
         elif bsqr_type == "bam-bsqr":
             submit(cmd, "compbio/ngseasy-base", projects_home, dependencies, tag)
@@ -230,7 +231,7 @@ def ngspyeasy_bsqr(tsv_conf, projects_home, dependencies, verbose, tag="bsqr"):
 
 
 def ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose, tag="varcaller"):
-    log_info("Submitting variant calling jobs...")
+    logger().info("Submitting variant calling jobs...")
 
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
@@ -265,7 +266,7 @@ def submit(cmd, image, projects_home, dependencies, tag):
     job_id = job_id_generator.get_next([tag, cmd.sample_id])
     prev_job_ids = [x for x in [dependencies.get(cmd.sample_id, None)] if x is not None]
 
-    log_debug(
+    logger().debug(
         "Submit job(sample_id='%s', job_id='%s', dependencies='%s', cmd=[%s])" % (
             cmd.sample_id, job_id, prev_job_ids, cmd.as_string()))
 
@@ -277,7 +278,7 @@ def submit(cmd, image, projects_home, dependencies, tag):
 
 
 def signal_handler(signum, frame):
-    log_info("Got SIGINT(%s) signal" % str(signum))
+    logger().info("Got SIGINT(%s) signal" % str(signum))
     job_scheduler.stop()
 
 

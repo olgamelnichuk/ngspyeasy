@@ -9,7 +9,7 @@ import os
 import cmdargs
 import projects_dir
 import tsv_config
-from logger import init_logger, log_error, log_debug, log_info, log_exception
+from logger import init_logger, logger
 
 
 def fix_file_permissions(projects_home, row):
@@ -24,21 +24,21 @@ def main(argv):
     print "Opening log file: %s" % log_file
 
     init_logger(log_file, args.verbose)
-    log_info("Starting...")
-    log_debug("Command line arguments: %s" % args)
+    logger().info("Starting...")
+    logger().debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
-    log_info("Reading TSV config: %s" % tsv_config_path)
+    logger().info("Reading TSV config: %s" % tsv_config_path)
     try:
         tsv_conf = tsv_config.parse(tsv_config_path)
     except (IOError, ValueError) as e:
-        log_error(e)
+        logger().error(e)
         sys.exit(1)
 
     try:
         ngspyeasy_realn_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
-        log_exception(ex)
+        logger().exception(ex)
         sys.exit(1)
 
 
@@ -55,17 +55,18 @@ def ngspyeasy_realn_job(tsv_conf, projects_home, sample_id, task):
 
 
 def run_realn(row, projects_home, task):
-    log_info("Running Realign job (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().info("Running Realign job (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.realn(), task, row.genomebuild()))
 
     if row.realn() == "no-realn":
-        log_info("[%s] Skipping Indel Realignment for sample: '%s'" % (row.realn(), row.sample_id()))
+        logger().info("[%s] Skipping Indel Realignment for sample: '%s'" % (row.realn(), row.sample_id()))
         return
 
     realn_data = sample.realn_data(row, projects_home)
 
     if os.path.isfile(realn_data.dupl_mark_realn_bam()):
-        log_info("Skipping Indel Realignment. Looks like you already ran it: %s" % realn_data.dupl_mark_realn_bam())
+        logger().info(
+            "Skipping Indel Realignment. Looks like you already ran it: %s" % realn_data.dupl_mark_realn_bam())
         return
 
     genomebuild = select_genomebuild(row, projects_home)
@@ -94,14 +95,14 @@ def select_genomebuild(row, projects_home):
 
 
 def bam_realn(row, task, realn_data, genomebuild):
-    log_debug("bam_realn (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("bam_realn (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.realn(), task, row.genomebuild()))
 
     run_script("bam-realn", "bam-realn.tmpl.sh", **common_script_params(realn_data, genomebuild))
 
 
 def gatk_realn(row, task, realn_data, genomebuild):
-    log_debug("gatk_realn (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("gatk_realn (SAMPLE_ID='%s', REALN='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.realn(), task, row.genomebuild()))
 
     params = dict(

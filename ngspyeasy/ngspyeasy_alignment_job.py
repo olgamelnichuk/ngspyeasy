@@ -12,7 +12,7 @@ import sample
 import genome_build
 import projects_dir
 import tsv_config
-from logger import init_logger, log_info, log_debug, log_error, log_exception
+from logger import init_logger, logger
 
 
 def fix_file_permissions(projects_home, row):
@@ -27,21 +27,21 @@ def main(argv):
     print "Opening log file: %s" % log_file
 
     init_logger(log_file, args.verbose)
-    log_info("Starting...")
-    log_debug("Command line arguments: %s" % args)
+    logger().info("Starting...")
+    logger().debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
-    log_info("Reading TSV config: %s" % tsv_config_path)
+    logger().info("Reading TSV config: %s" % tsv_config_path)
     try:
         tsv_conf = tsv_config.parse(tsv_config_path)
     except (IOError, ValueError) as e:
-        log_error(e)
+        logger().error(e)
         sys.exit(1)
 
     try:
         ngspyeasy_alignment_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
-        log_exception(ex)
+        logger().exception(ex)
         sys.exit(1)
 
 
@@ -58,11 +58,11 @@ def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
 
 
 def run_alignment(row, projects_home, task):
-    log_info("Running alignmnent job (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().info("Running alignmnent job (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     if row.aligner() == "no-align":
-        log_info("[%s] Skipping alignment" % row.aligner())
+        logger().info("[%s] Skipping alignment" % row.aligner())
         return
 
     callables = {
@@ -90,7 +90,7 @@ def alignment_results_exist(align_data):
     bam_bed = align_data.dupl_mark_bed()
     exist = os.path.isfile(bam_out) and os.path.isfile(bam_bed)
     if exist:
-        log_info("Looks like aligned BAM file already exists [%s, %s] Skipping Alignment..." % (bam_out, bam_bed))
+        logger().info("Looks like aligned BAM file already exists [%s, %s] Skipping Alignment..." % (bam_out, bam_bed))
     return exist
 
 
@@ -132,7 +132,7 @@ def common_parameters(align_data, projects_home):
 
 
 def bwa(row, projects_home, task):
-    log_debug("bwa (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("bwa (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -143,7 +143,7 @@ def bwa(row, projects_home, task):
 
 
 def novoalign(row, projects_home, task):
-    log_debug("novoalign (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("novoalign (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -158,7 +158,7 @@ def novoalign(row, projects_home, task):
 
 
 def bowtie2(row, projects_home, task):
-    log_debug("bowtie2 (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("bowtie2 (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -174,7 +174,7 @@ def bowtie2(row, projects_home, task):
 
 
 def snap(row, projects_home, task):
-    log_debug("snap (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("snap (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -188,7 +188,7 @@ def snap(row, projects_home, task):
 
 
 def stampy_bwa(row, projects_home, task):
-    log_debug("stampy_bwa (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("stampy_bwa (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -199,7 +199,7 @@ def stampy_bwa(row, projects_home, task):
     tmp_bam = align_data.tmp_bam()
 
     if os.path.isfile(tmp_bam):
-        log_info("tmp.bam already exists (%s)... skipping bwa task" % tmp_bam)
+        logger().info("tmp.bam already exists (%s)... skipping bwa task" % tmp_bam)
         return
 
     run_script("stampy", "bwa.tmpl.sh",
@@ -218,7 +218,7 @@ def stampy_bwa(row, projects_home, task):
 
 
 def stampy_stampy(row, projects_home, task):
-    log_debug("stampy_stampy (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("stampy_stampy (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -226,7 +226,7 @@ def stampy_stampy(row, projects_home, task):
         return
 
     if os.path.isfile(align_data.dupl_mark_tmp_bam()):
-        log_info("dupemk.tmp.bam already exists (%s)... skipping stampy task" % align_data.dupl_mark_tmp_bam())
+        logger().info("dupemk.tmp.bam already exists (%s)... skipping stampy task" % align_data.dupl_mark_tmp_bam())
         return
 
     if not os.path.isfile(align_data.tmp_bam()):
@@ -248,7 +248,7 @@ def stampy_stampy(row, projects_home, task):
 
 
 def stampy_cleansam(row, projects_home, task):
-    log_debug("stampy_cleansam (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("stampy_cleansam (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -256,7 +256,7 @@ def stampy_cleansam(row, projects_home, task):
         return
 
     if os.path.isfile(align_data.dupl_mark_tmp_cleansam_bam()):
-        log_info(
+        logger().info(
             "dupemk.tmpcleansam.bam already exists (%s)... skipping picard-cleansam task" % align_data.dupl_mark_tmp_cleansam_bam())
         return
 
@@ -271,7 +271,8 @@ def stampy_cleansam(row, projects_home, task):
 
 
 def stampy_picard_addorreplacereadgroups(row, projects_home, task):
-    log_debug("stampy_picard_addorreplacereadgroups (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug(
+        "stampy_picard_addorreplacereadgroups (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
@@ -306,7 +307,7 @@ def run_script(dir, filename, **kwargs):
 
 def find_platform_unit(fastq_file):
     cmd = "zcat %s | head -1 | sed 's/:/\\t/' - | cut -f 1 | sed 's/@//g' - " % fastq_file
-    log_debug("platform_info=[%s]" % cmd)
+    logger().debug("platform_info=[%s]" % cmd)
     out = subprocess.check_output(cmd, shell=True, preexec_fn=lambda: signal(SIGPIPE, SIG_DFL))
     return out.strip()
 

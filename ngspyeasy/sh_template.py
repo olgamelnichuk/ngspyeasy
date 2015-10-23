@@ -2,14 +2,14 @@
 import stat
 from string import Template
 import tempfile
-from logger import log_debug
+from logger import logger
 import os
 
 
 def load(*p):
     root = os.path.dirname(__file__)
     path = os.path.join(root, *(["resources"] + list(p)))
-    log_debug("Loading sh template from: %s" % path)
+    logger().debug("Loading sh template from: %s" % path)
 
     if not os.path.isfile(path):
         raise IOError("Sh template file not found: %s" % path)
@@ -39,7 +39,7 @@ class ShTemplate(object):
             self.validate(**kwargs)
 
         source = self.source(**kwargs)
-        log_debug("\n".join(source))
+        logger().debug("\n".join(source))
 
         file = tempfile.NamedTemporaryFile(delete=False)
         file.write("\n".join(source))

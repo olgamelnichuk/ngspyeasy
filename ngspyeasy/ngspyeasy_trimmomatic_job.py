@@ -8,7 +8,7 @@ import tsv_config
 import projects_dir
 import sample
 import genome_build
-from logger import init_logger, log_info, log_debug, log_error, log_exception
+from logger import init_logger, logger
 
 
 def fix_file_permissions(projects_home, row):
@@ -23,21 +23,21 @@ def main(argv):
     print "Opening log file: %s" % log_file
 
     init_logger(log_file, args.verbose)
-    log_info("Starting...")
-    log_debug("Command line arguments: %s" % args)
+    logger().info("Starting...")
+    logger().debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
-    log_info("Reading TSV config: %s" % tsv_config_path)
+    logger().info("Reading TSV config: %s" % tsv_config_path)
     try:
         tsv_conf = tsv_config.parse(tsv_config_path)
     except (IOError, ValueError) as e:
-        log_error(e)
+        logger().error(e)
         sys.exit(1)
 
     try:
         ngspyeasy_trimmomatic_job(tsv_conf, projects_home, args.sample_id, args.task)
     except Exception as ex:
-        log_exception(ex)
+        logger().exception(ex)
         sys.exit(1)
 
 
@@ -54,11 +54,11 @@ def ngspyeasy_trimmomatic_job(tsv_conf, projects_home, sample_id, task):
 
 
 def run_trimmomatic(row, projects_home, task):
-    log_info("Running Trimmomatic job (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().info("Running Trimmomatic job (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.trim(), task, row.genomebuild()))
 
     if row.trim() == "no-trim":
-        log_info("[%s] Skipping quality control of raw fastq reads. NOT RECOMMENDED" % row.trim())
+        logger().info("[%s] Skipping quality control of raw fastq reads. NOT RECOMMENDED" % row.trim())
         return
 
     callables = {
@@ -78,14 +78,14 @@ def unrecognized_options(row, projects_home, task):
 
 
 def fastqc(row, projects_home, task):
-    log_debug("fastqc (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("fastqc (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.trim(), task, row.genomebuild()))
 
     trim_data = sample.trimmomatic_data(row, projects_home)
     fastqc_reports = trim_data.trim_fastqc_htmls()
     not_exist = [x for x in fastqc_reports if not os.path.isfile(x)]
     if len(not_exist) == 0:
-        log_info("FastQC results already exist. Skipping this part... %s" % fastqc_reports)
+        logger().info("FastQC results already exist. Skipping this part... %s" % fastqc_reports)
         return
 
     fastq_files = trim_data.paired_fastq() + trim_data.unpaired_fastq()
@@ -94,7 +94,7 @@ def fastqc(row, projects_home, task):
     if len(not_exist) != 0:
         raise IOError("Can't proceed with (post Trimmomatic) FastQC as fastq files do not exist: %s" % not_exist)
 
-    log_info("Running (post Trimmomatic) FastQC tool...")
+    logger().info("Running (post Trimmomatic) FastQC tool...")
 
     cmd = ["/usr/local/pipeline/FastQC/fastqc",
            "--threads", "4",
@@ -106,7 +106,7 @@ def fastqc(row, projects_home, task):
 
 
 def atrim(row, projects_home, task):
-    log_debug("atrim (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("atrim (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.trim(), task, row.genomebuild()))
 
     genome = genome_build.select(row.genomebuild(), projects_home)
@@ -127,7 +127,7 @@ def atrim(row, projects_home, task):
 
 
 def btrim(row, projects_home, task):
-    log_debug("btrim (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
+    logger().debug("btrim (SAMPLE_ID='%s', TRIM='%s', TASK='%s', GENOMEBUILD='%s')" % (
         row.sample_id(), row.trim(), task, row.genomebuild()))
 
     trim(row, projects_home, [
@@ -148,11 +148,11 @@ def trim(row, projects_home, options):
 
     not_exist = [x for x in trim_results if not os.path.isfile(x)]
     if len(not_exist) == 0:
-        log_info("Trimmomatic data already exists...skipping this bit: %s" % trim_results)
+        logger().info("Trimmomatic data already exists...skipping this bit: %s" % trim_results)
         return
 
-    log_info("Running Trimmomatic tool...")
-    log_info("Trimmomatic options:\n %s" % "\n".join(options))
+    logger().info("Running Trimmomatic tool...")
+    logger().info("Trimmomatic options:\n %s" % "\n".join(options))
 
     cmd = ["java", "-XX:ParallelGCThreads=1", "-jar", "/usr/local/pipeline/Trimmomatic-0.32/trimmomatic-0.32.jar",
            "PE",
