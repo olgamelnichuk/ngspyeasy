@@ -11,18 +11,30 @@ NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 DOCKER_OPTS = "-v /opt/ngspyeasy:/ngspyeasy:ro"
 
 
-def wrap(name, image, cmd, projects_home, resources_home, pipeman=True):
-    docker_run = ["docker", "run", "--rm", "-P", "-w", HOME, "-e", "HOME=" + HOME]
+def docker_options(name, projects_home, resources_home, pipeman=True):
+    options = ["--rm", "-P", "-w", HOME, "-e", "HOME=" + HOME]
     if pipeman:
-        docker_run.extend(["-e", "USER=" + USER, "--user", USER])
+        options.extend(["-e", "USER=" + USER, "--user", USER])
 
-    docker_run.extend(["--name", name])
-    docker_run.extend(["-v", projects_home + ":" + NGS_PROJECTS])
-    docker_run.extend(["-v", resources_home + ":" + NGS_RESOURCES])
-    docker_run.append(DOCKER_OPTS)
+    options.extend(["--name", name])
+    options.extend(["-v", projects_home + ":" + NGS_PROJECTS])
+    options.extend(["-v", resources_home + ":" + NGS_RESOURCES])
+    options.append(DOCKER_OPTS)
+    return options
+
+
+def wrap(name, image, cmd, projects_home, resources_home, pipeman=True):
+    docker_run = ["docker", "run"] + docker_options(name, projects_home, resources_home, pipeman)
     docker_run.append(image)
     docker_run.append(cmd)
     return " ".join(docker_run)
+
+
+def wrap_lsf(name, image, cmd, projects_home, resources_home, dependencies, pipeman=True):
+    docker_image = "LSB_DOCKER_IMAGE=%s" % image
+    docker_opts = "LSB_DOCKER_OPTIONS=\"%s\"" % " ".join(docker_options(name, projects_home, resources_home, pipeman))
+    bsub_cmd = "bsub -J %s -w % -o out.log -e error.log %s" % (name, cmd, dependencies)
+    return ";".join([docker_image, docker_opts, bsub_cmd])
 
 
 class JobCommand(object):
