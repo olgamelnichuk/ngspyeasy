@@ -19,7 +19,7 @@ function transpose() {
   }' $${1}
 }
 
-chroms=$(cut -f 1 ${DUPEMARK_BED} | uniq | transpose)
+chroms=$$(cut -f 1 ${DUPEMARK_BED} | uniq | transpose)
 
 sambamba view -t ${NCPU} -f bam -F "not (unmapped or mate_is_unmapped) and mapping_quality >=0" ${DUPEMARK_BAM} ${CHROMS} | \
 glia -Rru -w 1000 -S 100 -Q 100 -G 4 -f ${REFFASTA} -v ${KNOWN_INDELS} | \
