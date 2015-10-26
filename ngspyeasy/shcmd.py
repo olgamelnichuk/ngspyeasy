@@ -29,7 +29,8 @@ def run_command(cmd):
          # ~/.bashrc can contain environment variables valuable for running the command; unfortunately it doesn't
          # run automatically in the docker container if bash runs in non-interactive mode (without '-i' flag). Read
          # the .bashrc source for more details.
-         "python /ngspyeasy/bin/fix_bashrc.py; source ~/.bashrc_fixed; echo $CLASSPATH; " + cmd2run],
+         # TODO the path to ngspyeasy home could be changed in the future
+         "python /ngspyeasy/fix_bashrc.py; source ~/.bashrc_fixed; echo $CLASSPATH; " + cmd2run],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
