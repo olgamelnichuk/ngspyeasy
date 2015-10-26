@@ -233,6 +233,10 @@ def ngspyeasy_variant_calling(tsv_conf, projects_home, dependencies, verbose, ta
         sample_id = row.sample_id()
         vc_type = row.varcaller()
 
+        if vc_type == "no-vc":
+            logger().info("[%s] Skipping Varian Calling for sample: '%s'" % (vc_type, sample_id))
+            continue
+
         cmd = docker.JobCommand("ngspyeasy_vc_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 
         submit(cmd.add_task("prepare"), "compbio/ngseasy-base", projects_home, dependencies, tag)
