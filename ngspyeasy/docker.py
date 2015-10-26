@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 
 USER = "pipeman"
 
@@ -8,7 +9,7 @@ NGS_PROJECTS = HOME + "/ngs_projects"
 
 NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 
-DOCKER_OPTS = "-v /opt/ngspyeasy:/ngspyeasy:ro"
+DOCKER_OPTS = ""
 
 
 def wrap(name, image, cmd, projects_home, resources_home, pipeman=True):
@@ -16,9 +17,11 @@ def wrap(name, image, cmd, projects_home, resources_home, pipeman=True):
     if pipeman:
         docker_run.extend(["-e", "USER=" + USER, "--user", USER])
 
+    ngspyeasy_home = os.path.dirname(os.path.realpath(__file__))
     docker_run.extend(["--name", name])
     docker_run.extend(["-v", projects_home + ":" + NGS_PROJECTS])
     docker_run.extend(["-v", resources_home + ":" + NGS_RESOURCES])
+    docker_run.extend(["-v", ngspyeasy_home + ":/ngspyeasy:ro"])
     docker_run.append(DOCKER_OPTS)
     docker_run.append(image)
     docker_run.append(cmd)
@@ -37,7 +40,7 @@ class JobCommand(object):
         return JobCommand(self.executable, self.config_name, self.sample_id, verbose=self.verbose, task=task)
 
     def as_string(self):
-        cmd = ["python /ngspyeasy/bin/%s" % self.executable, "-v" if self.verbose else "", "-c", self.config_name, "-d",
+        cmd = ["python /ngspyeasy/%s" % self.executable, "-v" if self.verbose else "", "-c", self.config_name, "-d",
                NGS_PROJECTS, "-i", self.sample_id]
 
         if self.task:
