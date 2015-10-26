@@ -123,7 +123,7 @@ def ngspyeasy_fastqc(tsv_conf, projects_home, dependencies, verbose, tag="fastqc
         sample_id = row.sample_id()
         fastqc_type = row.fastqc()
 
-        if fastqc_type not in ["fastqc", "no-fastqc"]:
+        if fastqc_type not in ["qc-fastqc", "no-fastqc"]:
             raise ValueError("Unknown fastqc type: %s" % fastqc_type)
 
         if fastqc_type == "no-fastqc":
