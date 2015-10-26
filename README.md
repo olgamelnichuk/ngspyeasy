@@ -11,14 +11,14 @@ where config file is compartible with the one you use in NGSeasy, but NGSPyEasy 
 
 The long command line option names are also supported:
 ```
-$ python /opt/ngspyeasy/bin/ngspyeasy.py --config ngseasy_test.config.tsv \
+$ python /<path-to-ngspyeasy>/ngspyeasy.py --config ngseasy_test.config.tsv \
     --projects-dir /home/bob/ngs_projects \
     --resources-dir /nfs/ngs_resources --verbose
 ```
 
 Running just one step is also possible. Here is an example of running `trimmomatic` step:
 ```
-$ python /opt/ngspyeasy/bin/ngspyeasy.py trimmomatic --config ngseasy_test.config.tsv \
+$ python /<path-to-ngspyeasy>/ngspyeasy.py trimmomatic --config ngseasy_test.config.tsv \
     --projects-dir /home/bob/ngs_projects \
     --resources-dir /nfs/ngs_resources --verbose
 ```
