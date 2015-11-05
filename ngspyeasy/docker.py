@@ -11,29 +11,34 @@ NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 DOCKER_OPTS = "-v /opt/ngspyeasy:/ngspyeasy:ro"
 
 
-def docker_options(name, projects_home, resources_home, pipeman=True):
+def docker_options(name, ngs_projects_path, ngs_resources_path, pipeman=False):
     options = ["--rm", "-P", "-w", HOME, "-e", "HOME=" + HOME]
     if pipeman:
         options.extend(["-e", "USER=" + USER, "--user", USER])
 
     options.extend(["--name", name])
-    options.extend(["-v", projects_home + ":" + NGS_PROJECTS])
-    options.extend(["-v", resources_home + ":" + NGS_RESOURCES])
+    options.extend(["-v", ngs_projects_path + ":" + NGS_PROJECTS])
+    options.extend(["-v", ngs_resources_path + ":" + NGS_RESOURCES])
     options.append(DOCKER_OPTS)
     return options
 
 
-def wrap(name, image, cmd, projects_home, resources_home, pipeman=False):
-    docker_run = ["docker", "run"] + docker_options(name, projects_home, resources_home, pipeman)
+def wrap(name, image, cmd, projects_home):
+    docker_run = ["docker", "run"] + docker_options(name, projects_home.root(), projects_home.resources_dir())
     docker_run.append(image)
     docker_run.append(cmd)
     return " ".join(docker_run)
 
 
-def wrap_lsf(name, image, cmd, projects_home, resources_home, dependencies, pipeman=True):
+def wrap_lsf(name, image, cmd, projects_home, dependencies):
+    lsf_dep_expression = " && ".join(["ended(%s)" % x for x in dependencies])
+
     docker_image = "LSB_DOCKER_IMAGE=%s" % image
-    docker_opts = "LSB_DOCKER_OPTIONS=\"%s\"" % " ".join(docker_options(name, projects_home, resources_home, pipeman))
-    bsub_cmd = "bsub -J %s -w % -o out.log -e error.log %s" % (name, cmd, dependencies)
+    docker_opts = "LSB_DOCKER_OPTIONS=\"%s\"" % " ".join(
+        docker_options(name, projects_home.root(), projects_home.resources_dir()))
+    outlog = projects_home.log_path("out.log")
+    errorlog = projects_home.log_path("error.log")
+    bsub_cmd = "bsub -J %s -w %s -o %s -e %s %s" % (name, lsf_dep_expression, outlog, errorlog, cmd)
     return ";".join([docker_image, docker_opts, bsub_cmd])
 
 

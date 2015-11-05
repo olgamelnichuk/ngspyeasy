@@ -41,12 +41,9 @@ class JobSubmitter(object):
         self.update_dependencies(cmd.sample_id, job_id)
 
     def wrap(self, job_id, job_dependencies, image, cmd_string):
-        projects_root = self.projects_home.root()
-        resources_root = self.projects_home.resources_dir()
-
         if self.in_lsf_mode():
-            return docker.wrap_lsf(job_id, image, cmd_string, projects_root, resources_root, job_dependencies)
-        return docker.wrap(job_id, image, cmd_string, projects_root, resources_root)
+            return docker.wrap_lsf(job_id, image, cmd_string, self.projects_home, job_dependencies)
+        return docker.wrap(job_id, image, cmd_string, self.projects_home)
 
     def in_lsf_mode(self):
         return self.mode == "docker-lsf"
@@ -81,7 +78,7 @@ def main(argv):
     print "Using log file: %s" % log_file
 
     logger = init_logger(log_file, args.verbose)
-    logger.info("Starting...")
+    logger.info("Starting NGSPyEasy v1.0...")
     logger.debug("Command line arguments: %s" % args)
 
     tsv_config_path = projects_home.config_path(args.config)
@@ -108,7 +105,7 @@ def main(argv):
         if init_required(args):
             ngspyeasy_init(tsv_conf, projects_home)
 
-        submitter = JobSubmitter(projects_home)
+        submitter = JobSubmitter(projects_home, args.mode)
         for cmd, image, tag in command_list(tsv_conf, verbose, args):
             submitter.submit(cmd, image, tag)
         job_scheduler.all_done()
