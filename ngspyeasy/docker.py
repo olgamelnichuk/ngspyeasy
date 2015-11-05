@@ -44,7 +44,7 @@ def wrap_lsf(name, image, cmd, projects_home, dependencies):
     outlog = projects_home.log_path("out.log")
     errorlog = projects_home.log_path("error.log")
     bsub_cmd = "bsub -q docker_queue -J %s %s -o %s -e %s %s" % (name, lsf_dep_expression, outlog, errorlog, cmd)
-    return ";".join([docker_image, docker_opts, bsub_cmd])
+    return " ".join([docker_image, docker_opts, bsub_cmd])
 
 
 class JobCommand(object):
