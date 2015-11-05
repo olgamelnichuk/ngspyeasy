@@ -23,7 +23,7 @@ def docker_options(name, projects_home, resources_home, pipeman=True):
     return options
 
 
-def wrap(name, image, cmd, projects_home, resources_home, pipeman=True):
+def wrap(name, image, cmd, projects_home, resources_home, pipeman=False):
     docker_run = ["docker", "run"] + docker_options(name, projects_home, resources_home, pipeman)
     docker_run.append(image)
     docker_run.append(cmd)
