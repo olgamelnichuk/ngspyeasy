@@ -1,4 +1,5 @@
 #!/usr/bin/env python
+import os
 
 USER = "pipeman"
 
@@ -8,7 +9,7 @@ NGS_PROJECTS = HOME + "/ngs_projects"
 
 NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 
-DOCKER_OPTS = "-v /opt/ngspyeasy:/ngspyeasy:ro"
+DOCKER_OPTS = ""
 
 
 def docker_options(name, ngs_projects_path, ngs_resources_path, pipeman=False):
@@ -16,9 +17,11 @@ def docker_options(name, ngs_projects_path, ngs_resources_path, pipeman=False):
     if pipeman:
         options.extend(["-e", "USER=" + USER, "--user", USER])
 
+    ngspyeasy_home = os.path.dirname(os.path.realpath(__file__))
     options.extend(["--name", name])
     options.extend(["-v", ngs_projects_path + ":" + NGS_PROJECTS])
     options.extend(["-v", ngs_resources_path + ":" + NGS_RESOURCES])
+    options.extend(["-v", ngspyeasy_home + ":/ngspyeasy:ro"])
     options.append(DOCKER_OPTS)
     return options
 
@@ -54,7 +57,7 @@ class JobCommand(object):
         return JobCommand(self.executable, self.config_name, self.sample_id, verbose=self.verbose, task=task)
 
     def as_string(self):
-        cmd = ["python /ngspyeasy/bin/%s" % self.executable, "-v" if self.verbose else "", "-c", self.config_name, "-d",
+        cmd = ["python /ngspyeasy/%s" % self.executable, "-v" if self.verbose else "", "-c", self.config_name, "-d",
                NGS_PROJECTS, "-i", self.sample_id]
 
         if self.task:

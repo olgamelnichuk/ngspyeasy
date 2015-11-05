@@ -183,7 +183,7 @@ def ngspyeasy_fastqc(tsv_conf, verbose):
         sample_id = row.sample_id()
         fastqc_type = row.fastqc()
 
-        if fastqc_type not in ["fastqc", "no-fastqc"]:
+        if fastqc_type not in ["qc-fastqc", "no-fastqc"]:
             raise ValueError("Unknown fastqc type: %s" % fastqc_type)
 
         if fastqc_type == "no-fastqc":
@@ -291,6 +291,10 @@ def ngspyeasy_variant_calling(tsv_conf, verbose):
     for row in tsv_conf.all_rows():
         sample_id = row.sample_id()
         vc_type = row.varcaller()
+
+        if vc_type == "no-vc":
+            logger().info("[%s] Skipping Varian Calling for sample: '%s'" % (vc_type, sample_id))
+            continue
 
         cmd = docker.JobCommand("ngspyeasy_vc_job.py", tsv_conf.filename(), sample_id, verbose=verbose)
 

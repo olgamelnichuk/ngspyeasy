@@ -59,6 +59,9 @@ def run_fastqc(row, projects_home):
         logger().info("[%s] Skipping FastQC..." % row.fastqc())
         return
 
+    if row.fastqc() != "qc-fastqc":
+        raise ValueError("Unrecognised FastQC option: %s" % row.fastqc())
+
     fq_data = sample.fastqc_data(row, projects_home)
 
     for fastq_file in fq_data.fastq_files():
