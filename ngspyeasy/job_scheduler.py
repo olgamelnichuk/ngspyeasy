@@ -77,7 +77,7 @@ class JobScheduler(Thread):
                     # WARNING! using '-i' option with bash will create interactive shell which will have parent's stdin
                     # and get the SIGINT first..
                     if self.test_mode:
-                        job_command = "pwd"
+                        job_command = "echo \"(test mode) pwd output is: `pwd`\""
                     proc = subprocess.Popen(["/bin/bash", "-c", job_command], env=os.environ.copy())
                     self.processes.append((proc, job_command, job_id))
 

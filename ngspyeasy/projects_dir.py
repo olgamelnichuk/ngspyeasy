@@ -30,6 +30,9 @@ class ProjectsDir(object):
     def resource_path(self, name):
         return os.path.join(self.resources_dir(), name)
 
+    def log_path(self, name):
+        return os.path.join(self.log_dir(), name)
+
     def log_dir(self):
         return os.path.join(self.projects_home, "run_log")
 
