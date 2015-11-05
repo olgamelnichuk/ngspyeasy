@@ -26,7 +26,7 @@ def chown(dir, uid, gid):
     has_permissions = functools.partial(has_chmod_permissions, os.getuid())
     for root, dirs, files in os.walk(dir):
         z = dirs + files
-        for p, mode in z:
+        for p in z:
             path = os.path.join(root, p)
             if has_permissions(path):
                 os.chown(path, uid, gid)
