@@ -38,7 +38,7 @@ def wrap_lsf(name, image, cmd, projects_home, dependencies):
     if len(dependencies) > 0:
         lsf_dep_expression = "-w " + " && ".join(["ended(%s)" % x for x in dependencies])
 
-    docker_image = "LSB_DOCKER_IMAGE=%s" % image
+    docker_image = "LSB_DOCKER_IMAGE=\"%s\"" % image
     docker_opts = "LSB_DOCKER_OPTIONS=\"%s\"" % " ".join(
         docker_options(name, projects_home.root(), projects_home.resources_dir()))
     outlog = projects_home.log_path("out.log")
