@@ -10,8 +10,8 @@ import tsv_config
 from logger import init_logger, logger
 
 
-def fix_file_permissions(projects_home, row):
-    projects_home.fix_file_permissions(row.project_id(), row.sample_id())
+def fix_file_permissions(projects_home, row, uid, gid):
+    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), uid, gid)
 
 
 def main(argv):
@@ -34,13 +34,13 @@ def main(argv):
         sys.exit(1)
 
     try:
-        ngspyeasy_fastqc_job(tsv_conf, projects_home, args.sample_id)
+        ngspyeasy_fastqc_job(tsv_conf, projects_home, args.sample_id, args.uid, args.gid)
     except Exception as ex:
         logger().exception(ex)
         sys.exit(1)
 
 
-def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
+def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id, uid, gid):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
         rows2run = filter(lambda x: x.sample_id() == sample_id, rows2run)
@@ -49,7 +49,7 @@ def ngspyeasy_fastqc_job(tsv_conf, projects_home, sample_id):
         try:
             run_fastqc(row, projects_home)
         finally:
-            fix_file_permissions(projects_home, row)
+            fix_file_permissions(projects_home, row, uid, gid)
 
 
 def run_fastqc(row, projects_home):

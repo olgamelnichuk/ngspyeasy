@@ -55,10 +55,10 @@ class ProjectsDir(object):
     def sample_dir(self, project_id, sample_id):
         return os.path.join(self.project_dir(project_id), sample_id)
 
-    def fix_file_permissions(self, project_id, sample_id):
+    def fix_file_permissions(self, project_id, sample_id, uid, gid):
         dir = self.sample_dir(project_id, sample_id)
-        logger().info("chmod -r 0777 0666 %s" % dir)
-        shcmd.chmod(dir, 0777, 0666)
+        logger().info("chown -r %s %s %s" % (str(uid), str(gid), dir))
+        shcmd.chown(dir, uid, gid)
 
     def init_structure(self, tsv_conf):
         uniq_sample_dirs = uniq_set(
@@ -82,12 +82,6 @@ class ProjectsDir(object):
             makedir_ifnotexist(sample_dir.reports_dir())
             makedir_ifnotexist(sample_dir.config_dir())
             makedir_ifnotexist(sample_dir.log_dir())
-
-        project_dirs = [self.project_dir(x) for x in uniq_set([y.project_id() for y in tsv_conf.all_rows()])]
-
-        for d in project_dirs:
-            logger().info("Chmod 0775 on everything under %s" % d)
-            shcmd.chmod(d, 0775, 0664)
 
     def check_fastq(self, tsv_conf):
         logger().info("Checking if we need to move raw FastQ files...")

@@ -58,7 +58,7 @@ class JobCommand(object):
 
     def as_string(self):
         cmd = ["python /ngspyeasy/%s" % self.executable, "-v" if self.verbose else "", "-c", self.config_name, "-d",
-               NGS_PROJECTS, "-i", self.sample_id]
+               NGS_PROJECTS, "-i", self.sample_id, "-u", str(os.getuid()), "-g", str(os.getgid())]
 
         if self.task:
             cmd += ["-t", self.task]

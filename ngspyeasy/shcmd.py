@@ -3,9 +3,10 @@ import functools
 import subprocess
 import sys
 import itertools
-from logger import logger
 
+from logger import logger
 import os
+
 
 def has_chmod_permissions(curr_uid, path):
     return curr_uid == 0 or curr_uid == os.stat(path).st_uid
@@ -19,6 +20,16 @@ def chmod(dir, dmode, fmode):
             path = os.path.join(root, p)
             if has_permissions(path):
                 os.chmod(path, mode)
+
+
+def chown(dir, uid, gid):
+    has_permissions = functools.partial(has_chmod_permissions, os.getuid())
+    for root, dirs, files in os.walk(dir):
+        z = dirs + files
+        for p, mode in z:
+            path = os.path.join(root, p)
+            if has_permissions(path):
+                os.chown(path, uid, gid)
 
 
 def run_command(cmd):
