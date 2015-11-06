@@ -12,13 +12,12 @@ NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
 DOCKER_OPTS = ""
 
 
-def docker_options(name, ngs_projects_path, ngs_resources_path, pipeman=False):
+def docker_options(ngs_projects_path, ngs_resources_path, pipeman=False):
     options = ["--rm", "-P", "-w", HOME, "-e", "HOME=" + HOME]
     if pipeman:
         options.extend(["-e", "USER=" + USER, "--user", USER])
 
     ngspyeasy_home = os.path.dirname(os.path.realpath(__file__))
-    options.extend(["--name", name])
     options.extend(["-v", ngs_projects_path + ":" + NGS_PROJECTS])
     options.extend(["-v", ngs_resources_path + ":" + NGS_RESOURCES])
     options.extend(["-v", ngspyeasy_home + ":/ngspyeasy:ro"])
@@ -27,7 +26,8 @@ def docker_options(name, ngs_projects_path, ngs_resources_path, pipeman=False):
 
 
 def wrap(name, image, cmd, projects_home):
-    docker_run = ["docker", "run"] + docker_options(name, projects_home.root(), projects_home.resources_dir())
+    docker_run = ["docker", "run"] + docker_options(projects_home.root(), projects_home.resources_dir())
+    docker_run.append("--name %s" % name)
     docker_run.append(image)
     docker_run.append(cmd)
     return " ".join(docker_run)
