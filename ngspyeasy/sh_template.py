@@ -12,7 +12,7 @@ def load(*p):
     logger().debug("Loading sh template from: %s" % path)
 
     if not os.path.isfile(path):
-        raise IOError("Sh template file not found: %s" % path)
+        raise IOError("sh template file not found: %s" % path)
 
     with open(path) as f:
         lines = f.readlines()

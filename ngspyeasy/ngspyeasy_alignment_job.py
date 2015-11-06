@@ -15,8 +15,8 @@ import tsv_config
 from logger import init_logger, logger
 
 
-def fix_file_permissions(projects_home, row):
-    projects_home.fix_file_permissions(row.project_id(), row.sample_id())
+def fix_file_permissions(projects_home, row, uid, gid):
+    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), uid, gid)
 
 
 def main(argv):
@@ -39,13 +39,13 @@ def main(argv):
         sys.exit(1)
 
     try:
-        ngspyeasy_alignment_job(tsv_conf, projects_home, args.sample_id, args.task)
+        ngspyeasy_alignment_job(tsv_conf, projects_home, args.sample_id, args.task, args.uid, args.gid)
     except Exception as ex:
         logger().exception(ex)
         sys.exit(1)
 
 
-def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
+def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task, uid, gid):
     rows2run = tsv_conf.all_rows()
     if sample_id is not None:
         rows2run = [x for x in rows2run if x.sample_id() == sample_id]
@@ -54,7 +54,7 @@ def ngspyeasy_alignment_job(tsv_conf, projects_home, sample_id, task=None):
         try:
             run_alignment(row, projects_home, task)
         finally:
-            fix_file_permissions(projects_home, row)
+            fix_file_permissions(projects_home, row, uid, gid)
 
 
 def run_alignment(row, projects_home, task):
@@ -273,7 +273,7 @@ def stampy_cleansam(row, projects_home, task):
 def stampy_picard_addorreplacereadgroups(row, projects_home, task):
     logger().debug(
         "stampy_picard_addorreplacereadgroups (SAMPLE_ID='%s', ALIGNER='%s', TASK='%s', GENOMEBUILD='%s')" % (
-        row.sample_id(), row.aligner(), task, row.genomebuild()))
+            row.sample_id(), row.aligner(), task, row.genomebuild()))
 
     align_data = sample.alignment_data(row, projects_home)
     if alignment_results_exist(align_data):
