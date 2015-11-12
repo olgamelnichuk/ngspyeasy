@@ -18,7 +18,7 @@
 
 import datetime
 
-VERSION = "0.1"
+VERSION = "2.0"
 
 NGSEASYVERSION = "1.0-r001"
 
