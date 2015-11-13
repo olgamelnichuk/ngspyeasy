@@ -333,6 +333,7 @@ def ngspyeasy_variant_calling(tsv_conf, verbose):
             yield cmd.add_task("freebayes"), "compbio/ngseasy-freebayes", vc_type
             yield cmd.add_task("platypus"), "compbio/ngseasy-platypus", vc_type
             yield cmd.add_task("HaplotypeCaller"), "compbio/ngseasy-gatk", vc_type
+            yield cmd.add_task("bcbio-variation"), "compbio/ngseasy-bcbio-variation", vc_type
         else:
             raise ValueError("Unknown variant calling type: %s" % vc_type)
 
