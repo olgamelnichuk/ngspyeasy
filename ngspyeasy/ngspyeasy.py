@@ -251,7 +251,7 @@ def ngspyeasy_alignment(tsv_conf, verbose):
             yield cmd, "compbio/ngseasy-novoalign", aligner_type
         elif aligner_type == "stampy":
             yield cmd.add_task("bwa"), "compbio/ngseasy-bwa", aligner_type
-            yield cmd.add_task("stampy"), "compbio/ngseasy-bwa", aligner_type
+            yield cmd.add_task("stampy"), "compbio/ngseasy-stampy", aligner_type
             yield cmd.add_task("picard_cleansam"), "compbio/ngseasy-picardtools", aligner_type
             yield cmd.add_task("picard_addorreplacereadgroups"), "compbio/ngseasy-picardtools", aligner_type
         elif aligner_type == "bowtie2":

@@ -28,6 +28,6 @@ sambamba view -t ${NCPU} -S -f bam ${SPLITREAD_SAM} | \
 sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${SPLITREAD_BAM} /dev/stdin && \
 sambamba index ${SPLITREAD_BAM} && \
 rm -v ${DISCORDANT_SAM} && \
-rm -v ${SPLITER_SAM} && \
+rm -v ${SPLITREAD_SAM} && \
 rm -rf ${TMP_DIR}/* && \
 chmod -R 777 ${ALIGNMENTS_DIR}/*
