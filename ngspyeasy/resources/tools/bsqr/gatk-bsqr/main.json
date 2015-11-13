@@ -1,0 +1,22 @@
+[
+  {
+    "template": "gatk-bsqr.templ.sh",
+    "image": "compbio/ngseasy-gatk",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "KNOWN_INDELS",
+      "KNOWN_SNPS_b138",
+      "KNOWN_SNPS_OMNI",
+      "KNOWN_SNPS_1000G",
+      "TMP_DIR",
+      "RECAL_DATA_TABLE"
+    ],
+    "input": [
+      "BAM_IN"
+    ],
+    "output": [
+      "BAM_OUT"
+    ]
+  }
+]

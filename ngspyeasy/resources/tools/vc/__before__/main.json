@@ -1,0 +1,29 @@
+[
+  {
+    "template": "callable-regions.tmpl.sh",
+    "image": "compbio/ngseasy-base",
+    "vars": [
+      "NCPU"
+    ],
+    "input": [
+      "BAM_FILE"
+    ],
+    "output": [
+      "MAPPED_READS_BED",
+      "GENOMECOV_BED"
+    ]
+  },
+  {
+    "template": "filter-bam.tmpl.sh",
+    "image": "compbio/ngseasy-base",
+    "vars": [
+      "NCPU"
+    ],
+    "input": [
+      "BAM_FILE"
+    ],
+    "output": [
+      "FILTERED_BAM"
+    ]
+  }
+]

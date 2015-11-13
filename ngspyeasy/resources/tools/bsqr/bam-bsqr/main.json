@@ -1,0 +1,18 @@
+[
+  {
+    "template": "bam-bsqr.tmpl.sh",
+    "image": "compbio/ngseasy-base",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "DBSNP_RECAB",
+      "TMP_DIR"
+    ],
+    "input": [
+      "BAM_IN"
+    ],
+    "output": [
+      "BAM_OUT"
+    ]
+  }
+]

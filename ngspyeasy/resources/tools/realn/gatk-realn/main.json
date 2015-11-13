@@ -1,0 +1,21 @@
+[
+  {
+    "template": "gatk-realn.tmpl.sh",
+    "image": "compbio/ngseasy-gatk",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "KNOWN_INDELS",
+      "TMP_DIR",
+      "DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS"
+    ],
+    "input": [
+      "DUPEMARK_BAM"
+    ],
+    "output": [
+      "DUPEMARK_REALN_BAM",
+      "DUPEMARK_REALN_FLAGSTAT",
+      "DUPEMARK_REALN_BED"
+    ]
+  }
+]

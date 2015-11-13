@@ -1,0 +1,69 @@
+[
+  {
+    "template": "freebayes.tmpl.sh",
+    "image": "compbio/ngseasy-freebayes",
+    "vars": [
+      "NCPU",
+      "REFFASTA"
+    ],
+    "input": [
+      "FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  },
+  {
+    "template": "platypus.tmpl.sh",
+    "image": "compbio/ngseasy-platypus",
+    "vars": [
+      "NCPU",
+      "REFFASTA"
+    ],
+    "input": [
+      "FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  },
+  {
+    "template": "HaplotypeCaller.tmpl.sh",
+    "image": "compbio/ngseasy-gatk",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "KNOWN_SNPS_b138",
+      "GTMODEGATK",
+      "TMP_DIR"
+    ],
+    "input": [
+      "FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  },
+  {
+    "template": "bcbio-variation.tmpl.sh",
+    "image": "compbio/ngseasy-bcbio-variation",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "VCF_GZ"
+    ],
+    "input": [
+      "HAPLOTYPE_CALLER_VCF",
+      "FREEBAYERS_VCF"
+    ],
+    "output": [
+      "VCF_GZ"
+    ]
+  }
+]

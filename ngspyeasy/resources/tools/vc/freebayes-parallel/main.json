@@ -1,0 +1,21 @@
+[
+  {
+    "template": "freebayes-parallel.tmpl.sh",
+    "image": null,
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "COVERAGE_MIN",
+      "MAP_QUAL",
+      "BASE_QUAL"
+    ],
+    "input": [
+      "FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  }
+]

@@ -1,0 +1,19 @@
+[
+  {
+    "template": "HaplotypeCaller.tmpl.sh",
+    "image": "compbio/ngseasy-gatk",
+    "vars": [
+      "TMP_DIR",
+      "REFFASTA",
+      "KNOWN_SNPS_b138"
+    ],
+    "input": [
+      "FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  }
+]

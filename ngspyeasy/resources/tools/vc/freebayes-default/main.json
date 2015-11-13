@@ -1,0 +1,18 @@
+[
+  {
+    "template": "freebayes-default.tmpl.sh",
+    "image": "compbio/ngseasy-freebayes",
+    "vars": [
+      "NCPU",
+      "REFFASTA"
+    ],
+    "input": [
+      "FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  }
+]

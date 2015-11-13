@@ -1,0 +1,20 @@
+[
+  {
+    "template": "bam-realn.tmpl.sh",
+    "image": "compbio/ngseasy-glia",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "KNOWN_INDELS",
+      "TMP_DIR"
+    ],
+    "input": [
+      "DUPEMARK_BAM"
+    ],
+    "output": [
+      "DUPEMARK_REALN_BAM",
+      "DUPEMARK_REALN_FLAGSTAT",
+      "DUPEMARK_REALN_BED"
+    ]
+  }
+]
