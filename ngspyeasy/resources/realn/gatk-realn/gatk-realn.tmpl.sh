@@ -24,7 +24,7 @@ time java -Xmx12g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysis
 --maxReadsForConsensuses 500 \
 --maxConsensuses 100 \
 --targetIntervals ${DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS} \
--o ${BAMOUT} && \
+-o ${DUPEMARK_REALN_BAM} && \
 sambamba index ${DUPEMARK_REALN_BAM}
 sambamba flagstat -t ${NCPU} ${DUPEMARK_REALN_BAM} > ${DUPEMARK_REALN_FLAGSTAT} && \
 bedtools bamtobed -i ${DUPEMARK_REALN_BAM} | bedtools merge > ${DUPEMARK_REALN_BED} && \
