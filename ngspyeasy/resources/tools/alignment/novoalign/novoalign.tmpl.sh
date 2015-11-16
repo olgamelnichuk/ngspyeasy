@@ -2,7 +2,7 @@
 
 time /usr/local/bin/novoalign \
 -d ${NOVOINDEX} \
--f ${FQ1} ${FQ2} \
+-f ${TRIMMED_FQ1} ${TRIMMED_FQ2} \
 -F STDFQ \
 --3Prime \
 -g 40 \

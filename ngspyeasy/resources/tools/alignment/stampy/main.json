@@ -1,5 +1,6 @@
 [
   {
+    "name": "bwa",
     "template": "bwa.tmpl.sh",
     "image": "compbio/ngseasy-bwa",
     "vars": [
@@ -13,14 +14,15 @@
       "TMP_DIR"
     ],
     "input": [
-      "FQ1",
-      "FQ2"
+      "TRIMMED_FQ1",
+      "TRIMMED_FQ2"
     ],
     "output": [
-      "TMP_BAM"
+      "STAMPY_TMP_BAM"
     ]
   },
   {
+    "name": "stampy",
     "template": "stampy.tmpl.sh",
     "image": "compbio/ngseasy-stampy",
     "vars": [
@@ -35,13 +37,14 @@
       "UNMAPPED_FASTQ"
     ],
     "input": [
-      "TMP_BAM"
+      "STAMPY_TMP_BAM"
     ],
     "output": [
-      "DUPEMARK_TMP_BAM"
+      "STAMPY_DUPEMARK_TMP_BAM"
     ]
   },
   {
+    "name": "picatd1",
     "template": "picard_cleansam.tmpl.sh",
     "image": "compbio/ngseasy-picardtools",
     "vars": [
@@ -49,13 +52,14 @@
       "PICARD_VERSION"
     ],
     "input": [
-      "DUPEMARK_TMP_BAM"
+      "STAMPY_DUPEMARK_TMP_BAM"
     ],
     "output": [
-      "DUPEMARK_TMPCLEANSAM_BAM"
+      "STAMPY_DUPEMARK_CLEANSAM_TMP_BAM"
     ]
   },
   {
+    "name": "picard2",
     "template": "picard_addorreplacegroups.tmpl.sh",
     "image": "compbio/ngseasy-picardtools",
     "vars": [
@@ -66,14 +70,14 @@
       "NGS_PLATFORM",
       "PLATFORM_UNIT",
       "RUNDATE",
-      "DUPEMARK_TMP_BAM"
+      "STAMPTY_DUPEMARK_TMP_BAM"
     ],
     "input": [
-      "DUPEMARK_TMPCLEANSAM_BAM"
+      "STAMPY_DUPEMARK_CLEANSAM_TMP_BAM"
     ],
     "output": [
       "DUPEMARK_BAM",
-      "DUPEMARK_FLAGSTAT_REPORT",
+      "DUPEMARK_FLAGSTAT",
       "DUPEMARK_BED"
     ]
   }

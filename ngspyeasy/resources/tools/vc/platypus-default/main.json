@@ -1,5 +1,6 @@
 [
   {
+    "name": "platypus-default",
     "template": "platypus-default.tmpl.sh",
     "image": "compbio/ngseasy-platypus",
     "vars": [

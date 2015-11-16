@@ -3,7 +3,7 @@
 time /usr/local/pipeline/freebayes/scripts/freebayes-parallel <(/usr/local/pipeline/freebayes/scripts/fasta_generate_regions.py ${REFFASTA} 100000) \
 ${NCPU} \
 -f ${REFFASTA} \
--b ${FILTERED_BAM} \
+-b ${VC_FILTERED_BAM} \
 --min-coverage ${COVERAGE_MIN} \
 --min-mapping-quality ${MAP_QUAL} \
 --min-base-quality ${BASE_QUAL} \

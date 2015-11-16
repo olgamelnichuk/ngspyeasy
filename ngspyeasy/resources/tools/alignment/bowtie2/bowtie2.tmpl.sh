@@ -7,7 +7,7 @@ time /usr/local/bin/bowtie2 ${FAST} --threads ${NCPU} -x ${GENOMEINDEX} \
 --rg PU:${NGS_PLATFORM} \
 --rg LB:${DNA_PREP_LIBRARY_ID} \
 --rg DT:${RUNDATE} \
--1 ${FQ1} -2 ${FQ2} | \
+-1 ${TRIMMED_FQ1} -2 ${TRIMMED_FQ2} | \
 samblaster --addMateTags --excludeDups \
 --discordantFile ${DISCORDANT_SAM} \
 --splitterFile ${SPLITREAD_SAM} \

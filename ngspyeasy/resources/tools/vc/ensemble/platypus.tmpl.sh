@@ -2,10 +2,10 @@
 
 time python /usr/local/pipeline/Platypus/bin/Platypus.py callVariants \
 --nCPU ${NCPU} \
---bamFiles=${FILTERED_BAM} \
+--bamFiles=${VC_FILTERED_BAM} \
 --refFile=${REFFASTA} \
---output=${RAW_VCF} \
---logFileName=${RAW_VCF}.log \
+--output=${PLATYPUS_RAW_VCF} \
+--logFileName=${PLATYPUS_RAW_VCF}.log \
 --filterDuplicates=1 \
 --assemble=1 \
 --assembleAll=1 \
@@ -37,7 +37,7 @@ vcffixup - | \
 vcfstreamsort | \
 vt normalize -r ${REFFASTA} -q - 2> /dev/null | \
 vcfuniqalleles | \
-bgzip -c > ${VCF_GZ} && \
-tabix ${VCF_GZ} && \
-bgzip ${RAW_VCF} && \
-tabix ${RAW_VCF_GZ}
+bgzip -c > ${PLATYPUS_VCF_GZ} && \
+tabix ${PLATYPUS_VCF_GZ} && \
+bgzip ${PLATYPUS_RAW_VCF} && \
+tabix ${PLATYPUS_RAW_VCF_GZ}

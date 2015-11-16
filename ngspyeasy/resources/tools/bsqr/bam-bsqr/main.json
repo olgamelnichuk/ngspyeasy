@@ -1,5 +1,6 @@
 [
   {
+    "name": "bam-bsqr",
     "template": "bam-bsqr.tmpl.sh",
     "image": "compbio/ngseasy-base",
     "vars": [
@@ -9,10 +10,10 @@
       "TMP_DIR"
     ],
     "input": [
-      "BAM_IN"
+      "BSQR_BAM_IN"
     ],
     "output": [
-      "BAM_OUT"
+      "BSQR_BAM_OUT"
     ]
   }
 ]

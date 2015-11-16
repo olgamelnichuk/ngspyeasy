@@ -1,5 +1,6 @@
 [
   {
+    "name": "bam-realn",
     "template": "bam-realn.tmpl.sh",
     "image": "compbio/ngseasy-glia",
     "vars": [

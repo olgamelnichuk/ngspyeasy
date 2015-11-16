@@ -1,5 +1,6 @@
 [
   {
+    "name": "UnifiedGenotyper",
     "template": "UnifiedGenotyper.tmpl.sh",
     "image": "compbio/ngseasy-gatk",
     "vars": [
@@ -9,7 +10,7 @@
       "NCPU"
     ],
     "import": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
       "RAW_VCF",

@@ -14,14 +14,14 @@ time python  /usr/local/pipeline/${STAMPY_VERSION}/stampy.py \
 --noautosense \
 --insertsize=500 \
 --insertsd=100 \
--M ${TMP_BAM} | \
+-M ${STAMPY_TMP_BAM} | \
 samblaster --addMateTags --excludeDups \
 --discordantFile ${DISCORDANT_SAM} \
 --splitterFile ${SPLITREAD_SAM} \
 --unmappedFile ${UNMAPPED_FASTQ} | \
 sambamba view -t ${NCPU} -S -f bam /dev/stdin | \
-sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${DUPEMARK_TMP_BAM} /dev/stdin && \
-sambamba index ${DUPEMARK_TMP_BAM} && \
+sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${STAMPY_DUPEMARK_TMP_BAM} /dev/stdin && \
+sambamba index ${STAMPY_DUPEMARK_TMP_BAM} && \
 sambamba view -t ${NCPU} -S -f bam ${DISCORDANT_SAM} | \
 sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${DISCORDANT_BAM} /dev/stdin && \
 sambamba index ${DISCORDANT_BAM} && \

@@ -1,5 +1,6 @@
 [
   {
+    "name": "freebayes-default",
     "template": "freebayes-default.tmpl.sh",
     "image": "compbio/ngseasy-freebayes",
     "vars": [
@@ -7,7 +8,7 @@
       "REFFASTA"
     ],
     "input": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
       "RAW_VCF",

@@ -1,12 +1,13 @@
 [
   {
+    "name": "callable-regions",
     "template": "callable-regions.tmpl.sh",
     "image": "compbio/ngseasy-base",
     "vars": [
       "NCPU"
     ],
     "input": [
-      "BAM_FILE"
+      "VC_BAM_IN"
     ],
     "output": [
       "MAPPED_READS_BED",
@@ -14,16 +15,17 @@
     ]
   },
   {
+    "name": "filter-bam",
     "template": "filter-bam.tmpl.sh",
     "image": "compbio/ngseasy-base",
     "vars": [
       "NCPU"
     ],
     "input": [
-      "BAM_FILE"
+      "VC_BAM_IN"
     ],
     "output": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ]
   }
 ]

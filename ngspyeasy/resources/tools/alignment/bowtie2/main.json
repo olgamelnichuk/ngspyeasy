@@ -1,6 +1,7 @@
 [
   {
-    "template": "bwa.tmpl.sh",
+    "name": "bowtie2",
+    "template": "bowtie2.tmpl.sh",
     "image": "compbio/ngseasy-bowtie2",
     "vars": [
       "NCPU",
@@ -18,13 +19,13 @@
       "UNMAPPED_FASTQ"
     ],
     "input": [
-      "FQ1",
-      "FQ2"
+      "TRIMMED_FQ1",
+      "TRIMMED_FQ2"
     ],
     "output": [
       "DUPEMARK_BAM",
-      "DUPEMARK_FLAGSTAT_REPORT",
-      "DUPEMARK_BED_REPORT"
+      "DUPEMARK_FLAGSTAT",
+      "DUPEMARK_BED"
     ]
   }
 ]

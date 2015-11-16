@@ -1,5 +1,6 @@
 [
   {
+    "name": "bwa",
     "template": "bwa.tmpl.sh",
     "image": "compbio/ngseasy-bwa",
     "vars": [
@@ -18,13 +19,13 @@
       "UNMAPPED_FASTQ"
     ],
     "input": [
-      "FQ1",
-      "FQ2"
+      "TRIMMED_FQ1",
+      "TRIMMED_FQ2"
     ],
     "output": [
       "DUPEMARK_BAM",
-      "DUPEMARK_FLAGSTAT_REPORT",
-      "DUPEMARK_BED_REPORT"
+      "DUPEMARK_FLAGSTAT",
+      "DUPEMARK_BED"
     ]
   }
 ]

@@ -1,5 +1,6 @@
 [
   {
+    "name": "gatk-realn",
     "template": "gatk-realn.tmpl.sh",
     "image": "compbio/ngseasy-gatk",
     "vars": [

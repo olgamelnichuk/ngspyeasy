@@ -1,5 +1,6 @@
 [
   {
+    "name": "HaplotypeCaller",
     "template": "HaplotypeCaller.tmpl.sh",
     "image": "compbio/ngseasy-gatk",
     "vars": [

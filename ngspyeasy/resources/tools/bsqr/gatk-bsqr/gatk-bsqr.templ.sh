@@ -23,7 +23,7 @@ time java -Xmx12g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysis
 --baq RECALCULATE \
 --baqGapOpenPenalty 40 \
 --BQSR ${RECAL_DATA_TABLE} \
--I ${BAM_IN} \
--o ${BAM_OUT} && \
-sambamba index ${BAM_OUT} \
+-I ${BSQR_BAM_IN} \
+-o ${BSQR_BAM_OUT} && \
+sambamba index ${BSQR_BAM_OUT} \
 rm -fr ${TMP_DIR}

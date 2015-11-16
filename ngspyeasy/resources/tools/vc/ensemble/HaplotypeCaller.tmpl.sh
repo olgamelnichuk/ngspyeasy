@@ -4,8 +4,8 @@ time java -Xmx6g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisT
 -T HaplotypeCaller \
 -R ${REFFASTA} \
 -nct ${NCPU} \
--I ${FILTERED_BAM} \
--o ${RAW_VCF} \
+-I ${VC_FILTERED_BAM} \
+-o ${HAPLOTYPE_CALLER_RAW_VCF} \
 -stand_call_conf 30 \
 -stand_emit_conf 10 \
 --output_mode EMIT_VARIANTS_ONLY \
@@ -37,7 +37,7 @@ time java -Xmx6g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisT
 --annotation SpanningDeletions \
 --annotation TandemRepeatAnnotator \
 --annotation VariantType && \
-time cat ${RAW_VCF} | \
+time cat ${HAPLOTYPE_CALLER_RAW_VCF} | \
 vcffilter -f 'QUAL > 5' -s | \
 fix_ambiguous | \
 vcfallelicprimitives --keep-geno | \
@@ -45,7 +45,7 @@ vcffixup - | \
 vcfstreamsort | \
 vt normalize -r ${REFFASTA} -q - 2> /dev/null | \
 vcfuniqalleles | \
-bgzip -c > ${VCF_GZ} && \
-tabix ${VCF_GZ} && \
-bgzip ${RAW_VCF} && \
-tabix ${RAW_VCF_GZ}
+bgzip -c > ${HAPLOTYPE_CALLER_VCF_GZ} && \
+tabix ${HAPLOTYPE_CALLER_VCF_GZ} && \
+bgzip ${HAPLOTYPE_CALLER_RAW_VCF} && \
+tabix ${HAPLOTYPE_CALLER_RAW_VCF_GZ}

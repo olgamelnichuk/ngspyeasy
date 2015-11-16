@@ -5,7 +5,7 @@ time /usr/local/bin/bwa mem \
 -t ${NCPU} \
 -R '@RG\tID:${BAM_PREFIX}\tSM:${BAM_PREFIX}\tPU:${PLATFORM_UNIT}\tPL:${NGS_PLATFORM}\tLB:${DNA_PREP_LIBRARY_ID}\tDT:${RUNDATE}' \
 ${REFFASTA} \
-${FQ1} ${FQ2} | \
+${TRIMMED_FQ1} ${TRIMMED_FQ2} | \
 samblaster --addMateTags --excludeDups \
 --discordantFile ${DISCORDANT_SAM} \
 --splitterFile ${SPLITREAD_SAM} \

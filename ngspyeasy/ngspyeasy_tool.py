@@ -85,7 +85,7 @@ def run_2l(tool_path, row, projects_home, uid, gid):
         raise ValueError("Unknown pipeline tool: %s" % tool)
 
     try:
-        tool.run(pipeline_environment.as_map(row, projects_home))
+        tool.run(pipeline_environment.as_dict(row, projects_home))
     except Exception as ex:
         logger().exception(ex)
     finally:

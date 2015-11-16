@@ -4,7 +4,7 @@ time java -Xmx6g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisT
 -T UnifiedGenotyper \
 -R ${REFFASTA} \
 -nct ${NCPU} \
--I ${FILTERED_BAM} \
+-I ${VC_FILTERED_BAM} \
 -o ${RAW_VCF} \
 -stand_call_conf 30 \
 -stand_emit_conf 10 \

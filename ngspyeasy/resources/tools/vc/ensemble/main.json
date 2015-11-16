@@ -1,5 +1,6 @@
 [
   {
+    "name": "freebayes",
     "template": "freebayes.tmpl.sh",
     "image": "compbio/ngseasy-freebayes",
     "vars": [
@@ -7,15 +8,16 @@
       "REFFASTA"
     ],
     "input": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
-      "RAW_VCF",
-      "RAW_VCF_GZ",
-      "VCF_GZ"
+      "FREEBAYES_RAW_VCF",
+      "FREEBAYES_RAW_VCF_GZ",
+      "FREEBAYES_VCF_GZ"
     ]
   },
   {
+    "name": "platypus",
     "template": "platypus.tmpl.sh",
     "image": "compbio/ngseasy-platypus",
     "vars": [
@@ -23,15 +25,16 @@
       "REFFASTA"
     ],
     "input": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
-      "RAW_VCF",
-      "RAW_VCF_GZ",
-      "VCF_GZ"
+      "PLATYPUS_RAW_VCF",
+      "PLATYPUS_RAW_VCF_GZ",
+      "PLATYPUS_VCF_GZ"
     ]
   },
   {
+    "name": "HaplotypeCaller",
     "template": "HaplotypeCaller.tmpl.sh",
     "image": "compbio/ngseasy-gatk",
     "vars": [
@@ -42,15 +45,16 @@
       "TMP_DIR"
     ],
     "input": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
-      "RAW_VCF",
-      "RAW_VCF_GZ",
-      "VCF_GZ"
+      "HAPLOTYPE_CALLER_RAW_VCF",
+      "HAPLOTYPE_CALLER_RAW_VCF_GZ",
+      "HAPLOTYPE_CALLER_VCF_GZ"
     ]
   },
   {
+    "name": "bcbio-variation",
     "template": "bcbio-variation.tmpl.sh",
     "image": "compbio/ngseasy-bcbio-variation",
     "vars": [
@@ -59,8 +63,8 @@
       "VCF_GZ"
     ],
     "input": [
-      "HAPLOTYPE_CALLER_VCF",
-      "FREEBAYERS_VCF"
+      "HAPLOTYPE_CALLER_VCF_GZ",
+      "FREEBAYERS_VCF_GZ"
     ],
     "output": [
       "VCF_GZ"

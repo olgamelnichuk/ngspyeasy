@@ -1,5 +1,6 @@
 [
   {
+    "name": "freebayes-parallel",
     "template": "freebayes-parallel.tmpl.sh",
     "image": null,
     "vars": [

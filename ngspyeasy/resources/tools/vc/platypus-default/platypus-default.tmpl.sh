@@ -2,7 +2,7 @@
 
 time python /usr/local/pipeline/Platypus/bin/Platypus.py callVariants \
 --nCPU ${NCPU} \
---bamFiles=${FILTERED_BAM} \
+--bamFiles=${VC_FILTERED_BAM} \
 --refFile=${REFFASTA} \
 --output=${RAW_VCF} \
 --logFileName=${RAW_VCF}.log \

@@ -2,7 +2,7 @@
 
 time /usr/local/pipeline/snap/snap-aligner paired \
 ${REFDIR} \
-${FQ1} ${FQ2} \
+${TRIMMED_FQ1} ${TRIMMED_FQ2} \
 -t ${NCPU} \
 -b \
 -M \

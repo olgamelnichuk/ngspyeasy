@@ -1,5 +1,6 @@
 [
   {
+    "name": "gatk-bsqr",
     "template": "gatk-bsqr.templ.sh",
     "image": "compbio/ngseasy-gatk",
     "vars": [

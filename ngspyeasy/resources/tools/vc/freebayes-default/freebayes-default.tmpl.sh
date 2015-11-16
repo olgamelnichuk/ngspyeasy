@@ -2,7 +2,7 @@
 
 time /usr/local/pipeline/freebayes/scripts/freebayes-parallel <(/usr/local/pipeline/freebayes/scripts/fasta_generate_regions.py ${REFFASTA} 100000) ${NCPU} \
 -f ${REFFASTA} \
--b ${FILTERED_BAM} \
+-b ${VC_FILTERED_BAM} \
 --min-repeat-entropy 1 \
 --genotype-qualities > ${RAW_VCF} && \
 time cat ${RAW_VCF} | \
