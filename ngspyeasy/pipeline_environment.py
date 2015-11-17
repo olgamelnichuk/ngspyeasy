@@ -24,12 +24,9 @@ import genome_build
 import sample
 from utils import LazyDict
 
-BASE_QUAL = "20"
-MAP_QUAL = "20"
-COVERAGE_MIN = "2"
-
 
 def as_dict(row, projects_home):
+    fqc_data = sample.fastqc_data(row, projects_home)
     align_data = sample.alignment_data(row, projects_home)
     realn_data = sample.realn_data(row, projects_home)
     bsqr_data = sample.bsqr_data(row, projects_home)
@@ -89,15 +86,21 @@ def as_dict(row, projects_home):
         VC_FILTERED_BAM=vc_data.vc_filtered_bam(),
         MAPPED_READS_BED=vc_data.reports_path(os.path.basename(vc_data.vc_bam_in()) + ".mapped.reads.bed"),
         GENOMECOV_BED=vc_data.reports_path(os.path.basename(vc_data.vc_bam_in()) + ".genomecov.bed"),
-        COVERAGE_MIN=COVERAGE_MIN,
-        MAP_QUAL=MAP_QUAL,
-        BASE_QUAL=BASE_QUAL,
+        BASE_QUAL="20",
+        MAP_QUAL="20",
+        COVERAGE_MIN="2",
         RAW_VCF=vc_data.raw_vcf(),
+        RAW_VCF_GZ=vc_data.raw_vcf_gz(),
         VCF_GZ=vc_data.vcf_gz(),
-        RAW_VCF_GZ=vc_data.raw_vcf_gz()
+        FREEBAYES_RAW_VCF=vc_data.raw_vcf("freebayes-parallel"),
+        FREEBAYES_RAW_VCF_GZ=vc_data.raw_vcf_gz("freebayes-parallel"),
+        FREEBAYES_VCF_GZ=vc_data.vcf_gz("freebayes-parallel"),
+        HAPLOTYPE_CALLER_RAW_VCF=vc_data.raw_vcf("HaplotypeCaller"),
+        HAPLOTYPE_CALLER_VCF_GZ=vc_data.raw_vcf_gz("HaplotypeCaller"),
+        HAPLOTYPE_CALLER_VCF_GZ=vc_data.vcf_gz("HaplotypeCaller")
     )
 
-    dict.set_lazy("PLATFORM_UNIT", find_platform_unit, fastq_files[0])
+    dict.set_lazy("PLATFORM_UNIT", find_platform_unit, fqc_data.fastq_files()[0])
     return dict
 
 

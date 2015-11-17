@@ -1,0 +1,20 @@
+[
+  {
+    "name": "btrim",
+    "template": "btrim",
+    "image": "compbio/ngseasy-trimmomatic",
+    "vars": [
+      "NCPU"
+    ],
+    "input": [
+      "FQ1",
+      "FQ2"
+    ],
+    "output": [
+      "PAIRED_FQ1",
+      "UNPAIRED_FQ1",
+      "PAIRED_FQ2",
+      "UNPAIRED_FQ2"
+    ]
+  }
+]

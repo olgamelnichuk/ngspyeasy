@@ -63,24 +63,49 @@ class PipelineTool(object):
         shcmd.run_command(tmpl.create_sh_file(self.key_values(env)))
 
 
-def find(p):
+def normalize(p):
     tool_path = p.rsplit("#", 1)
     tool_path = [None] + tool_path if len(tool_path) == 1 else tool_path
-    tool_name = tool_path[0]
-    tool_ref = tool_path[1]
+    return tool_path[0], tool_path[1]
+
+
+def refs():
+    root = os.path.dirname(__file__)
+    tools_dir = os.path.join(root, "resources", "tools")
+
+    for root, dirs, files in os.walk(tools_dir):
+        for f in files:
+            if f == "main.json":
+                yield os.path.relpath(root, tools_dir)
+
+
+def find(p):
+    name, ref = normalize(p)
 
     root = os.path.dirname(__file__)
-    tool_dir = os.path.join(root, "resources", tool_ref)
+    tool_dir = os.path.join(root, "resources", "tools", ref)
     logger().debug("Pipeline tool directory: %s" % tool_dir)
 
     if not os.path.isdir(tool_dir):
-        return None
+        return []
 
     main_json = os.path.join(tool_dir, "main.json")
     logger().debug("Path to main.json: %s" % main_json)
 
     with open(main_json, 'r') as stream:
         templates = json.load(stream)
+
+    for t in templates:
+        t["ref"]=ref + "#" + t.name
+    return templates
+
+
+def find_template(p):
+    tool_name, tool_ref = normalize(p)
+    templates = find(tool_ref)
+
+    if len(templates) == 0:
+        return None
 
     tmpl = templates[0] if tool_name is None else next(t for t in templates if t.name == tool_name)
     return PipelineTool(tmpl, tool_ref)

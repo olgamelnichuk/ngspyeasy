@@ -80,7 +80,7 @@ def rows2run(tsv_conf, sample_id):
 
 
 def run_2l(tool_path, row, projects_home, uid, gid):
-    tool = pipeline_tools.find(tool_path)
+    tool = pipeline_tools.find_template(tool_path)
     if tool is None:
         raise ValueError("Unknown pipeline tool: %s" % tool)
 

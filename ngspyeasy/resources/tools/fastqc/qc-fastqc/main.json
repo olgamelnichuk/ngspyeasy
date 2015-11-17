@@ -1,0 +1,20 @@
+[
+  {
+    "name": "qc-fastqc",
+    "template": "fastqc.tmpl.sh",
+    "image": "compbio/ngseasy-fastqc",
+    "vars": [
+      "TMP_DIR",
+      "FASTQ_DIR"
+    ],
+    "input": [
+      "FQ1",
+      "FQ2"
+    ],
+    "output": [
+      "FQ1_REPORT",
+      "FQ2_REPORT"
+    ]
+
+  }
+]

@@ -1,0 +1,21 @@
+[
+  {
+    "name": "fastqc",
+    "template": "fastqc.tmpl.sh",
+    "image": "compbio/ngseasy-fastqc",
+    "vars": [
+    ],
+    "input": [
+      "PAIRED_FQ1",
+      "PAIRED_FQ2",
+      "UNPAIRED_FQ1",
+      "UNPAIRED_FQ2"
+    ],
+    "output": [
+      "PAIRED_FQ1_REPORT",
+      "PAIRED_FQ2_REPORT",
+      "UNPAIRED_FQ1_REPORT",
+      "UNPAIRED_FQ2_REPORT"
+   ]
+  }
+]
