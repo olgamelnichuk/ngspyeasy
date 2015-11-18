@@ -9,7 +9,7 @@ from ngspyeasy import sh_template
 from ngspyeasy import pipeline_environment
 
 
-class TemplateStructureTests(unittest.TestCase):
+class TemplateVarsTests(unittest.TestCase):
     def test_vars(self):
         env = (pipeline_environment.as_test_dict())
         print env
