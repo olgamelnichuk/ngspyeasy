@@ -47,9 +47,9 @@ class JobSubmitter(object):
         self.dependencies[sample_id] = job_id
 
     def submit(self, tmpl, sample_id, config_name, verbose):
-        job = docker.Job(tmpl.ref, sample_id, config_name, verbose)
-        image = "%s:%s" % (tmpl.image, NGSEASYVERSION)
-        tag = tmpl.name
+        job = docker.Job(tmpl.id(), sample_id, config_name, verbose)
+        image = "%s:%s" % (tmpl.image(), NGSEASYVERSION)
+        tag = tmpl.name()
 
         job_id = job_id_generator.get_next([tag, sample_id])
         job_dependencies = self.dependencies_for(sample_id)
@@ -129,7 +129,7 @@ def main(argv):
 
         submitter = JobSubmitter(projects_home, args.mode)
         for tmpl, sample_id in command_list(tsv_conf, args):
-            submitter.submit(tmpl, tsv_conf.filename(), sample_id, verbose)
+            submitter.submit(tmpl, sample_id, tsv_conf.filename(), verbose)
         job_scheduler.all_done()
     except Exception as e:
         logger.exception(e)

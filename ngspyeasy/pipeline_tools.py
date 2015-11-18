@@ -24,14 +24,42 @@ import os
 import sh_template
 
 
+class ToolTemplate(object):
+    def __init__(self, tmpl, tmpl_dir):
+        self.tmpl = tmpl
+        self.tmpl_dir = tmpl_dir
+
+    def vars(self):
+        return self.tmpl["vars"]
+
+    def input(self):
+        return self.tmpl["input"]
+
+    def output(self):
+        return self.tmpl["output"]
+
+    def template(self):
+        return self.tmpl["template"]
+
+    def image(self):
+        return self.tmpl["image"]
+
+    def name(self):
+        return self.tmpl["name"]
+
+    def dir(self):
+        return self.tmpl_dir
+
+    def id(self):
+        return self.dir() + "#" + self.name()
+
+    def allvars(self):
+        return self.vars() + self.input() + self.output()
+
+
 class PipelineTool(object):
-    def __init__(self, tmpl, tool_ref):
-        self.name = tmpl.name
-        self.template = tmpl.template
-        self.vars = tmpl.vars
-        self.inputs = tmpl.input
-        self.outputs = tmpl.output
-        self.tool_ref = tool_ref
+    def __init__(self, tmpl):
+        self.tmpl = tmpl
 
     def files_must_exist(self, names, env):
         return self.files_exist(names, env, True)
@@ -48,18 +76,18 @@ class PipelineTool(object):
 
     def key_values(self, env):
         d = dict()
-        for k in self.vars + self.inputs + self.outputs:
+        for k in self.tmpl.allvars():
             d[k] = env[k]
         return d
 
     def run(self, env):
-        if self.files_exist(self.outputs, env):
+        if self.files_exist(self.tmpl.output(), env):
             logger().info("Skipping this bit... results are already exist")
             return
 
-        self.files_must_exist(self.inputs, env)
+        self.files_must_exist(self.tmpl.input(), env)
 
-        tmpl = sh_template.load(self.tool_ref, self.template)
+        tmpl = sh_template.load(self.tmpl.dir(), self.tmpl.template())
         shcmd.run_command(tmpl.create_sh_file(self.key_values(env)))
 
 
@@ -69,43 +97,41 @@ def normalize(p):
     return tool_path[0], tool_path[1]
 
 
-def refs():
+def tool_dirs():
     root = os.path.dirname(__file__)
-    tools_dir = os.path.join(root, "resources", "tools")
+    tools_root = os.path.join(root, "resources", "tools")
 
-    for root, dirs, files in os.walk(tools_dir):
+    for root, dirs, files in os.walk(tools_root):
         for f in files:
             if f == "main.json":
-                yield os.path.relpath(root, tools_dir)
+                yield os.path.relpath(root, tools_root)
 
 
 def find(p):
-    name, ref = normalize(p)
+    tool_name, tool_dir = normalize(p)
 
     root = os.path.dirname(__file__)
-    tool_dir = os.path.join(root, "resources", "tools", ref)
-    logger().debug("Pipeline tool directory: %s" % tool_dir)
+    absolute_dir = os.path.join(root, "resources", "tools", tool_dir)
+    logger().debug("Pipeline tool directory: %s" % absolute_dir)
 
-    if not os.path.isdir(tool_dir):
+    if not os.path.isdir(absolute_dir):
         return []
 
-    main_json = os.path.join(tool_dir, "main.json")
+    main_json = os.path.join(absolute_dir, "main.json")
     logger().debug("Path to main.json: %s" % main_json)
 
     with open(main_json, 'r') as stream:
         templates = json.load(stream)
 
-    for t in templates:
-        t["ref"]=ref
-    return templates
+    return [ToolTemplate(t, tool_dir) for t in templates]
 
 
 def find_template(p):
-    tool_name, tool_ref = normalize(p)
-    templates = find(tool_ref)
+    tool_name, tool_dir = normalize(p)
+    templates = find(p)
 
     if len(templates) == 0:
         return None
 
     tmpl = templates[0] if tool_name is None else next(t for t in templates if t.name == tool_name)
-    return PipelineTool(tmpl, tool_ref)
+    return PipelineTool(ToolTemplate(tmpl, tool_dir))

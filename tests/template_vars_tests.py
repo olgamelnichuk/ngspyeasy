@@ -13,12 +13,12 @@ class TemplateVarsTests(unittest.TestCase):
     def test_vars(self):
         env = (pipeline_environment.as_test_dict())
         print env
-        for r, n in zip(pipeline_tools.refs(), itertools.count()):
+        for r, n in zip(pipeline_tools.tool_dirs(), itertools.count()):
             print "[%s]" % str(n), r
             tmpls = pipeline_tools.find(r)
             for t in tmpls:
                 self.validate(t, env)
 
     def validate(self, t, env):
-        tmpl = sh_template.load(os.path.join("tools", t["ref"], t["template"]))
+        tmpl = sh_template.load(os.path.join("tools", t.dir(), t.template()))
         tmpl.validate(**env)
