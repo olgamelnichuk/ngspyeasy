@@ -29,7 +29,7 @@ time python /usr/local/pipeline/Platypus/bin/Platypus.py callVariants \
 --qdThreshold 0 \
 --abThreshold 0.0001 \
 --minVarFreq 0.0 && \
-time cat ${RAW_VCF} | \
+time cat ${PLATYPUS_RAW_VCF} | \
 vcffilter -f 'QUAL > 5' -s | \
 fix_ambiguous | \
 vcfallelicprimitives --keep-geno | \

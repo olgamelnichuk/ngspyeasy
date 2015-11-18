@@ -4,6 +4,7 @@
     "template": "HaplotypeCaller.tmpl.sh",
     "image": "compbio/ngseasy-gatk",
     "vars": [
+      "NCPU",
       "TMP_DIR",
       "REFFASTA",
       "KNOWN_SNPS_b138"

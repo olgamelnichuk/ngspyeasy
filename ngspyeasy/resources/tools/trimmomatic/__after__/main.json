@@ -4,6 +4,8 @@
     "template": "fastqc.tmpl.sh",
     "image": "compbio/ngseasy-fastqc",
     "vars": [
+      "TMP_DIR",
+      "FASTQ_DIR"
     ],
     "input": [
       "PAIRED_FQ1",

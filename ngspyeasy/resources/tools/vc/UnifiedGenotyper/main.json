@@ -9,7 +9,7 @@
       "KNOWN_SNPS_b138",
       "NCPU"
     ],
-    "import": [
+    "input": [
       "VC_FILTERED_BAM"
     ],
     "output": [

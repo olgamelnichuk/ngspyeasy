@@ -96,7 +96,7 @@ def find(p):
         templates = json.load(stream)
 
     for t in templates:
-        t["ref"]=ref + "#" + t.name
+        t["ref"]=ref
     return templates
 
 

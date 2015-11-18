@@ -12,6 +12,7 @@
       "GENOMEINDEX",
       "RUNDATE",
       "TMP_DIR",
+      "FAST",
       "DISCORDANT_SAM",
       "DISCORDANT_BAM",
       "SPLITREAD_SAM",

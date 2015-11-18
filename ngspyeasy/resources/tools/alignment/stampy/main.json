@@ -63,6 +63,7 @@
     "template": "picard_addorreplacegroups.tmpl.sh",
     "image": "compbio/ngseasy-picardtools",
     "vars": [
+      "NCPU",
       "TMP_DIR",
       "PICARD_VERSION",
       "BAM_PREFIX",
@@ -70,7 +71,8 @@
       "NGS_PLATFORM",
       "PLATFORM_UNIT",
       "RUNDATE",
-      "STAMPTY_DUPEMARK_TMP_BAM"
+      "STAMPY_DUPEMARK_TMP_BAM",
+      "STAMPY_TMP_BAM"
     ],
     "input": [
       "STAMPY_DUPEMARK_CLEANSAM_TMP_BAM"

@@ -15,9 +15,9 @@ samblaster --addMateTags --excludeDups \
 sambamba view -t ${NCPU} -S -f bam /dev/stdin | \
 sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${DUPEMARK_BAM} /dev/stdin && \
 sambamba index ${DUPEMARK_BAM} && \
-sambamba flagstat -t ${NCPU} ${DUPEMARK_BAM} > ${DUPEMARK_FLAGSTAT_REPORT} && \
-bedtools bamtobed -i ${DUPEMARK_BAM} | bedtools merge > ${DUPEMARK_BED_REPORT} && \
-sambamba view -t ${NCPU} -S -f bam ${DISCONDANT_SAM} | \
+sambamba flagstat -t ${NCPU} ${DUPEMARK_BAM} > ${DUPEMARK_FLAGSTAT} && \
+bedtools bamtobed -i ${DUPEMARK_BAM} | bedtools merge > ${DUPEMARK_BED} && \
+sambamba view -t ${NCPU} -S -f bam ${DISCORDANT_SAM} | \
 sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${DISCORDANT_BAM} /dev/stdin && \
 sambamba index ${DISCORDANT_BAM} && \
 sambamba view -t ${NCPU} -S -f bam ${SPLITREAD_SAM} | \

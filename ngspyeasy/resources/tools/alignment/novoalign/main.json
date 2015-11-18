@@ -12,6 +12,7 @@
       "RUNDATE",
       "NOVOINDEX",
       "TMP_DIR",
+      "K_STATS",
       "DISCORDANT_SAM",
       "DISCORDANT_BAM",
       "SPLITREAD_SAM",

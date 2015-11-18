@@ -18,6 +18,6 @@ bedtools bamtobed -i ${DUPEMARK_BAM} | bedtools merge > ${DUPEMARK_BED} && \
 rm -v ${STAMPY_DUPEMARK_CLEANSAM_TMP_BAM} && \
 rm -v ${STAMPY_DUPEMARK_TMP_BAM} && \
 rm -v ${STAMPY_DUPEMARK_TMP_BAM}.bai && \
-rm -v ${TMP_BAM}.bai && \
-rm -v ${TMP_BAM} && \
+rm -v ${STAMPY_TMP_BAM}.bai && \
+rm -v ${STAMPY_TMP_BAM} && \
 rm -v ${STAMPY_DUPEMARK_CLEANSAM_TMP_BAM}.bai

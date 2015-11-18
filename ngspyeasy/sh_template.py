@@ -26,24 +26,29 @@ import os
 def load(*p):
     root = os.path.dirname(__file__)
     path = os.path.join(root, *(["resources"] + list(p)))
-    logger().debug("Loading sh template from: %s" % path)
-
-    if not os.path.isfile(path):
-        raise IOError("sh template file not found: %s" % path)
-
-    with open(path) as f:
-        lines = f.readlines()
-
-    return ShTemplate(lines)
+    return ShTemplate(path)
 
 
 class ShTemplate(object):
-    def __init__(self, lines):
+    def __init__(self, path):
+        logger().debug("Loading sh template from: %s" % path)
+
+        if not os.path.isfile(path):
+            raise IOError("sh template file not found: %s" % path)
+
+        with open(path) as f:
+            lines = f.readlines()
+
         self.lines = [x for x in lines if not x.startswith("#")]
+        self.path = path
 
     def validate(self, **kwargs):
-        t = Template("".join(self.lines))
-        t.substitute(kwargs)
+        try:
+            t = Template("".join(self.lines))
+            t.substitute(kwargs)
+        except KeyError, e:
+            logger().exception(e)
+            raise ValueError("SH Template validation failure (var: %s): %s" % (e.message, self.path))
 
     def source(self, **kwargs):
         source = ["#!/usr/bin/env bash"]

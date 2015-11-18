@@ -11,7 +11,7 @@ time java -Xmx12g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysis
 -knownSites ${KNOWN_SNPS_b138} \
 -knownSites ${KNOWN_SNPS_OMNI} \
 -knownSites ${KNOWN_SNPS_1000G} \
--I ${BAM_IN} \
+-I ${BSQR_BAM_IN} \
 -o ${RECAL_DATA_TABLE} && \
 time java -Xmx12g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisTK.jar \
 -T PrintReads \

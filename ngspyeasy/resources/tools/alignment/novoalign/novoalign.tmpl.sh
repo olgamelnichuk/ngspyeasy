@@ -11,7 +11,7 @@ time /usr/local/bin/novoalign \
 -c ${NCPU} \
 -k \
 -K ${K_STATS} \
--o SAM $'@RG\tID:${BAM_PREFIX}\tSM:${BAM_PREFIX}\tPU:${NGS_PLATFORM}\tLB:${DNA_PREP_LIBRARY_ID}' | \
+-o SAM '@RG\tID:${BAM_PREFIX}\tSM:${BAM_PREFIX}\tPU:${NGS_PLATFORM}\tLB:${DNA_PREP_LIBRARY_ID}' | \
 samblaster --addMateTags --excludeDups \
 --discordantFile ${DISCORDANT_SAM} \
 --splitterFile ${SPLITREAD_SAM} \
@@ -19,8 +19,8 @@ samblaster --addMateTags --excludeDups \
 sambamba view -t ${NCPU} -S -f bam /dev/stdin | \
 sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${DUPEMARK_BAM} /dev/stdin && \
 sambamba index ${DUPEMARK_BAM} && \
-sambamba flagstat -t ${NCPU} ${DUPEMARK_BAM} > ${DUPEMARK_FLAGSTAT_REPORT} && \
-bedtools bamtobed -i ${DUPEMARK_BAM} | bedtools merge > ${DUPEMARK_BED_REPORT} && \
+sambamba flagstat -t ${NCPU} ${DUPEMARK_BAM} > ${DUPEMARK_FLAGSTAT} && \
+bedtools bamtobed -i ${DUPEMARK_BAM} | bedtools merge > ${DUPEMARK_BED} && \
 sambamba view -t ${NCPU} -S -f bam ${DISCORDANT_SAM} | \
 sambamba sort -t ${NCPU} -m 2GB --tmpdir=${TMP_DIR} -o ${DISCORDANT_BAM} /dev/stdin && \
 sambamba index ${DISCORDANT_BAM} && \

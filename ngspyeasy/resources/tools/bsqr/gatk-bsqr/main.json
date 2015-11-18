@@ -14,10 +14,10 @@
       "RECAL_DATA_TABLE"
     ],
     "input": [
-      "BAM_IN"
+      "BSQR_BAM_IN"
     ],
     "output": [
-      "BAM_OUT"
+      "BSQR_BAM_OUT"
     ]
   }
 ]

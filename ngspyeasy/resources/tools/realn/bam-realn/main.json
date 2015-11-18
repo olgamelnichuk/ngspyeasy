@@ -10,7 +10,8 @@
       "TMP_DIR"
     ],
     "input": [
-      "DUPEMARK_BAM"
+      "DUPEMARK_BAM",
+      "DUPEMARK_BED"
     ],
     "output": [
       "DUPEMARK_REALN_BAM",

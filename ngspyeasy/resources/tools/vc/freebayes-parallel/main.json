@@ -11,7 +11,7 @@
       "BASE_QUAL"
     ],
     "input": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
       "RAW_VCF",
