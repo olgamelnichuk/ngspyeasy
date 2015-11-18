@@ -8,6 +8,7 @@ from ngspyeasy import pipeline_tools
 from ngspyeasy import sh_template
 from ngspyeasy import pipeline_environment
 
+
 class TemplateStructureTests(unittest.TestCase):
     def test_vars(self):
         env = (pipeline_environment.as_test_dict())
@@ -20,11 +21,4 @@ class TemplateStructureTests(unittest.TestCase):
 
     def validate(self, t, env):
         tmpl = sh_template.load(os.path.join("tools", t["ref"], t["template"]))
-        #d = dict()
-        #for v in (t["vars"] + t["input"] + t["output"]):
-        #    d[v] = "DUMMY"
         tmpl.validate(**env)
-
-
-
-
