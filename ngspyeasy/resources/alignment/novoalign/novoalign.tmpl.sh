@@ -11,7 +11,7 @@ time /usr/local/bin/novoalign \
 -c ${NCPU} \
 -k \
 -K ${K_STATS} \
--o SAM $'@RG\tID:${BAM_PREFIX}\tSM:${BAM_PREFIX}\tPU:${NGS_PLATFORM}\tLB:${DNA_PREP_LIBRARY_ID}' | \
+-o SAM '@RG\tID:${BAM_PREFIX}\tSM:${BAM_PREFIX}\tPU:${NGS_PLATFORM}\tLB:${DNA_PREP_LIBRARY_ID}' | \
 samblaster --addMateTags --excludeDups \
 --discordantFile ${DISCORDANT_SAM} \
 --splitterFile ${SPLITREAD_SAM} \
