@@ -7,10 +7,10 @@
       "NCPU",
       "TMP_DIR",
       "REFFASTA",
-      "KNOWN_SNPS_b138"
+      "KNOWN_SNPS_B138"
     ],
     "input": [
-      "FILTERED_BAM"
+      "VC_FILTERED_BAM"
     ],
     "output": [
       "RAW_VCF",

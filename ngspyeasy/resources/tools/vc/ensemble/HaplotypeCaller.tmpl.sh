@@ -9,7 +9,7 @@ time java -Xmx6g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisT
 -stand_call_conf 30 \
 -stand_emit_conf 10 \
 --output_mode EMIT_VARIANTS_ONLY \
---dbsnp ${KNOWN_SNPS_b138} \
+--dbsnp ${KNOWN_SNPS_B138} \
 -dcov 250 \
 -minPruning 10 \
 --unsafe ALL \

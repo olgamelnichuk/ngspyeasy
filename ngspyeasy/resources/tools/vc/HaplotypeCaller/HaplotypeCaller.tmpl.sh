@@ -4,9 +4,9 @@ time java -Xmx6g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysisT
 -T HaplotypeCaller \
 -R ${REFFASTA} \
 -nct ${NCPU} \
--I ${FILTERED_BAM} \
+-I ${VC_FILTERED_BAM} \
 -o ${RAW_VCF} \
---dbsnp ${KNOWN_SNPS_b138} \
+--dbsnp ${KNOWN_SNPS_B138} \
 --unsafe ALL \
 -stand_call_conf 30 \
 -stand_emit_conf 10 \

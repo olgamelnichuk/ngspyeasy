@@ -6,7 +6,7 @@
     "vars": [
       "TMP_DIR",
       "REFFASTA",
-      "KNOWN_SNPS_b138",
+      "KNOWN_SNPS_B138",
       "NCPU"
     ],
     "input": [

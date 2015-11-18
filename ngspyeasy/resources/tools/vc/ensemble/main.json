@@ -40,7 +40,7 @@
     "vars": [
       "NCPU",
       "REFFASTA",
-      "KNOWN_SNPS_b138",
+      "KNOWN_SNPS_B138",
       "GTMODEGATK",
       "TMP_DIR"
     ],
@@ -64,7 +64,7 @@
     ],
     "input": [
       "HAPLOTYPE_CALLER_VCF_GZ",
-      "FREEBAYERS_VCF_GZ"
+      "FREEBAYES_VCF_GZ"
     ],
     "output": [
       "VCF_GZ"

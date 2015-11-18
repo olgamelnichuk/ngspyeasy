@@ -8,7 +8,7 @@ time java -Xmx12g -Djava.io.tmpdir=${TMP_DIR} -jar /usr/local/bin/GenomeAnalysis
 --unsafe ALL \
 --validation_strictness SILENT \
 -knownSites ${KNOWN_INDELS} \
--knownSites ${KNOWN_SNPS_b138} \
+-knownSites ${KNOWN_SNPS_B138} \
 -knownSites ${KNOWN_SNPS_OMNI} \
 -knownSites ${KNOWN_SNPS_1000G} \
 -I ${BSQR_BAM_IN} \
