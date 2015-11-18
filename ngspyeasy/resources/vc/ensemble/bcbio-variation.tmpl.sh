@@ -6,5 +6,5 @@ bcbio-variation-recall ensemble \
 --nofiltered \
 ${VCF_GZ} \
 ${REFFASTA} \
-${FREEBAYERS_VCF} \
+${FREEBAYES_VCF} \
 ${HAPLOTYPE_CALLER_VCF}

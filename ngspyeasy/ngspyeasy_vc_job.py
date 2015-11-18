@@ -425,7 +425,7 @@ def ensemble_bcbio_variation(row, projects_home, task):
                NCPU=row.ncpu(),
                REFFASTA=genomebuild.ref_fasta(),
                VCF_GZ=vc_data.vcf_gz(),
-               FREEBAYERS_VCF_GZ=vc_data.vcf_gz("freebayes-parallel"),
+               FREEBAYES_VCF_GZ=vc_data.vcf_gz("freebayes-parallel"),
                HAPLOTYPE_CALLER_VCF_GZ=vc_data.vcf_gz("HaplotypeCaller"))
 
 
