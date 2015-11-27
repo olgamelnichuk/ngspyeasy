@@ -2,6 +2,8 @@
 
 pip install docker-py
 
+$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+
 DIR=/opt/ngspyeasy
 
 mkdir -p ${DIR}
