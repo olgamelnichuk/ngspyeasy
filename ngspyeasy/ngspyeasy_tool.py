@@ -20,36 +20,29 @@ import sys
 
 import cmdargs
 from logger import logger, init_logger
-from ngspyeasy import pipeline_environment
+from ngspyeasy import pipeline_env
 import pipeline_tools
 import tsv_config
 import projects_dir
 import os
 
 
-def fix_file_permissions(projects_home, row, uid, gid):
-    projects_home.fix_file_permissions(row.project_id(), row.sample_id(), uid, gid)
-
-
 def main(argv):
-    uid = os.getuid()
-    gid = os.getgid()
-
     parser = argparse.ArgumentParser(description="NGSPyEasy Tool")
-    parser.add_argument("-t", "--tool", dest="tool", required=True, help="relative tool path")
     parser.add_argument("-c", "--config", dest="config", required=True, type=cmdargs.path_basename,
                         help="TSV configuration file name")
     parser.add_argument("-d", "--projects-dir", dest="projects_dir", required=True, type=cmdargs.existed_directory,
                         help="ngs_projects directory path")
+    parser.add_argument("-r", "--resources-dir", dest="resources_dir", type=cmdargs.existed_directory,
+                        help="ngs_resources directory path")
+    parser.add_argument("-t", "--tool", dest="tool", required=True, help="pipeline tool name")
     parser.add_argument("-i", "--sample_id", dest="sample_id", help="sample_id to run with")
-    parser.add_argument("-u", "--uid", dest="uid", type=int, default=uid, help="files owner uid")
-    parser.add_argument("-g", "--gid", dest="gid", type=int, default=gid, help="files owner gid")
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
     parser.add_argument("--version", action="version", version="%(prog)s 2.0", help="print software version")
     args = parser.parse_args(argv)
     logger().debug("Parsed command line arguments: %s " % args)
 
-    projects_home = projects_dir.ProjectsDir(args.projects_dir)
+    projects_home = projects_dir.ProjectsDir(args.projects_dir, args.resources_dir)
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
     print "Opening log file: %s" % log_file
 
@@ -65,12 +58,8 @@ def main(argv):
         logger().error(e)
         sys.exit(1)
 
-    try:
-        for row in rows2run(tsv_conf, args.sample_id):
-            run_2l(args.tool, row, projects_home, args.uid, args.gid)
-    except Exception as ex:
-        logger().exception(ex)
-        sys.exit(1)
+    for row in rows2run(tsv_conf, args.sample_id):
+        run_2l(args.tool, row, projects_home)
 
 
 def rows2run(tsv_conf, sample_id):
@@ -79,17 +68,15 @@ def rows2run(tsv_conf, sample_id):
     return [x for x in tsv_conf.all_rows() if x.sample_id() == sample_id]
 
 
-def run_2l(tool_path, row, projects_home, uid, gid):
-    tool = pipeline_tools.find_template(tool_path)
+def run_2l(tool_path, row, projects_home):
+    tool = pipeline_tools.find_tool(tool_path)
     if tool is None:
         raise ValueError("Unknown pipeline tool: %s" % tool)
 
     try:
-        tool.run(pipeline_environment.as_dict(row, projects_home))
+        tool.run(row, projects_home)
     except Exception as ex:
         logger().exception(ex)
-    finally:
-        fix_file_permissions(projects_home, row, uid, gid)
 
 
 if __name__ == '__main__':

@@ -6,12 +6,12 @@ import os
 
 from ngspyeasy import pipeline_tools
 from ngspyeasy import sh_template
-from ngspyeasy import pipeline_environment
+from ngspyeasy import pipeline_env
 
 
 class TemplateVarsTests(unittest.TestCase):
     def test_vars(self):
-        env = (pipeline_environment.as_test_dict())
+        env = (pipeline_env.as_test_dict())
         print env
         for r, n in zip(pipeline_tools.tool_dirs(), itertools.count()):
             print "[%s]" % str(n), r

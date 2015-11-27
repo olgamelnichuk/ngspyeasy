@@ -17,17 +17,15 @@
 ###
 
 import argparse
-import os
 import sys
 import signal
 import threading
 import itertools
 
+import os
 import cmdargs
 import job_id_generator
-import docker
 import pipeline_tools
-from settings import NGSEASYVERSION
 import projects_dir
 import job_scheduler
 import tsv_config
@@ -46,29 +44,43 @@ class JobSubmitter(object):
     def update_dependencies(self, sample_id, job_id):
         self.dependencies[sample_id] = job_id
 
-    def submit(self, tmpl, sample_id, config_name, verbose):
-        job = docker.Job(tmpl.id(), sample_id, config_name, verbose)
-        image = "%s:%s" % (tmpl.image(), NGSEASYVERSION)
-        tag = tmpl.name()
+    def submit(self, tool, sample_id, config_name, verbose):
+        job_cmd = self.cmd(tool, sample_id, config_name, verbose)
+        tag = tool.name()
 
         job_id = job_id_generator.get_next([tag, sample_id])
         job_dependencies = self.dependencies_for(sample_id)
 
         logger().debug(
-            "Submit job(sample_id='%s', job_id='%s', dependencies='%s', cmd=[%s])" % (
-                sample_id, job_id, job_dependencies, job.cmd))
+            "Submit job(job_id='%s', dependencies='%s')" % (job_id, job_dependencies))
 
         job_scheduler.submit(
-            job_id, self.wrap(job_id, job_dependencies, image, job), job_dependencies)
+            job_id, self.create_cmd(job_id, job_dependencies, job_cmd), job_dependencies)
         self.update_dependencies(sample_id, job_id)
 
-    def wrap(self, job_id, job_dependencies, image, job):
-        if self.in_lsf_mode():
-            return job.wrap_lsf(job_id, image, self.projects_home, job_dependencies)
-        return job.wrap(job_id, image, self.projects_home)
+    def create_cmd(self, job_id, job_dependencies, job_cmd):
+        return self.lsf_wrap(job_id, job_dependencies, job_cmd) if self.in_lsf_mode() else job_cmd
+
+    def lsf_wrap(self, job_id, job_dependencies, cmd):
+        lsf_dep_expression = ""
+        if len(job_dependencies) > 0:
+            lsf_dep_expression = "\"%s\"" % " && ".join(["ended(%s)" % x for x in job_dependencies])
+
+        return "bsub -J %s -w %s %s" % (job_id, lsf_dep_expression, cmd)
 
     def in_lsf_mode(self):
         return self.mode == "docker-lsf"
+
+    def cmd(self, tool, sample_id, config_name, verbose):
+        root = os.path.dirname(__file__)
+        executable = os.path.join(root, "ngspyeasy_tool.py")
+        return " ".join([executable,
+                         "-c", config_name,
+                         "-d", self.projects_home.root(),
+                         "-r", self.projects_home.resources_dir(),
+                         "--sample_id", sample_id,
+                         "--tool", tool.id(),
+                         "--verbose", verbose])
 
 
 def main(argv):
@@ -128,8 +140,8 @@ def main(argv):
             ngspyeasy_init(tsv_conf, projects_home)
 
         submitter = JobSubmitter(projects_home, args.mode)
-        for tmpl, sample_id in command_list(tsv_conf, args):
-            submitter.submit(tmpl, sample_id, tsv_conf.filename(), verbose)
+        for tool, sample_id in command_list(tsv_conf, args):
+            submitter.submit(tool, sample_id, tsv_conf.filename(), verbose)
         job_scheduler.all_done()
     except Exception as e:
         logger.exception(e)
@@ -209,12 +221,12 @@ def ngspyeasy_fastqc(tsv_conf):
             logger().info("[%s] No fastqc jobs to be run for sample: '%s'" % (fastqc_type, sample_id))
             continue
 
-        templates = pipeline_tools.find(os.path.join("fastqc", fastqc_type))
+        tools = pipeline_tools.find(os.path.join("fastqc", fastqc_type))
 
-        if len(templates) == 0:
+        if len(tools) == 0:
             raise ValueError("Unknown fastqc type: %s" % fastqc_type)
 
-        for tmpl in templates:
+        for tmpl in tools:
             yield tmpl, sample_id
 
 
@@ -230,14 +242,14 @@ def ngspyeasy_trimmomatic(tsv_conf):
                 "[%s] No trimmomatic jobs to be run for sample: '%s'. NOT RECOMMENDED" % (trim_type, sample_id))
             continue
 
-        templates = pipeline_tools.find(os.path.join("trimmomatic", trim_type))
+        tools = pipeline_tools.find(os.path.join("trimmomatic", trim_type))
         common = pipeline_tools.find(os.path.join("trimmomatic", "__after__"))
 
-        if len(templates) == 0:
+        if len(tools) == 0:
             raise ValueError("Unknown trimmomatic type: %s" % trim_type)
 
-        for tmpl in (templates + common):
-            yield tmpl, sample_id
+        for tool in (tools + common):
+            yield tool, sample_id
 
 
 def ngspyeasy_alignment(tsv_conf):
@@ -251,13 +263,13 @@ def ngspyeasy_alignment(tsv_conf):
             logger().info("[%s] No alignment jobs to be run for sample: '%s'." % (aligner_type, sample_id))
             continue
 
-        templates = pipeline_tools.find(os.path.join("alignment", aligner_type))
+        tools = pipeline_tools.find(os.path.join("alignment", aligner_type))
 
-        if len(templates) == 0:
+        if len(tools) == 0:
             raise ValueError("Unknown aligner type: %s" % aligner_type)
 
-        for tmpl in templates:
-            yield tmpl, sample_id
+        for tool in tools:
+            yield tool, sample_id
 
 
 def ngspyeasy_realn(tsv_conf):
@@ -271,13 +283,13 @@ def ngspyeasy_realn(tsv_conf):
             logger().info("[%s] Skipping Indel Realignment for sample: '%s'." % (realn_type, sample_id))
             continue
 
-        templates = pipeline_tools.find(os.path.join("realn", realn_type))
+        tools = pipeline_tools.find(os.path.join("realn", realn_type))
 
-        if len(templates) == 0:
+        if len(tools) == 0:
             raise ValueError("Unknown realign type: %s" % realn_type)
 
-        for tmpl in templates:
-            yield tmpl, sample_id
+        for tool in tools:
+            yield tool, sample_id
 
 
 def ngspyeasy_bsqr(tsv_conf):
@@ -291,13 +303,13 @@ def ngspyeasy_bsqr(tsv_conf):
             logger().info("[%s] Skipping Base quality score recalibration for sample: '%s'" % (bsqr_type, sample_id))
             continue
 
-        templates = pipeline_tools.find(os.path.join("bsqr", bsqr_type))
+        tools = pipeline_tools.find(os.path.join("bsqr", bsqr_type))
 
-        if len(templates) == 0:
+        if len(tools) == 0:
             raise ValueError("Unknown bsqr type: %s" % bsqr_type)
 
-        for tmpl in templates:
-            yield tmpl, sample_id
+        for tool in tools:
+            yield tool, sample_id
 
 
 def ngspyeasy_variant_calling(tsv_conf):
@@ -312,13 +324,13 @@ def ngspyeasy_variant_calling(tsv_conf):
             continue
 
         common = pipeline_tools.find(os.path.join("vc", "__before__"))
-        templates = pipeline_tools.find(os.path.join("vc", vc_type))
+        tools = pipeline_tools.find(os.path.join("vc", vc_type))
 
-        if len(templates) == 0:
+        if len(tools) == 0:
             raise ValueError("Unknown variant calling type: %s" % vc_type)
 
-        for tmpl in (common + templates):
-            yield tmpl, sample_id
+        for tool in (common + tools):
+            yield tool, sample_id
 
 
 def signal_handler(signum, frame):

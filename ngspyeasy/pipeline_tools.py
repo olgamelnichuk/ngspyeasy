@@ -19,53 +19,59 @@
 import json
 
 from logger import logger
-import shcmd
 import os
 import sh_template
+import docker_env
+import pipeline_env
 
 
-class ToolTemplate(object):
-    def __init__(self, tmpl, tmpl_dir):
-        self.tmpl = tmpl
-        self.tmpl_dir = tmpl_dir
+class ToolSpec(object):
+    def __init__(self, spec, tool_dir):
+        self.spec = spec
+        self.tool_dir = tool_dir
 
     def vars(self):
-        return self.tmpl["vars"]
+        return self.spec["vars"]
 
     def input(self):
-        return self.tmpl["input"]
+        return self.spec["input"]
 
     def output(self):
-        return self.tmpl["output"]
+        return self.spec["output"]
 
     def template(self):
-        return self.tmpl["template"]
+        return self.spec["template"]
 
     def image(self):
-        return self.tmpl["image"]
+        return self.spec["image"]
 
     def name(self):
-        return self.tmpl["name"]
+        return self.spec["name"]
 
-    def dir(self):
-        return self.tmpl_dir
+    def resource_path(self):
+        return os.path.join(self.tool_dir, self.template())
 
     def id(self):
-        return self.dir() + "#" + self.name()
+        return self.tool_dir + "#" + self.name()
 
-    def allvars(self):
+    def all_vars(self):
         return self.vars() + self.input() + self.output()
 
 
 class PipelineTool(object):
-    def __init__(self, tmpl):
-        self.tmpl = tmpl
+    def __init__(self, spec):
+        self.spec = spec
 
-    def files_must_exist(self, names, env):
-        return self.files_exist(names, env, True)
+    def output_files(self, env):
+        return [env[x] for x in self.spec.output()]
 
-    def files_exist(self, names, env, must=False):
-        files = [env[x] for x in names]
+    def input_files(self, env):
+        return [env[x] for x in self.spec.input()]
+
+    def files_must_exist(self, files):
+        return self.files_exist(files, must=True)
+
+    def files_exist(self, files, must=False):
         for f in files:
             if os.path.isfile(f):
                 continue
@@ -74,21 +80,27 @@ class PipelineTool(object):
             return False
         return True
 
-    def key_values(self, env):
+    def all_vars(self, env):
         d = dict()
-        for k in self.tmpl.allvars():
+        for k in self.spec.all_vars():
             d[k] = env[k]
         return d
 
-    def run(self, env):
-        if self.files_exist(self.tmpl.output(), env):
+    def run(self, row, projects_home):
+        host_env = pipeline_env.as_dict(row, projects_home)
+
+        if self.files_exist(self.output_files(host_env)):
             logger().info("Skipping this bit... results are already exist")
             return
 
-        self.files_must_exist(self.tmpl.input(), env)
+        self.files_must_exist(self.input_files(host_env))
 
-        tmpl = sh_template.load(self.tmpl.dir(), self.tmpl.template())
-        shcmd.run_command(tmpl.create_sh_file(self.key_values(env)))
+        container_env = pipeline_env.as_dict(row, docker_env.projects_home())
+        docker_env.run_command(self.cmd(container_env), self.spec.image(), projects_home)
+
+    def cmd(self, env):
+        tmpl = sh_template.load(self.spec.resource_path())
+        return tmpl.as_executable(self.all_vars(env))
 
 
 def normalize(p):
@@ -121,17 +133,17 @@ def find(p):
     logger().debug("Path to main.json: %s" % main_json)
 
     with open(main_json, 'r') as stream:
-        templates = json.load(stream)
+        specs = json.load(stream)
 
-    return [ToolTemplate(t, tool_dir) for t in templates]
+    return [ToolSpec(s, tool_dir) for s in specs]
 
 
-def find_template(p):
+def find_tool(p):
     tool_name, tool_dir = normalize(p)
-    templates = find(p)
+    specs = find(p)
 
-    if len(templates) == 0:
+    if len(specs) == 0:
         return None
 
-    tmpl = templates[0] if tool_name is None else next(t for t in templates if t.name == tool_name)
-    return PipelineTool(ToolTemplate(tmpl, tool_dir))
+    spec = specs[0] if tool_name is None else next(s for s in specs if s.name == tool_name)
+    return PipelineTool(ToolSpec(spec, tool_dir))

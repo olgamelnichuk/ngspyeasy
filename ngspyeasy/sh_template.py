@@ -56,7 +56,7 @@ class ShTemplate(object):
         source += [Template("".join(self.lines)).safe_substitute()]
         return source
 
-    def create_sh_file(self, validate=True, **kwargs):
+    def as_executable(self, validate=True, **kwargs):
         if validate:
             self.validate(**kwargs)
 
