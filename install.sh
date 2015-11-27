@@ -1,18 +1,16 @@
 #!/usr/bin/env bash
 
-pip install docker-py
+$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
 
-$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+DEST=/opt/ngspyeasy
 
-DIR=/opt/ngspyeasy
-
-mkdir -p ${DIR}
-cp -R ./ngspyeasy/* ${DIR}
+mkdir -p ${DEST}
+cp -R ./ngspyeasy/* ${DEST}
 
 echo "#!/usr/bin/env sh
-python ${DIR}/ngspyeasy.py \"$@\"" > /usr/sbin/ngspyeasy
+python ${DEST}/ngspyeasy.py \"$@\"" > /usr/sbin/ngspyeasy
 chmod a+x /usr/sbin/ngspyeasy
 
 echo "#!/usr/bin/env sh
-python ${DIR}/ngspyeasy_tool.py \"$@\"" > /usr/sbin/ngspyeasy_tool
+python ${DEST}/ngspyeasy_tool.py \"$@\"" > /usr/sbin/ngspyeasy_tool
 chmod a+x /usr/sbin/ngspyeasy_tool
