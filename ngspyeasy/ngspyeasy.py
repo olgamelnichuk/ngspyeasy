@@ -72,9 +72,9 @@ class JobSubmitter(object):
         return self.mode == "docker-lsf"
 
     def cmd(self, tool, sample_id, config_name, verbose):
-        root = os.path.dirname(__file__)
-        executable = os.path.join(root, "ngspyeasy_tool.py")
-        return " ".join([executable,
+        # root = os.path.dirname(__file__)
+        # executable = os.path.join(root, "ngspyeasy_tool.py")
+        return " ".join(["ngspyeasy_tool",
                          "-c", config_name,
                          "-d", self.projects_home.root(),
                          "-r", self.projects_home.resources_dir(),
