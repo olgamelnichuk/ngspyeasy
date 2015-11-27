@@ -2,7 +2,7 @@
   {
     "name": "fastqc",
     "template": "fastqc.tmpl.sh",
-    "image": "compbio/ngseasy-fastqc",
+    "image": "compbio/ngseasy-fastqc:1.0-r001",
     "vars": [
       "TMP_DIR",
       "FASTQ_DIR"

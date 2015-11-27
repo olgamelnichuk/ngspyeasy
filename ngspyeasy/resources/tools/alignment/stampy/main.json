@@ -2,7 +2,7 @@
   {
     "name": "bwa",
     "template": "bwa.tmpl.sh",
-    "image": "compbio/ngseasy-bwa",
+    "image": "compbio/ngseasy-bwa:1.0-r001",
     "vars": [
       "NCPU",
       "BAM_PREFIX",
@@ -24,7 +24,7 @@
   {
     "name": "stampy",
     "template": "stampy.tmpl.sh",
-    "image": "compbio/ngseasy-stampy",
+    "image": "compbio/ngseasy-stampy:1.0-r001",
     "vars": [
       "STAMPY_VERSION",
       "GENOMEINDEX",
@@ -46,7 +46,7 @@
   {
     "name": "picatd1",
     "template": "picard_cleansam.tmpl.sh",
-    "image": "compbio/ngseasy-picardtools",
+    "image": "compbio/ngseasy-picardtools:1.0-r001",
     "vars": [
       "TMP_DIR",
       "PICARD_VERSION"
@@ -61,7 +61,7 @@
   {
     "name": "picard2",
     "template": "picard_addorreplacegroups.tmpl.sh",
-    "image": "compbio/ngseasy-picardtools",
+    "image": "compbio/ngseasy-picardtools:1.0-r001",
     "vars": [
       "NCPU",
       "TMP_DIR",

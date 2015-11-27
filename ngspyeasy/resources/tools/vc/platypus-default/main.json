@@ -2,7 +2,7 @@
   {
     "name": "platypus-default",
     "template": "platypus-default.tmpl.sh",
-    "image": "compbio/ngseasy-platypus",
+    "image": "compbio/ngseasy-platypus:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA",

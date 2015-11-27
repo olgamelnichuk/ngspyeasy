@@ -2,7 +2,7 @@
   {
     "name": "gatk-bsqr",
     "template": "gatk-bsqr.templ.sh",
-    "image": "compbio/ngseasy-gatk",
+    "image": "compbio/ngseasy-gatk:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA",

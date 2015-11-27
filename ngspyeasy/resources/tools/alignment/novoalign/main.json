@@ -2,7 +2,7 @@
   {
     "name": "novoalign",
     "template": "novoalign.tmpl.sh",
-    "image": "compbio/ngseasy-novoalign",
+    "image": "compbio/ngseasy-novoalign:1.0-r001",
     "vars": [
       "NCPU",
       "BAM_PREFIX",

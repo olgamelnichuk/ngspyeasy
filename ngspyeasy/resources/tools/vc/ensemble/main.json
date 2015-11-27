@@ -2,7 +2,7 @@
   {
     "name": "freebayes",
     "template": "freebayes.tmpl.sh",
-    "image": "compbio/ngseasy-freebayes",
+    "image": "compbio/ngseasy-freebayes:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA"
@@ -19,7 +19,7 @@
   {
     "name": "platypus",
     "template": "platypus.tmpl.sh",
-    "image": "compbio/ngseasy-platypus",
+    "image": "compbio/ngseasy-platypus:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA"
@@ -36,7 +36,7 @@
   {
     "name": "HaplotypeCaller",
     "template": "HaplotypeCaller.tmpl.sh",
-    "image": "compbio/ngseasy-gatk",
+    "image": "compbio/ngseasy-gatk:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA",
@@ -56,7 +56,7 @@
   {
     "name": "bcbio-variation",
     "template": "bcbio-variation.tmpl.sh",
-    "image": "compbio/ngseasy-bcbio-variation",
+    "image": "compbio/ngseasy-bcbio-variation:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA",

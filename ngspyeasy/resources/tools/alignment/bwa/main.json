@@ -2,7 +2,7 @@
   {
     "name": "bwa",
     "template": "bwa.tmpl.sh",
-    "image": "compbio/ngseasy-bwa",
+    "image": "compbio/ngseasy-bwa:1.0-r001",
     "vars": [
       "NCPU",
       "BAM_PREFIX",

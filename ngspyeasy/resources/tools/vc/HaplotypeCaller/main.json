@@ -2,7 +2,7 @@
   {
     "name": "HaplotypeCaller",
     "template": "HaplotypeCaller.tmpl.sh",
-    "image": "compbio/ngseasy-gatk",
+    "image": "compbio/ngseasy-gatk:1.0-r001",
     "vars": [
       "NCPU",
       "TMP_DIR",

@@ -2,7 +2,7 @@
   {
     "name": "snap",
     "template": "snap.tmpl.sh",
-    "image": "compbio/ngseasy-snap",
+    "image": "compbio/ngseasy-snap:1.0-r001",
     "vars": [
       "NCPU",
       "BAM_PREFIX",

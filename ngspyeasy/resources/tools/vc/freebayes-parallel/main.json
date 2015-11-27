@@ -2,7 +2,7 @@
   {
     "name": "freebayes-parallel",
     "template": "freebayes-parallel.tmpl.sh",
-    "image": null,
+    "image": "compbio/ngseasy-freebayes:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA",

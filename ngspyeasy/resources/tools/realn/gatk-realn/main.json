@@ -2,7 +2,7 @@
   {
     "name": "gatk-realn",
     "template": "gatk-realn.tmpl.sh",
-    "image": "compbio/ngseasy-gatk",
+    "image": "compbio/ngseasy-gatk:1.0-r001",
     "vars": [
       "NCPU",
       "REFFASTA",

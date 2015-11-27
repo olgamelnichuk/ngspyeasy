@@ -2,7 +2,7 @@
   {
     "name": "atrim",
     "template": "atrim.tmpl.sh",
-    "image": "compbio/ngseasy-trimmomatic",
+    "image": "compbio/ngseasy-trimmomatic:1.0-r001",
     "vars": [
       "NCPU",
       "ADAPTER_FA"

@@ -2,7 +2,7 @@
   {
     "name": "callable-regions",
     "template": "callable-regions.tmpl.sh",
-    "image": "compbio/ngseasy-base",
+    "image": "compbio/ngseasy-base:1.0-r001",
     "vars": [
       "NCPU"
     ],

@@ -2,7 +2,7 @@
   {
     "name": "btrim",
     "template": "btrim.tmpl.sh",
-    "image": "compbio/ngseasy-trimmomatic",
+    "image": "compbio/ngseasy-trimmomatic:1.0-r001",
     "vars": [
       "NCPU"
     ],
