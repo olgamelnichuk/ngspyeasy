@@ -20,16 +20,15 @@ except ImportError:
     from distutils.core import setup
 
 config = {
-    'description': 'a description',
-    'author': 'an author',
-    'url': 'an url',
-    'download_url': 'a download url',
+    'description': 'NGSeasy pipeline: python version',
+    'author': 'olkin',
     'author_email': 'an email',
-    'version': '0.1',
-    'install_requires': [],
+    'url': 'https://github.com/olgamelnichuk/ngspyeasy',
+    'version': '2.0',
+    'install_requires': ["docker-py"],
     'packages': ['ngspyeasy'],
     'scripts': [],
-    'name': 'NGSPyEasy'
+    'name': 'ngspyeasy'
 }
 
 setup(**config)

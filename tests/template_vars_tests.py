@@ -17,8 +17,14 @@ class TemplateVarsTests(unittest.TestCase):
             print "[%s]" % str(n), r
             tmpls = pipeline_tools.find(r)
             for t in tmpls:
-                self.validate(t, env)
+                self.validate(t, self.extract(t.all_vars(), env))
 
     def validate(self, t, env):
-        tmpl = sh_template.load(os.path.join("tools", t.dir(), t.template()))
+        tmpl = sh_template.load(os.path.join("tools", t.tool_dir, t.template()))
         tmpl.validate(**env)
+
+    def extract(self, vars, env):
+        d = dict()
+        for k in vars:
+            d[k] = env[k]
+        return d

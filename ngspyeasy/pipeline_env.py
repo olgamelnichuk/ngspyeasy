@@ -275,6 +275,24 @@ class PipelineEnvironment(PipelineEnvironmentBase):
     def unpaired_fq2(self):
         return self.trim_data.unpaired_fastq()[1]
 
+    def fq1_report(self):
+        return self.fqc_data.fastqc_htmls()[0]
+
+    def fq2_report(self):
+        return self.fqc_data.fastqc_htmls()[1]
+
+    def unpaired_fq1_report(self):
+        return self.trim_data.trim_fastqc_htmls()[0]
+
+    def unpaired_fq2_report(self):
+        return self.trim_data.trim_fastqc_htmls()[1]
+
+    def paired_fq1_report(self):
+        return self.trim_data.trim_fastqc_htmls()[2]
+
+    def paired_fq2_report(self):
+        return self.trim_data.trim_fastqc_htmls()[3]
+
     def adapter_fa(self):
         return self.genomebuild.adapter_fa()
 
