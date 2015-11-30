@@ -80,7 +80,7 @@ class JobSubmitter(object):
                          "-r", self.projects_home.resources_dir(),
                          "--sample_id", sample_id,
                          "--tool", tool.id(),
-                         "--verbose", verbose])
+                         "--verbose" if verbose else ""])
 
 
 def main(argv):
