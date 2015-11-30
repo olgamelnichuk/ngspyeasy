@@ -145,5 +145,5 @@ def find_tool(p):
     if len(specs) == 0:
         return None
 
-    spec = specs[0] if tool_name is None else next(s for s in specs if s.name == tool_name)
+    spec = specs[0] if tool_name is None else next(s for s in specs if s.name() == tool_name)
     return PipelineTool(ToolSpec(spec, tool_dir))
