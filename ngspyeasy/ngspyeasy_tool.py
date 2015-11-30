@@ -38,7 +38,7 @@ def main(argv):
     parser.add_argument("-v", "--verbose", dest="verbose", action="store_true", help="turn ON verbose mode")
     parser.add_argument("--version", action="version", version="%(prog)s 2.0", help="print software version")
     args = parser.parse_args(argv)
-    logger().debug("Parsed command line arguments: %s " % args)
+    print "Parsed command line arguments: %s " % args
 
     projects_home = projects_dir.ProjectsDir(args.projects_dir, args.resources_dir)
     log_file = projects_home.sample_log_file(args.config, args.sample_id)
