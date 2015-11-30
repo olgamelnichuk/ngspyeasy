@@ -2,7 +2,7 @@
 
 set -e
 
-$(cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )
+cd "$( dirname "${BASH_SOURCE[0]}" )"
 
 DEST=/opt/ngspyeasy
 
