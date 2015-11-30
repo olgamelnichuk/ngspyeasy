@@ -57,8 +57,6 @@ class ShTemplate(object):
         return source
 
     def as_executable(self, validate=True, **kwargs):
-        logger().debug(kwargs)
-
         if validate:
             self.validate(**kwargs)
 

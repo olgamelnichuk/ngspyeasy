@@ -100,7 +100,9 @@ class PipelineTool(object):
 
     def cmd(self, env):
         tmpl = sh_template.load("tools", self.spec.resource_path())
-        return tmpl.as_executable(self.all_vars(env))
+        vars = self.all_vars(env)
+        logger().debug(vars)
+        return tmpl.as_executable(vars)
 
 
 def normalize(p):
