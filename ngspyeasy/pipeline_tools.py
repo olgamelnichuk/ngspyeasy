@@ -97,7 +97,7 @@ class PipelineTool(object):
         self.files_must_exist(self.input_files(host_env))
 
         container_env = pipeline_env.as_dict(row, docker_env.projects_home())
-        name = str(os.getuid()) + "_" + row.sample_id + "_" + self.spec.name() + "_" + str(
+        name = str(os.getuid()) + "_" + row.sample_id() + "_" + self.spec.name() + "_" + str(
             int(round(time.time() * 1000)))
         docker_env.run_command(self.cmd(container_env), self.spec.image(), name, projects_home)
 
