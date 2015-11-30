@@ -20,11 +20,9 @@ import sys
 
 import cmdargs
 from logger import logger, init_logger
-from ngspyeasy import pipeline_env
 import pipeline_tools
 import tsv_config
 import projects_dir
-import os
 
 
 def main(argv):
