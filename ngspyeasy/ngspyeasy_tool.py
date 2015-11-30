@@ -66,10 +66,10 @@ def rows2run(tsv_conf, sample_id):
     return [x for x in tsv_conf.all_rows() if x.sample_id() == sample_id]
 
 
-def run_2l(tool_path, row, projects_home):
-    tool = pipeline_tools.find_tool(tool_path)
+def run_2l(tool_id, row, projects_home):
+    tool = pipeline_tools.find_tool(tool_id)
     if tool is None:
-        raise ValueError("Unknown pipeline tool: %s" % tool)
+        raise ValueError("Can't find tool by id: %s" % tool_id)
 
     try:
         tool.run(row, projects_home)
