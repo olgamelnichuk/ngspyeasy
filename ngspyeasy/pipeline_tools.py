@@ -99,7 +99,7 @@ class PipelineTool(object):
         docker_env.run_command(self.cmd(container_env), self.spec.image(), projects_home)
 
     def cmd(self, env):
-        tmpl = sh_template.load(self.spec.resource_path())
+        tmpl = sh_template.load("tools", self.spec.resource_path())
         return tmpl.as_executable(self.all_vars(env))
 
 
