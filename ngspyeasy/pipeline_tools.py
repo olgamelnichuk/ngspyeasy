@@ -99,7 +99,8 @@ class PipelineTool(object):
         container_env = pipeline_env.as_dict(row, docker_env.projects_home())
         name = str(os.getuid()) + "_" + row.sample_id() + "_" + self.spec.name() + "_" + str(
             int(round(time.time() * 1000)))
-        logger().debug("effective user:group=(%s:%s)" % (os.geteuid(), os.getegid()))
+        logger().debug("uid:gid=(%s:%s)" % (os.getuid(), os.getgid()))
+        logger().debug("euid:egid=(%s:%s)" % (os.geteuid(), os.getegid()))
         docker_env.run_command(self.cmd(container_env), self.spec.image(), name, projects_home)
 
     def cmd(self, env):
