@@ -104,9 +104,9 @@ class PipelineTool(object):
 
 
 def normalize(p):
-    tool_path = p.rsplit("#", 1)
-    tool_path = [None] + tool_path if len(tool_path) == 1 else tool_path
-    return tool_path[0], tool_path[1]
+    arr = p.rsplit("#", 1)
+    arr = arr + [None] if len(arr) == 1 else arr
+    return arr[1], arr[0]
 
 
 def tool_dirs():
