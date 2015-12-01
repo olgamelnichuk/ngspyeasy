@@ -60,7 +60,7 @@ def run_command(cmd, image, name, projects_home):
     c = Client(base_url=DOCKER_BASEURL)
     container = c.create_container(image, command=cmd, name=name, volumes=volumes(projects_home),
                                    environment=environment(), working_dir=working_dir(), user=user())
-    c.start(container, rm=True, publish_all_ports=True)
+    c.start(container, publish_all_ports=True)
     lines = []
     for line in c.logs(container, stdout=True, stderr=True, stream=True, timestamps=True, tail='all'):
         sys.stdout.write(line)
