@@ -66,9 +66,11 @@ def user():
     gid = str(os.getgid()) if sudo_gid is None else sudo_gid
     return uid + ":" + gid
 
-def run_command_api(cmd, image, name, projects_home):
+
+def run_command(cmd, image, name, projects_home):
     c = Client(base_url=DOCKER_BASEURL)
-    container = c.create_container(image, command=change_dir(cmd), name=name, volumes=volumes(projects_home),
+    container = c.create_container(image, command=change_dir(cmd, projects_home), name=name,
+                                   volumes=volumes(projects_home),
                                    environment=environment(), working_dir=working_dir(), user=user())
     c.start(container, publish_all_ports=True)
     lines = []
@@ -85,7 +87,7 @@ def run_command_api(cmd, image, name, projects_home):
     return status
 
 
-def run_command(cmd, image, name, projects_home):
+def run_command_subprocess(cmd, image, name, projects_home):
     options = ["--rm", "-P", "-w", working_dir(), "-e", "HOME=%s" % HOME]
     options.extend(["--user", user()])
     options.extend(["--name", name])
