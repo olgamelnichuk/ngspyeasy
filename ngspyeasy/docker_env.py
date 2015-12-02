@@ -34,7 +34,7 @@ DOCKER_OPTS = ""
 DOCKER_BASEURL = 'unix://var/run/docker.sock'
 
 
-def projects_home():
+def local_projects_home():
     return projects_dir.ProjectsDir(NGS_PROJECTS)
 
 
@@ -53,6 +53,11 @@ def working_dir():
     return HOME
 
 
+def change_dir(cmd, projects_home):
+    relpath = os.path.relpath(cmd, projects_home.tmp_dir())
+    return os.path.join(local_projects_home().tmp_dir(), relpath)
+
+
 def user():
     sudo_uid = os.getenv("SUDO_UID")
     sudo_gid = os.getenv("SUDO_GID")
@@ -63,7 +68,7 @@ def user():
 
 def run_command_api(cmd, image, name, projects_home):
     c = Client(base_url=DOCKER_BASEURL)
-    container = c.create_container(image, command=cmd, name=name, volumes=volumes(projects_home),
+    container = c.create_container(image, command=change_dir(cmd), name=name, volumes=volumes(projects_home),
                                    environment=environment(), working_dir=working_dir(), user=user())
     c.start(container, publish_all_ports=True)
     lines = []
@@ -90,7 +95,7 @@ def run_command(cmd, image, name, projects_home):
 
     docker_run = ["docker", "run"] + options
     docker_run.append(image)
-    docker_run.append(cmd)
+    docker_run.append(change_dir(cmd, projects_home))
 
     docker_cmd = " ".join(docker_run)
     logger().debug("[\n%s\n]" % docker_cmd)

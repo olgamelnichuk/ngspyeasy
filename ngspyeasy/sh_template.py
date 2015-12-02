@@ -56,14 +56,14 @@ class ShTemplate(object):
         source += [Template("".join(self.lines)).safe_substitute()]
         return source
 
-    def as_executable(self, validate=True, **kwargs):
+    def as_executable(self, tmpdir, validate=True, **kwargs):
         if validate:
             self.validate(**kwargs)
 
         source = self.source(**kwargs)
         logger().debug("\n".join(source))
 
-        file = tempfile.NamedTemporaryFile(delete=False)
+        file = tempfile.NamedTemporaryFile(dir=tmpdir, delete=False)
         file.write("\n".join(source))
         file.close()
 

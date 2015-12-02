@@ -96,18 +96,18 @@ class PipelineTool(object):
 
         self.files_must_exist(self.input_files(host_env))
 
-        container_env = pipeline_env.as_dict(row, docker_env.projects_home())
+        container_env = pipeline_env.as_dict(row, docker_env.local_projects_home())
         name = str(os.getuid()) + "_" + row.sample_id() + "_" + self.spec.name() + "_" + str(
             int(round(time.time() * 1000)))
         logger().debug("uid:gid=(%s:%s)" % (os.getuid(), os.getgid()))
         logger().debug("euid:egid=(%s:%s)" % (os.geteuid(), os.getegid()))
-        docker_env.run_command(self.cmd(container_env), self.spec.image(), name, projects_home)
+        docker_env.run_command(self.cmd(container_env, projects_home.tmp_dir()), self.spec.image(), name, projects_home)
 
-    def cmd(self, env):
+    def cmd(self, env, tmpdir):
         tmpl = sh_template.load("tools", self.spec.resource_path())
         vars = self.all_vars(env)
         logger().debug(vars)
-        return tmpl.as_executable(**vars)
+        return tmpl.as_executable(tmpdir, **vars)
 
 
 def normalize(p):
