@@ -67,6 +67,5 @@ class ShTemplate(object):
         file.write("\n".join(source))
         file.close()
 
-        st = os.stat(file.name)
-        os.chmod(file.name, st.st_mode | stat.S_IEXEC)
+        os.chmod(file.name, 0755)
         return file.name
