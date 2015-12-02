@@ -54,8 +54,12 @@ def working_dir():
 
 
 def user():
-    return str(os.getuid()) + ":" + str(os.getgid())
+    sudo_uid = os.getenv("SUDO_UID")
+    sudo_gid = os.getenv("SUDO_GID")
 
+    uid = str(os.getuid()) if sudo_uid is None else sudo_uid
+    gid = str(os.getgid()) if sudo_gid is None else sudo_gid
+    return uid + ":" + gid
 
 def run_command_api(cmd, image, name, projects_home):
     c = Client(base_url=DOCKER_BASEURL)
