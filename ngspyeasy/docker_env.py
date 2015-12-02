@@ -81,15 +81,18 @@ def run_command(cmd, image, name, projects_home):
     options.extend(["--user", user()])
     options.extend(["--name", name])
 
-    for v in volumes(projects_home()):
+    for v in volumes(projects_home):
         options.extend(["-v", v])
 
     docker_run = ["docker", "run"] + options
     docker_run.append(image)
     docker_run.append(cmd)
 
+    docker_cmd = " ".join(docker_run)
+    logger().debug("[\n%s\n]" % docker_cmd)
+
     proc = subprocess.Popen(
-        ["/bin/bash", "-c", " ".join(docker_run)],
+        ["/bin/bash", "-c", ],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
