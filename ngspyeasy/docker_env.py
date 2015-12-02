@@ -96,7 +96,7 @@ def run_command(cmd, image, name, projects_home):
     logger().debug("[\n%s\n]" % docker_cmd)
 
     proc = subprocess.Popen(
-        ["/bin/bash", "-c", ],
+        ["/bin/bash", "-c", docker_cmd],
         stdout=subprocess.PIPE,
         stderr=subprocess.STDOUT)
 
