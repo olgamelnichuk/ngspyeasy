@@ -15,6 +15,7 @@
 # See the License for the specific language governing permissions and
 # limitations under the License.
 ###
+import subprocess
 import sys
 
 from logger import logger
@@ -56,7 +57,7 @@ def user():
     return str(os.getuid()) + ":" + str(os.getgid())
 
 
-def run_command(cmd, image, name, projects_home):
+def run_command_api(cmd, image, name, projects_home):
     c = Client(base_url=DOCKER_BASEURL)
     container = c.create_container(image, command=cmd, name=name, volumes=volumes(projects_home),
                                    environment=environment(), working_dir=working_dir(), user=user())
@@ -73,3 +74,34 @@ def run_command(cmd, image, name, projects_home):
     logger().debug("exit status code: %s" % status)
     c.remove_container(id)
     return status
+
+
+def run_command(cmd, image, name, projects_home):
+    options = ["--rm", "-P", "-w", working_dir(), "-e", "HOME=%s" % HOME]
+    options.extend(["--user", user()])
+    options.extend(["--name", name])
+
+    for v in volumes(projects_home()):
+        options.extend(["-v", v])
+
+    docker_run = ["docker", "run"] + options
+    docker_run.append(image)
+    docker_run.append(cmd)
+
+    proc = subprocess.Popen(
+        ["/bin/bash", "-c", " ".join(docker_run)],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+
+    lines = []
+    try:
+        for line in iter(proc.stdout.readline, b''):
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            lines.append(line)
+        proc.stdout.close()
+    except KeyboardInterrupt:
+        logger().info("KeyboardInterrupt received")
+
+    logger().debug("cmd:\n %s" % ''.join(lines))
+    return proc.returncode
