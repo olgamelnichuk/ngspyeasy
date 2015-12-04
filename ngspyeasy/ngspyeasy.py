@@ -64,9 +64,9 @@ class JobSubmitter(object):
     def lsf_wrap(self, job_id, job_dependencies, cmd):
         lsf_dep_expression = ""
         if len(job_dependencies) > 0:
-            lsf_dep_expression = "\"%s\"" % " && ".join(["ended(%s)" % x for x in job_dependencies])
+            lsf_dep_expression = "-w \"%s\"" % " && ".join(["ended(%s)" % x for x in job_dependencies])
 
-        return "bsub -J %s -w %s %s" % (job_id, lsf_dep_expression, cmd)
+        return "bsub -J %s %s %s" % (job_id, lsf_dep_expression, cmd)
 
     def in_lsf_mode(self):
         return self.mode == "docker-lsf"
