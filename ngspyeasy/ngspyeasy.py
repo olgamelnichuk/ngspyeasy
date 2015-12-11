@@ -30,7 +30,7 @@ from logger import logger
 import yaml
 import jinja2
 
-TEST_MODE = True
+TEST_MODE = False
 
 
 class JobSubmitter(object):
@@ -71,7 +71,7 @@ class JobSubmitter(object):
         return self.mode == "lsf"
 
     def cmd(self, sample_id, task_index, config_path, pipeline_script, var_files):
-        executable = "ngspyeasy_routine"
+        executable = "ngspyeasy_tool"
         if TEST_MODE:
             root = os.path.dirname(__file__)
             executable = "python " + os.path.abspath(os.path.join(root, "ngspyeasy_tool.py"))
