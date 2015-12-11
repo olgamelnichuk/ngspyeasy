@@ -89,6 +89,10 @@ def main(argv):
         if os.path.exists(roles_dir):
             shutil.copytree(roles_dir, os.path.join(temp_dir, "roles"))
 
+        library_dir = os.path.join(os.path.dirname(pipeline_path), "library")
+        if os.path.exists(library_dir):
+            shutil.copytree(library_dir, os.path.join(temp_dir, "library"))
+
         playbook = os.path.join(temp_dir, "playbook.yml")
         with open(playbook, 'w') as outfile:
             outfile.write(yaml.dump([task], default_flow_style=False))
