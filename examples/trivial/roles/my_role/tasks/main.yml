@@ -1,0 +1,18 @@
+---
+- name: just a test
+  shell: echo "hello {{ some_name }}. Sample id is {{ sample.sample_id }}"
+  register: echo_output
+
+- debug: var=echo_output
+
+- name: test docker run
+  dockercmd:
+    image: ubuntu
+    command: "ls -la"
+    secure: no
+    sudo: no
+  register: docker_output
+
+- debug: var=docker_output.stdout
+
+- debug: var=docker_output.stdout_lines

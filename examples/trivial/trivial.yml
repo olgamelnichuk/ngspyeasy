@@ -1,0 +1,4 @@
+---
+- name: do something trivial
+  roles: [my_role]
+  samples: "{{ all_samples }}"
