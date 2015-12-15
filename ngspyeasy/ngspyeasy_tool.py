@@ -269,8 +269,9 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
 
         if msg != '':
             logger().info(msg)
-        for warning in host_result2['warnings']:
-            logger().warn("warning: %s" % warning)
+        if 'warnings' in host_result2 and host_result2['warnings']:
+            for warning in host_result2['warnings']:
+                logger().warn("warning: %s" % warning)
         super(MyPlaybookRunnerCallbacks, self).on_ok(host, host_result)
 
     def on_skipped(self, host, item=None):
