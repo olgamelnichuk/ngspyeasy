@@ -136,7 +136,7 @@ localhost ansible_connection=local
     # Ensure on_stats callback is called
     # for callback modules
     playbook_cb.on_stats(pb.stats)
-    print results
+    logger().info(results)
 
 
 if __name__ == '__main__':
