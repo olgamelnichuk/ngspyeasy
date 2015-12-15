@@ -22,7 +22,7 @@ import tempfile
 
 import os
 import cmdargs
-from logger import logger
+from logger import logger, init_sample_logger
 import tsv_config
 from ansible.playbook import PlayBook
 from ansible import callbacks
@@ -40,6 +40,7 @@ def main(argv):
                         type=cmdargs.existed_file, help="List of samples in TSV format")
     parser.add_argument("--vars", dest="var_files", metavar="/path/to/your/vars.yml", help="additional variables",
                         type=cmdargs.existed_file, action="append")
+    parser.add_argument("--log_dir", dest="log_dir", type=cmdargs.existed_directory)
 
     args = parser.parse_args(argv)
 
@@ -48,6 +49,9 @@ def main(argv):
     tsv_path = os.path.abspath(args.tsv_path)
     pipeline_path = os.path.abspath(args.pipeline_path)
     var_files = [os.path.abspath(f) for f in args.var_files]
+
+    if args.log_dir is not None:
+        init_sample_logger(args.log_dir, run_id)
 
     logger().debug("Command line arguments: %s" % args)
     logger().debug("TSV config path: %s" % tsv_path)

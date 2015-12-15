@@ -26,7 +26,7 @@ import cmdargs
 import job_id_generator
 import job_scheduler
 import tsv_config
-from logger import logger
+from logger import logger, init_main_logger
 import yaml
 import jinja2
 
@@ -34,9 +34,10 @@ TEST_MODE = False
 
 
 class JobSubmitter(object):
-    def __init__(self, mode="local"):
+    def __init__(self, mode="local", log_dir=None):
         self.dependencies = dict()
         self.mode = mode
+        self.log_dir = log_dir
 
     def dependencies_for(self, sample_id):
         return [x for x in [self.dependencies.get(sample_id, None)] if x is not None]
@@ -75,12 +76,15 @@ class JobSubmitter(object):
         if TEST_MODE:
             root = os.path.dirname(__file__)
             executable = "python " + os.path.abspath(os.path.join(root, "ngspyeasy_tool.py"))
+        log_dir = []
+        if self.log_dir:
+            log_dir = ["--log_dir", self.log_dir]
         return " ".join([executable,
                          pipeline_script,
                          "--run_id", sample_id,
                          "--run_index", str(task_index),
                          "--samples", config_path
-                         ] + ["--vars " + x for x in var_files])
+                         ] + ["--vars " + x for x in var_files] + log_dir)
 
 
 def main(argv):
@@ -92,8 +96,12 @@ def main(argv):
     parser.add_argument("--vars", dest="var_files", metavar="/path/to/your/vars.yml", help="additional variables",
                         type=cmdargs.existed_file, action="append")
     parser.add_argument("--mode", dest="mode", choices=["local", "lsf"], default="local", help="job scheduler")
+    parser.add_argument("--log_dir", dest="log_dir", type=cmdargs.existed_directory)
 
     args = parser.parse_args(argv)
+
+    if args.log_dir is not None:
+        init_main_logger(args.log_dir)
 
     tsv_path = os.path.abspath(args.tsv_path)
     pipeline_path = os.path.abspath(args.pipeline_path)
@@ -127,7 +135,7 @@ def main(argv):
         sys.exit(1)
 
     try:
-        submitter = JobSubmitter(args.mode)
+        submitter = JobSubmitter(mode=args.mode, log_dir=args.log_dir)
         for index, task in enumerate(tasks, start=0):
             tmpl = task["samples"]
             samples2run = all_samples

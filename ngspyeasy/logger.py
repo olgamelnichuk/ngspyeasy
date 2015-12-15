@@ -18,13 +18,24 @@
 
 import sys
 import logging
+import datetime
 
 import os.path
 
 FORMATTER = logging.Formatter('%(asctime)s %(threadName)s %(module)s %(levelname)s: %(message)s')
 
 
-def init_logger(logfile, verbose):
+def init_main_logger(log_dir):
+    logname = "%s_ngseasy.log" % datetime.datetime.now().strftime("%d%m%y")
+    init_logger(os.path.join(log_dir, logname), verbose=True)
+
+
+def init_sample_logger(log_dir, sample_id):
+    logname = "%s_ngseasy@%s.log" % (datetime.datetime.now().strftime("%d%m%y"), sample_id)
+    init_logger(os.path.join(log_dir, logname), verbose=True)
+
+
+def init_logger(logfile, verbose=False):
     log_dir = os.path.dirname(logfile)
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
