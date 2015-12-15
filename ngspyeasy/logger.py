@@ -34,7 +34,6 @@ def init_sample_logger(log_dir, sample_id):
     logname = "%s_ngseasy@%s.log" % (datetime.datetime.now().strftime("%d%m%y"), sample_id)
     log_path = os.path.join(log_dir, logname)
     init_logger(log_path, verbose=True)
-    return log_path
 
 
 def init_logger(logfile, verbose=False):

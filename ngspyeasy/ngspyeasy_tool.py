@@ -51,9 +51,7 @@ def main(argv):
     var_files = [os.path.abspath(f) for f in args.var_files]
 
     if args.log_dir is not None:
-        log_path = init_sample_logger(args.log_dir, run_id)
-        os.environ["ANSIBLE_LOG_PATH"] = log_path
-
+        init_sample_logger(args.log_dir, run_id)
 
     logger().debug("Command line arguments: %s" % args)
     logger().debug("TSV config path: %s" % tsv_path)
@@ -110,7 +108,7 @@ def main(argv):
 
 def run_playbook(dir, extra_vars):
     utils.VERBOSITY = 0
-    playbook_cb = callbacks.PlaybookCallbacks(verbose=utils.VERBOSITY)
+    playbook_cb = MyPlaybookCallbacks(verbose=utils.VERBOSITY)
     stats = callbacks.AggregateStats()
     runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
 
@@ -139,6 +137,53 @@ localhost ansible_connection=local
     # for callback modules
     playbook_cb.on_stats(pb.stats)
     logger().info(results)
+
+
+class MyPlaybookCallbacks(callbacks.PlaybookCallbacks):
+    def __init__(self, verbose=False):
+        super(MyPlaybookCallbacks, self).__init__(verbose)
+        self.verbose = verbose
+
+    def on_start(self):
+        super(MyPlaybookCallbacks, self).on_start()
+
+    def on_notify(self, host, handler):
+        super(MyPlaybookCallbacks, self).on_notify(host, handler)
+
+    def on_no_hosts_matched(self):
+        super(MyPlaybookCallbacks, self).on_no_hosts_matched()
+
+    def on_no_hosts_remaining(self):
+        super(MyPlaybookCallbacks, self).on_no_hosts_remaining()
+
+    def on_task_start(self, name, is_conditional):
+        super(MyPlaybookCallbacks, self).on_task_start(name, is_conditional)
+        logger().info("task_start: %s" % name)
+
+    def on_vars_prompt(self, varname, private=True, prompt=None, encrypt=None, confirm=False, salt_size=None, salt=None,
+                       default=None):
+        return super(MyPlaybookCallbacks, self).on_vars_prompt(varname, private, prompt, encrypt, confirm, salt_size,
+                                                               salt, default)
+
+    def on_setup(self):
+        super(MyPlaybookCallbacks, self).on_setup()
+        logger().info("GATHERING FACTS...")
+
+    def on_import_for_host(self, host, imported_file):
+        super(MyPlaybookCallbacks, self).on_import_for_host(host, imported_file)
+        logger().info("%s: importing file: %s" % (host, imported_file))
+
+    def on_not_import_for_host(self, host, missing_file):
+        super(MyPlaybookCallbacks, self).on_not_import_for_host(host, missing_file)
+        logger().info("%s: not importing file: %s" % (host, missing_file))
+
+    def on_play_start(self, name):
+        super(MyPlaybookCallbacks, self).on_play_start(name)
+        logger().info("PLAY [%s]" % name)
+
+    def on_stats(self, stats):
+        super(MyPlaybookCallbacks, self).on_stats(stats)
+
 
 
 if __name__ == '__main__':
