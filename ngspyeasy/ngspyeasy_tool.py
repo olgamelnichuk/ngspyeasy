@@ -51,7 +51,9 @@ def main(argv):
     var_files = [os.path.abspath(f) for f in args.var_files]
 
     if args.log_dir is not None:
-        init_sample_logger(args.log_dir, run_id)
+        log_path = init_sample_logger(args.log_dir, run_id)
+        os.environ["ANSIBLE_LOG_PATH"] = log_path
+
 
     logger().debug("Command line arguments: %s" % args)
     logger().debug("TSV config path: %s" % tsv_path)
