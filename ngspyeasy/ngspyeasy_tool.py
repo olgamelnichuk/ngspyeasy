@@ -140,6 +140,10 @@ localhost ansible_connection=local
     logger().info(results)
 
 
+def file_logger():
+    return logger(file_only=True)
+
+
 class MyPlaybookCallbacks(callbacks.PlaybookCallbacks):
     def __init__(self, verbose=False):
         super(MyPlaybookCallbacks, self).__init__(verbose)
@@ -157,8 +161,8 @@ class MyPlaybookCallbacks(callbacks.PlaybookCallbacks):
         super(MyPlaybookCallbacks, self).on_no_hosts_remaining()
 
     def on_task_start(self, name, is_conditional):
+        file_logger().info("task_start: %s" % name)
         super(MyPlaybookCallbacks, self).on_task_start(name, is_conditional)
-        logger().info("task_start: %s" % name)
 
     def on_vars_prompt(self, varname, private=True, prompt=None, encrypt=None, confirm=False, salt_size=None, salt=None,
                        default=None):
@@ -166,20 +170,20 @@ class MyPlaybookCallbacks(callbacks.PlaybookCallbacks):
                                                                salt, default)
 
     def on_setup(self):
+        file_logger().info("GATHERING FACTS...")
         super(MyPlaybookCallbacks, self).on_setup()
-        logger().info("GATHERING FACTS...")
 
     def on_import_for_host(self, host, imported_file):
+        file_logger().info("%s: importing file: %s" % (host, imported_file))
         super(MyPlaybookCallbacks, self).on_import_for_host(host, imported_file)
-        logger().info("%s: importing file: %s" % (host, imported_file))
 
     def on_not_import_for_host(self, host, missing_file):
+        file_logger().info("%s: not importing file: %s" % (host, missing_file))
         super(MyPlaybookCallbacks, self).on_not_import_for_host(host, missing_file)
-        logger().info("%s: not importing file: %s" % (host, missing_file))
 
     def on_play_start(self, name):
+        file_logger().info("PLAY [%s]" % name)
         super(MyPlaybookCallbacks, self).on_play_start(name)
-        logger().info("PLAY [%s]" % name)
 
     def on_stats(self, stats):
         super(MyPlaybookCallbacks, self).on_stats(stats)
@@ -206,7 +210,7 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
             msg = "fatal: [%s] => (item=%s) => %s" % (host, item, results)
         else:
             msg = "fatal: [%s] => %s" % (host, results)
-        logger().error(msg)
+        file_logger().error(msg)
         super(MyPlaybookRunnerCallbacks, self).on_unreachable(host, results)
 
     def on_failed(self, host, results, ignore_errors=False):
@@ -227,14 +231,14 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
             msg = "failed: [%s] => (item=%s) => %s" % (host, item, utils.jsonify(results2))
         else:
             msg = "failed: [%s] => %s" % (host, utils.jsonify(results2))
-        logger().error(msg)
+        file_logger().error(msg)
 
         if returned_msg:
-            logger().error(returned_msg)
+            file_logger().error(returned_msg)
         if not parsed and module_msg:
-            logger().error(module_msg)
+            file_logger().error(module_msg)
         if ignore_errors:
-            logger().info("...ignoring")
+            file_logger().info("...ignoring")
 
         super(MyPlaybookRunnerCallbacks, self).on_failed(host, results, ignore_errors=ignore_errors)
 
@@ -268,10 +272,10 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
                     msg = "%s: [%s] => %s" % (ok_or_changed, host, utils.jsonify(host_result2, format=verbose_always))
 
         if msg != '':
-            logger().info(msg)
+            file_logger().info(msg)
         if 'warnings' in host_result2 and host_result2['warnings']:
             for warning in host_result2['warnings']:
-                logger().warn("warning: %s" % warning)
+                file_logger().warn("warning: %s" % warning)
         super(MyPlaybookRunnerCallbacks, self).on_ok(host, host_result)
 
     def on_skipped(self, host, item=None):
@@ -281,11 +285,11 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
             msg = "skipping: [%s] => (item=%s)" % (host, item)
         else:
             msg = "skipping: [%s]" % host
-        logger().info(msg)
+        file_logger().info(msg)
         super(MyPlaybookRunnerCallbacks, self).on_skipped(host, item)
 
     def on_no_hosts(self):
-        logger().error("FATAL: no hosts matched or all hosts have already failed -- aborting\n")
+        file_logger().error("FATAL: no hosts matched or all hosts have already failed -- aborting\n")
         super(MyPlaybookRunnerCallbacks, self).on_no_hosts()
 
     def on_async_poll(self, host, res, jid, clock):
@@ -294,16 +298,16 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
     def on_async_ok(self, host, res, jid):
         if jid:
             msg = "<job %s> finished on %s" % (jid, host)
-            logger().info(msg)
+            file_logger().info(msg)
         super(MyPlaybookRunnerCallbacks, self).on_async_ok(host, res, jid)
 
     def on_async_failed(self, host, res, jid):
         msg = "<job %s> FAILED on %s" % (jid, host)
-        logger().error(msg)
+        file_logger().error(msg)
         super(MyPlaybookRunnerCallbacks, self).on_async_failed(host, res, jid)
 
     def on_file_diff(self, host, diff):
-        logger().info(utils.get_diff(diff))
+        file_logger().info(utils.get_diff(diff))
         super(MyPlaybookRunnerCallbacks, self).on_file_diff(host, diff)
 
 

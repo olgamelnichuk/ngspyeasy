@@ -45,6 +45,11 @@ def init_logger(logfile, verbose=False):
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
     logger.addHandler(file_handler(logfile))
     logger.addHandler(console_handler())
+
+    file_only = logging.getLogger("file-only")
+    file_only.setLevel(logging.DEBUG if verbose else logging.INFO)
+    file_only.addHandler(file_handler(logfile))
+
     return logger
 
 
@@ -60,7 +65,10 @@ def console_handler():
     return handler
 
 
-def logger():
+def logger(file_only=False):
+    if file_only:
+        return logging.getLogger("file-only")
+
     logger = logging.getLogger()
     if len(logger.handlers) == 0:
         logger.addHandler(console_handler())
