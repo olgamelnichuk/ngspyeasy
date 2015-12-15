@@ -41,7 +41,7 @@ def init_logger(logfile, verbose=False):
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
 
-    logger = logging.getLogger()
+    logger = logging.getLogger("main")
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
     logger.addHandler(file_handler(logfile))
     logger.addHandler(console_handler())
@@ -69,7 +69,7 @@ def logger(file_only=False):
     if file_only:
         return logging.getLogger("file-only")
 
-    logger = logging.getLogger()
+    logger = logging.getLogger("main")
     if len(logger.handlers) == 0:
         logger.addHandler(console_handler())
         logger.setLevel(logging.DEBUG)
