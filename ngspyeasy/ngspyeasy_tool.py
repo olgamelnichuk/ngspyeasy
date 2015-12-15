@@ -19,6 +19,7 @@ import argparse
 import shutil
 import sys
 import tempfile
+from ansible.module_utils import basic
 
 import os
 import cmdargs
@@ -110,7 +111,7 @@ def run_playbook(dir, extra_vars):
     utils.VERBOSITY = 0
     playbook_cb = MyPlaybookCallbacks(verbose=utils.VERBOSITY)
     stats = callbacks.AggregateStats()
-    runner_cb = callbacks.PlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
+    runner_cb = MyPlaybookRunnerCallbacks(stats, verbose=utils.VERBOSITY)
 
     inventory = """
 [localhost]
@@ -142,7 +143,6 @@ localhost ansible_connection=local
 class MyPlaybookCallbacks(callbacks.PlaybookCallbacks):
     def __init__(self, verbose=False):
         super(MyPlaybookCallbacks, self).__init__(verbose)
-        self.verbose = verbose
 
     def on_start(self):
         super(MyPlaybookCallbacks, self).on_start()
@@ -184,6 +184,126 @@ class MyPlaybookCallbacks(callbacks.PlaybookCallbacks):
     def on_stats(self, stats):
         super(MyPlaybookCallbacks, self).on_stats(stats)
 
+
+class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
+    def __init__(self, stats, verbose=None):
+        super(MyPlaybookRunnerCallbacks, self).__init__(stats, verbose)
+
+    def on_unreachable(self, host, results):
+        if self.runner.delegate_to:
+            host = '%s -> %s' % (host, self.runner.delegate_to)
+
+        item = None
+        if type(results) == dict:
+            item = results.get('item', None)
+            if isinstance(item, unicode):
+                item = utils.unicode.to_bytes(item)
+            results = basic.json_dict_unicode_to_bytes(results)
+        else:
+            results = utils.unicode.to_bytes(results)
+        host = utils.unicode.to_bytes(host)
+        if item:
+            msg = "fatal: [%s] => (item=%s) => %s" % (host, item, results)
+        else:
+            msg = "fatal: [%s] => %s" % (host, results)
+        logger().error(msg)
+        super(MyPlaybookRunnerCallbacks, self).on_unreachable(host, results)
+
+    def on_failed(self, host, results, ignore_errors=False):
+        if self.runner.delegate_to:
+            host = '%s -> %s' % (host, self.runner.delegate_to)
+
+        results2 = results.copy()
+        results2.pop('invocation', None)
+
+        item = results2.get('item', None)
+        parsed = results2.get('parsed', True)
+        returned_msg = results2.pop('msg', None)
+        module_msg = ''
+        if not parsed:
+            module_msg = results2.pop('msg', None)
+
+        if item:
+            msg = "failed: [%s] => (item=%s) => %s" % (host, item, utils.jsonify(results2))
+        else:
+            msg = "failed: [%s] => %s" % (host, utils.jsonify(results2))
+        logger().error(msg)
+
+        if returned_msg:
+            logger().error(returned_msg)
+        if not parsed and module_msg:
+            logger().error(module_msg)
+        if ignore_errors:
+            logger().info("...ignoring")
+
+        super(MyPlaybookRunnerCallbacks, self).on_failed(host, results, ignore_errors=ignore_errors)
+
+    def on_ok(self, host, host_result):
+        item = host_result.get('item', None)
+
+        host_result2 = host_result.copy()
+        host_result2.pop('invocation', None)
+        verbose_always = host_result2.pop('verbose_always', False)
+        changed = host_result.get('changed', False)
+        ok_or_changed = 'ok'
+        if changed:
+            ok_or_changed = 'changed'
+
+        # show verbose output for non-setup module results if --verbose is used
+        msg = ''
+        if (not self.verbose or host_result2.get("verbose_override", None) is not
+            None) and not verbose_always:
+            if item:
+                msg = "%s: [%s] => (item=%s)" % (ok_or_changed, host, item)
+            else:
+                if 'ansible_job_id' not in host_result or 'finished' in host_result:
+                    msg = "%s: [%s]" % (ok_or_changed, host)
+        else:
+            # verbose ...
+            if item:
+                msg = "%s: [%s] => (item=%s) => %s" % (
+                ok_or_changed, host, item, utils.jsonify(host_result2, format=verbose_always))
+            else:
+                if 'ansible_job_id' not in host_result or 'finished' in host_result2:
+                    msg = "%s: [%s] => %s" % (ok_or_changed, host, utils.jsonify(host_result2, format=verbose_always))
+
+        if msg != '':
+            logger().info(msg)
+        for warning in host_result2['warnings']:
+            logger().warn("warning: %s" % warning)
+        super(MyPlaybookRunnerCallbacks, self).on_ok(host, host_result)
+
+    def on_skipped(self, host, item=None):
+        if self.runner.delegate_to:
+            host = '%s -> %s' % (host, self.runner.delegate_to)
+        if item:
+            msg = "skipping: [%s] => (item=%s)" % (host, item)
+        else:
+            msg = "skipping: [%s]" % host
+        logger().info(msg)
+        super(MyPlaybookRunnerCallbacks, self).on_skipped(host, item)
+
+    def on_no_hosts(self):
+        logger().error("FATAL: no hosts matched or all hosts have already failed -- aborting\n")
+        super(MyPlaybookRunnerCallbacks, self).on_no_hosts()
+
+    def on_async_poll(self, host, res, jid, clock):
+        super(MyPlaybookRunnerCallbacks, self).on_async_poll(host, res, jid, clock)
+
+    def on_async_ok(self, host, res, jid):
+        if jid:
+            msg = "<job %s> finished on %s" % (jid, host)
+            logger().info(msg)
+        super(MyPlaybookRunnerCallbacks, self).on_async_ok(host, res, jid)
+
+    def on_async_failed(self, host, res, jid):
+        msg = "<job %s> FAILED on %s" % (jid, host)
+        logger().error(msg)
+        super(MyPlaybookRunnerCallbacks, self).on_async_failed(host, res, jid)
+
+    def on_file_diff(self, host, diff):
+        logger().info(utils.get_diff(diff))
+        super(MyPlaybookRunnerCallbacks, self).on_file_diff(host, diff)
 
 
 if __name__ == '__main__':
