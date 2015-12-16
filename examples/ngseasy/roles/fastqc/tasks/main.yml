@@ -1,0 +1,21 @@
+---
+- set_fact:
+    sample_dir: "{{ sample.project_id }}/{{ sample.sample_id }}"
+    pipeman_sample_dir: "{{ pipeman_projects_dir }}/{{ sample_dir }}"
+
+- set_fact:
+    fq1: "{{ pipeman_sample_dir }}/fastq/{{ sample.fq1 }}"
+    fq2: "{{ pipeman_sample_dir }}/fastq/{{ sample.fq2 }}"
+    tmp_dir: "{{ pipeman_sample_dir }}/tmp"
+    fastq_dir: "{{ pipeman_sample_dir }}/fastq"
+
+- name: Create fastqc script
+  template: src="fastqc.sh.j2" dest="{{ projects_dir }}/{{ sample_dir }}/tmp/fastqc.sh"
+  when: sample.fastqc == "fastqc"
+
+- name: Run fastqc script
+  docker_run: /bin/bash {{ sample_dir }}/tmp/trimmomatic.sh
+    image: compbio/ngseasy-trimmomatic:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+  when: sample.fastqc == "fastqc"

@@ -1,0 +1,8 @@
+---
+- name: init sample directories
+  roles: [init]
+  samples: "{{ all_samples }}"
+
+- name: run fastqc on a sample
+  roles: [fastqc]
+  samples: "{{ all_samples }}"
