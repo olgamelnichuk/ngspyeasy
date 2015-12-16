@@ -1,6 +1,8 @@
 ---
 - set_fact:
      project_dir: "{{ projects_dir }}/{{ sample.project_id }}"
+
+- set_fact:
      sample_dir: "{{ project_dir }}/{{ sample.sample_id }}"
 
 - name: create project dir

@@ -14,8 +14,16 @@
   when: sample.fastqc == "fastqc"
 
 - name: Run fastqc script
-  docker_run: /bin/bash {{ sample_dir }}/tmp/trimmomatic.sh
-    image: compbio/ngseasy-trimmomatic:1.0-r001
+  dockercmd:
+    command: /bin/bash {{ piperman_sample_dir }}/tmp/fastqc.sh
+    image: compbio/ngseasy-fastqc:1.0-r001
     volumes:
     - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    register: docker_output
   when: sample.fastqc == "fastqc"
+
+- debug: var=docker_output.stdout
+  when: docker_output is defined
+
+- debug: var=docker_output.stdout_lines
+  when: docker_output is defined
