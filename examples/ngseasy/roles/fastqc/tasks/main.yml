@@ -1,6 +1,8 @@
 ---
 - set_fact:
     sample_dir: "{{ sample.project_id }}/{{ sample.sample_id }}"
+
+- set_fact:
     pipeman_sample_dir: "{{ pipeman_projects_dir }}/{{ sample_dir }}"
 
 - set_fact:
