@@ -1,6 +1,9 @@
 ---
 - set_fact:
     sample_description_file: "{{ sample.name }}_description.txt"
+    analysis_dir: "sample_{{ sample.name }}"
+
+- set_fact:
     options: "--analysisDir={{ analysis_dir }}/ --processors={{ processors }}"
 
 - set_fact:
