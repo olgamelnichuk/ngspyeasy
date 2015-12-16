@@ -1,0 +1,6 @@
+---
+kraken_image: "docker-registry:5000/kraken:latest"
+kraken_annotation_dir: "/home/bob/kraken/Annotation-12-164"
+kraken_projects_dir: "/home/bob/kraken_projects"
+analysis_dir: "my_test"
+processors: "12"
