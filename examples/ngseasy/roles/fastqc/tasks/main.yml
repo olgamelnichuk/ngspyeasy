@@ -17,7 +17,7 @@
 
 - name: Run fastqc script
   dockercmd:
-    command: /bin/bash {{ piperman_sample_dir }}/tmp/fastqc.sh
+    command: /bin/bash {{ pipeman_sample_dir }}/tmp/fastqc.sh
     image: compbio/ngseasy-fastqc:1.0-r001
     volumes:
     - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
