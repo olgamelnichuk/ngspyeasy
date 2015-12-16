@@ -22,7 +22,7 @@
   register: fastq1_stat
 
 - name: move fastq1 file if it is exists
-  command: mv {{ raw_fastq_dir }}/{{ sample.fastq1 }} {{ sample_dir }}/{{ fastq }}/{{ sample.fastq1 }}
+  command: mv {{ raw_fastq_dir }}/{{ sample.fastq1 }} {{ sample_dir }}/fastq/{{ sample.fastq1 }}
   when: fastq1_stat.stat.exists
 
 - name: check if fastq2 file exists
@@ -30,5 +30,5 @@
   register: fastq2_stat
 
 - name: move fastq2 file if it is exists
-  command: mv {{ raw_fastq_dir }}/{{ sample.fastq2 }} {{ sample_dir }}/{{ fastq }}/{{ sample.fastq2 }}
-  when: fastq1_stat.stat.exists
+  command: mv {{ raw_fastq_dir }}/{{ sample.fastq2 }} {{ sample_dir }}/fastq/{{ sample.fastq2 }}
+  when: fastq2_stat.stat.exists
