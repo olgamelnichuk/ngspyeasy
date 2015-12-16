@@ -13,7 +13,7 @@
 
 - name: Create fastqc script
   template: src="fastqc.sh.j2" dest="{{ projects_dir }}/{{ sample_dir }}/tmp/fastqc.sh"
-  when: sample.fastqc == "fastqc"
+  when: sample.fastqc == "qc-fastqc"
 
 - name: Run fastqc script
   dockercmd:
@@ -22,7 +22,7 @@
     volumes:
     - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
     register: docker_output
-  when: sample.fastqc == "fastqc"
+  when: sample.fastqc == "qc-fastqc"
 
 - debug: var=docker_output.stdout
   when: docker_output is defined
