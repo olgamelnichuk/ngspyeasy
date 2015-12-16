@@ -6,8 +6,8 @@
     pipeman_sample_dir: "{{ pipeman_projects_dir }}/{{ sample_dir }}"
 
 - set_fact:
-    fq1: "{{ pipeman_sample_dir }}/fastq/{{ sample.fq1 }}"
-    fq2: "{{ pipeman_sample_dir }}/fastq/{{ sample.fq2 }}"
+    fq1: "{{ pipeman_sample_dir }}/fastq/{{ sample.fastq1 }}"
+    fq2: "{{ pipeman_sample_dir }}/fastq/{{ sample.fastq2 }}"
     tmp_dir: "{{ pipeman_sample_dir }}/tmp"
     fastq_dir: "{{ pipeman_sample_dir }}/fastq"
 
