@@ -7,6 +7,7 @@ def main():
             image=dict(required=True, default=None, type='str'),
             volumes=dict(required=False, default=[], type='list'),
             environment=dict(required=False, default=[], type='list'),
+            working_dir=dict(required=False, default=None, type='str'),
             secure=dict(required=False, default=True, type='bool'),
             sudo=dict(required=False, default=True, type='bool'),
             rm=dict(required=False, default=True, type='bool')
@@ -17,6 +18,7 @@ def main():
     image = module.params['image']
     volumes = module.params['volumes']
     environment = module.params['environment']
+    working_dir = module.params['working_dir']
     secure = module.params['secure']
     sudo = module.params['sudo']
     rm = module.params['rm']
@@ -29,6 +31,9 @@ def main():
 
     if rm:
         cmd.append("--rm")
+
+    if working_dir is not None:
+        cmd.append("-w " + working_dir)
 
     cmd += ["-e " + x for x in environment]
     cmd += ["-v " + x for x in volumes]
