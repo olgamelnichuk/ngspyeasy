@@ -104,7 +104,8 @@ def main(argv):
 
         run_playbook(temp_dir, extra_vars)
     finally:
-        shutil.rmtree(temp_dir)
+        # shutil.rmtree(temp_dir)
+        pass
 
 
 def run_playbook(dir, extra_vars):
