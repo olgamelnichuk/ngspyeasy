@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    sample_description_file: "{{ sample.name }}_description.txt"
+    sample_description_file: "sample_{{ sample.name }}_description.txt"
     analysis_dir: "sample_{{ sample.name }}"
 
 - set_fact:
