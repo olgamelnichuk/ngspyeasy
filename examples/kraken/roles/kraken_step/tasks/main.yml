@@ -10,7 +10,7 @@
     options: "--identifier={{ analysis_dir }} --no-unique"
   when: step == "organise"
 
-- ste_fact:
+- set_fact:
     options: "--annotationDir=/wd/Annotation {{ options }}"
   when: step == "align" or step == "features"
 
