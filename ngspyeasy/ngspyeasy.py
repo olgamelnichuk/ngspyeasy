@@ -116,7 +116,7 @@ def main(argv):
         sys.exit(1)
 
     logger().info("TSV config first line: %s" % str(tsv_conf.row_at(0)))
-    all_samples = tsv_conf.all_rows()
+    all_samples = list(tsv_conf.all_rows())
     logger().info("Number of samples: %s" % len(all_samples))
 
     try:
