@@ -34,8 +34,8 @@ import yaml
 def main(argv):
     parser = argparse.ArgumentParser(description="NGSpeasy pipelines")
     parser.add_argument("pipeline_path", metavar='/path/to/your_pipeline.yml', type=cmdargs.existed_file)
-    parser.add_argument("--run_id", dest="run_id", help="sample_id to run with")
-    parser.add_argument("--run_index", dest="run_index", type=int, help="task index to run")
+    parser.add_argument("--sample_index", dest="sample_index", type=int, help="sample index to run with")
+    parser.add_argument("--task_index", dest="task_index", type=int, help="task index to run")
     parser.add_argument("--version", action="version", version="%(prog)s 3.0", help="print software version")
     parser.add_argument("--samples", metavar="/path/to/config.tsv", dest="tsv_path", required=True,
                         type=cmdargs.existed_file, help="List of samples in TSV format")
@@ -45,14 +45,14 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
-    run_index = args.run_index
-    run_id = args.run_id
+    task_index = args.task_index
+    sample_index = args.sample_index
     tsv_path = os.path.abspath(args.tsv_path)
     pipeline_path = os.path.abspath(args.pipeline_path)
     var_files = [os.path.abspath(f) for f in args.var_files]
 
     if args.log_dir is not None:
-        init_sample_logger(args.log_dir, run_id)
+        init_sample_logger(args.log_dir, sample_index)
 
     logger().debug("Command line arguments: %s" % args)
     logger().debug("TSV config path: %s" % tsv_path)
@@ -64,9 +64,9 @@ def main(argv):
 
     extra_vars = dict()
 
-    sample = next(x for x in tsv_conf.all_rows() if x.sample_id == run_id)
+    sample = tsv_conf.row_at(sample_index)
     if sample is None:
-        raise ValueError("Unknown sample id: %s" % run_id)
+        raise ValueError("Sample not found by index: %s" % sample_index)
 
     extra_vars["sample"] = sample
 
@@ -79,7 +79,7 @@ def main(argv):
     try:
         with open(pipeline_path, 'r') as stream:
             tasks = yaml.load(stream)
-        task = tasks[run_index]
+        task = tasks[task_index]
     except yaml.scanner.ScannerError, e:
         logger().exception(e)
         sys.exit(1)

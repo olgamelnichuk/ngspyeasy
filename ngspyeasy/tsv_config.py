@@ -56,7 +56,7 @@ class TsvConfig:
             return
 
         header = rows[0]
-        self.rows = map(lambda x: TsvConfigRow(x, header), rows[1:])
+        self.rows = [TsvConfigRow("sample_" + str(i), x, header) for i, x in enumerate(rows[1:])]
 
     def all_rows(self):
         for r in self.rows:
@@ -76,15 +76,19 @@ class TsvConfig:
 
 
 class TsvConfigRow:
-    def __init__(self, values, headers):
+    def __init__(self, id, values, headers):
         d = dict()
         for i, h in enumerate(headers, start=0):
             d[h.lower()] = values[i]
 
         self.__dict__.update(d)
+        self.__id__ = id
 
     def size(self):
         return len(self.__dict__)
 
     def __str__(self):
         return str(self.__dict__)
+
+    def id(self):
+        return self.__id__

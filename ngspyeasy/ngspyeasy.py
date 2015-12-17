@@ -39,24 +39,24 @@ class JobSubmitter(object):
         self.mode = mode
         self.log_dir = log_dir
 
-    def dependencies_for(self, sample_id):
-        return [x for x in [self.dependencies.get(sample_id, None)] if x is not None]
+    def dependencies_for(self, sample_index):
+        return [x for x in [self.dependencies.get(str(sample_index), None)] if x is not None]
 
-    def update_dependencies(self, sample_id, job_id):
-        self.dependencies[sample_id] = job_id
+    def update_dependencies(self, sample_index, job_id):
+        self.dependencies[str(sample_index)] = job_id
 
-    def submit(self, sample_id, task_index, config_path, pipeline_script, var_files):
-        job_cmd = self.cmd(sample_id, task_index, config_path, pipeline_script, var_files)
+    def submit(self, sample_index, task_index, config_path, pipeline_script, var_files):
+        job_cmd = self.cmd(sample_index, task_index, config_path, pipeline_script, var_files)
 
-        job_id = job_id_generator.get_next([sample_id, str(task_index)])
-        job_dependencies = self.dependencies_for(sample_id)
+        job_id = job_id_generator.get_next([str(sample_index), str(task_index)])
+        job_dependencies = self.dependencies_for(sample_index)
 
         logger().debug(
             "Submit job(job_id='%s', dependencies='%s')" % (job_id, job_dependencies))
 
         job_scheduler.submit(
             job_id, self.create_cmd(job_id, job_dependencies, job_cmd), job_dependencies)
-        self.update_dependencies(sample_id, job_id)
+        self.update_dependencies(sample_index, job_id)
 
     def create_cmd(self, job_id, job_dependencies, job_cmd):
         return self.lsf_wrap(job_id, job_dependencies, job_cmd) if self.in_lsf_mode() else job_cmd
@@ -71,7 +71,7 @@ class JobSubmitter(object):
     def in_lsf_mode(self):
         return self.mode == "lsf"
 
-    def cmd(self, sample_id, task_index, config_path, pipeline_script, var_files):
+    def cmd(self, sample_index, task_index, config_path, pipeline_script, var_files):
         executable = "ngspyeasy_tool"
         if TEST_MODE:
             root = os.path.dirname(__file__)
@@ -81,8 +81,8 @@ class JobSubmitter(object):
             log_dir = ["--log_dir", self.log_dir]
         return " ".join([executable,
                          pipeline_script,
-                         "--run_id", sample_id,
-                         "--run_index", str(task_index),
+                         "--sample_index", str(sample_index),
+                         "--task_index", str(task_index),
                          "--samples", config_path
                          ] + ["--vars " + x for x in var_files] + log_dir)
 
@@ -116,7 +116,7 @@ def main(argv):
         sys.exit(1)
 
     logger().info("TSV config first line: %s" % str(tsv_conf.row_at(0)))
-    all_samples = [x.sample_id for x in tsv_conf.all_rows()]
+    all_samples = tsv_conf.all_rows()
     logger().info("Number of samples: %s" % len(all_samples))
 
     try:
@@ -136,15 +136,15 @@ def main(argv):
 
     try:
         submitter = JobSubmitter(mode=args.mode, log_dir=args.log_dir)
-        for index, task in enumerate(tasks, start=0):
+        for task_index, task in enumerate(tasks, start=0):
             tmpl = task["samples"]
             samples2run = all_samples
             if tmpl != "all":
                 samples_str = jinja2.Template(tmpl).render({"all_samples": all_samples})
                 samples2run = eval(samples_str)
 
-            for sample in samples2run:
-                submitter.submit(sample, index, tsv_path, pipeline_path, var_files)
+            for sample_index, sample in enumerate(samples2run, start=0):
+                submitter.submit(sample_index, task_index, tsv_path, pipeline_path, var_files)
 
         job_scheduler.all_done()
     except Exception as e:
