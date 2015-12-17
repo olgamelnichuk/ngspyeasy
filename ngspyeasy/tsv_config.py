@@ -56,7 +56,7 @@ class TsvConfig:
             return
 
         header = rows[0]
-        self.rows = [as_dict(x, header) for i, x in enumerate(rows[1:])]
+        self.rows = [self.as_dict(x, header) for x in rows[1:]]
 
     def all_rows(self):
         for r in self.rows:
