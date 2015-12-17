@@ -20,7 +20,7 @@
 - name: runnning pipeline step
   dockercmd:
     command: /kraken/seqimp/bin/imp_commandline.pl --step={{ step }} --description=/wd/{{ sample_description_file }} --user-configuration=/wd/config.txt --dataDir=/wd/fastq/ {{ options }}
-    image: {{ kraken_image }}
+    image: "{{ kraken_image }}"
     working_dir: "/wd"
     volumes:
     - "{{ kraken_projects_dir }}:/wd"
