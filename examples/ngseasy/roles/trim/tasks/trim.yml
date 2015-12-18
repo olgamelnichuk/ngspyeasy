@@ -42,7 +42,7 @@
 - name: Create trim_fastqc.sh script
   template: src="trim_fastqc.sh.j2" dest="{{ sample_dir }}/tmp/trim_fastqc.sh"
 
- - name: Run trim.sh script in docker
+- name: Run trim.sh script in docker
    dockercmd:
     command: /bin/bash {{ pipeman_sample_dir }}/tmp/trim_fastqc.sh
     image: compbio/ngseasy-fastqc:1.0-r001
