@@ -2,8 +2,8 @@
 - set_fact:
     fq1: "{{ pipeman_sample_dir }}/fastq/{{ sample.fastq1 }}"
     fq2: "{{ pipeman_sample_dir }}/fastq/{{ sample.fastq2 }}"
-    fq1_html: "{{ sample.fq1 | regexp_replace('?fastq?gz$', '_fastqc.html') }}"
-    fq2_html: "{{ sample.fq2 | regexp_replace('?fastq?gz$', '_fastqc.html') }}"
+    fq1_html: "{{ sample.fq1 | regex_replace('?fastq?gz$', '_fastqc.html') }}"
+    fq2_html: "{{ sample.fq2 | regex_replace('?fastq?gz$', '_fastqc.html') }}"
     tmp_dir: "{{ pipeman_sample_dir }}/tmp"
     fastq_dir: "{{ pipeman_sample_dir }}/fastq"
 
