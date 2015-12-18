@@ -1,0 +1,18 @@
+---
+- set_fact:
+    sample_rel_path: "{{ sample.project_id }}/{{ sample.sample_id }}"
+    genomeref_rel_path: "reference_genomes_{{ sample.genomebuild }}"
+
+- set_fact:
+    sample_dir: "{{ projects_dir }}/{{ sample_rel_path }}"
+    pipeman_sample_dir: "{{ pipeman_projects_dir }}/{{ sample_rel_path }}"
+
+- set_fact:
+    genomeref_dir: "{{ resources_dir }}/{{ genomeref_rel_path }}"
+    pipeman_genomeref_dir: "{{ pipeman_resources_dir }}/{{ genomeref_rel_path }}"
+
+- set_fact:
+    pipeman_adapter_fa: "{{ pipeman_genomeref_dir }}/contaminant_list.fa"
+
+- set_fact:
+    trim_prefix: "{{ sample.sample_id }}.{{ sample.ngs_type }}.{{ sample.dna_prep_library_id }}.{{ sample.trim }}"

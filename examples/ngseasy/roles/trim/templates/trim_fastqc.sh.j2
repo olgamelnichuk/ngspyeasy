@@ -1,0 +1,4 @@
+#!/usr/bin/env bash
+
+/usr/local/pipeline/FastQC/fastqc --threads 4 \
+--extract --quiet --dir {{ tmp_dir }} --outdir {{ fastq_dir }} {{ paired_fq1 }} {{ paired_fq2 }} {{ unpaired_fq1 }} {{ unpaired_fq2 }}

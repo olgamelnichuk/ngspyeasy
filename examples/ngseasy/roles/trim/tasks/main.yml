@@ -1,0 +1,6 @@
+---
+- include: trim.yml adapter_fa="{{ pipeman_adapter_fa }}"
+  when: sample.trim == "atrim"
+
+- include: trim.yml
+  when: sample.trim == "btrim"
