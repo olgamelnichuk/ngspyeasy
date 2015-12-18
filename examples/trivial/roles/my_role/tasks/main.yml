@@ -11,6 +11,7 @@
     command: "ls -la"
     secure: no
     sudo: no
+    rm: yes
   register: docker_output
 
 - debug: var=docker_output.stdout

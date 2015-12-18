@@ -25,6 +25,7 @@
     volumes:
     - "{{ kraken_projects_dir }}:/wd"
     - "{{ kraken_annotation_dir }}:/wd/Annotation"
+    rm: yes
   register: docker_output
 
 - debug: var=docker_output.stdout_lines
