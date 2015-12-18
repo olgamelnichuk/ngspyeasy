@@ -1,5 +1,7 @@
 #!/usr/bin/env python
 
+import glob
+
 def main():
     module = AnsibleModule(
         argument_spec=dict(
@@ -10,7 +12,8 @@ def main():
             working_dir=dict(required=False, default=None, type='str'),
             secure=dict(required=False, default=True, type='bool'),
             sudo=dict(required=False, default=True, type='bool'),
-            rm=dict(required=False, default=True, type='bool')
+            rm=dict(required=False, default=True, type='bool'),
+            creates=dict(required=False, default=[], type='list')
         )
     )
 
@@ -22,6 +25,18 @@ def main():
     secure = module.params['secure']
     sudo = module.params['sudo']
     rm = module.params['rm']
+    creates = module.params['creates']
+
+    if len(creates) > 0:
+        uncreated = [x for x in creates if not glob.glob(os.path.expanduser(x))]
+        if len(uncreated) == 0:
+            module.exit_json(
+                cmd=command,
+                stdout="skipped, since %s exist" % creates,
+                changed=False,
+                stderr=False,
+                rc=0
+            )
 
     cmd = []
     if secure:
