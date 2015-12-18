@@ -6,3 +6,7 @@
 - name: run fastqc on a sample
   roles: [fastqc]
   samples: "{{ all_samples }}"
+
+- name: run trimmomatic on a sample
+  roles: [trim]
+  samples: "{{ all_samples }}"
