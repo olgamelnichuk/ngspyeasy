@@ -15,10 +15,10 @@
     paired_fq2: "{{ fastq_dir }}/{{ paired_fq2_name }}"
     unpaired_fq1: "{{ fastq_dir }}/{{ unpaired_fq1_name }}"
     unpaired_fq2: "{{ fastq_dir }}/{{ unpaired_fq2_name }}"
-    paired_fq1_html: "{{ paired_fq1_name | regex_replace('?fastq?gz$', '_fastqc.html') }}"
-    paired_fq2_html: "{{ paired_fq2_name | regex_replace('?fastq?gz$', '_fastqc.html') }}"
-    unpaired_fq1_html: "{{ unpaired_fq1_name | regex_replace('?fastq?gz$', '_fastqc.html') }}"
-    unpaired_fq2_html: "{{ unpaired_fq2_name | regex_replace('?fastq?gz$', '_fastqc.html') }}"
+    paired_fq1_html: "{{ paired_fq1_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    paired_fq2_html: "{{ paired_fq2_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    unpaired_fq1_html: "{{ unpaired_fq1_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    unpaired_fq2_html: "{{ unpaired_fq2_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
 
 - name: Create trim.sh script
   template: src="trim.sh.j2" dest="{{ sample_dir }}/tmp/trim.sh"
