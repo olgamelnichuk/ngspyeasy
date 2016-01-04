@@ -14,6 +14,12 @@
 - name: create fastq dir
   file: path="{{ sample_dir }}/fastq" state=directory
 
+- name: create alignments dir
+  file: path="{{ sample_dir }}/alignments" state=directory
+
+- name: create reports dir
+  file: path="{{ sample_dir }}reports" state=directory
+
 - name: create tmp dir
   file: path="{{ sample_dir }}/tmp" state=directory
 

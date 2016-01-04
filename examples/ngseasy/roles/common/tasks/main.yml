@@ -1,18 +1,36 @@
 ---
-- set_fact:
-    sample_rel_path: "{{ sample.project_id }}/{{ sample.sample_id }}"
-    genomeref_rel_path: "reference_genomes_{{ sample.genomebuild }}"
+- name: get the current time for a timestamp
+  command: date +%Y%m%d%H%M%S
+  register: timestamp
+
+- debug: var=timestamp
 
 - set_fact:
-    sample_dir: "{{ projects_dir }}/{{ sample_rel_path }}"
-    pipeman_sample_dir: "{{ pipeman_projects_dir }}/{{ sample_rel_path }}"
+    sample_dir: "{{ sample.project_id }}/{{ sample.sample_id }}"
+    run_date: {{ timestamp.stdout }}
 
 - set_fact:
-    genomeref_dir: "{{ resources_dir }}/{{ genomeref_rel_path }}"
-    pipeman_genomeref_dir: "{{ pipeman_resources_dir }}/{{ genomeref_rel_path }}"
+    tmp_dir: "{{ sample_dir }}/tmp"
+    fastq_dir: "{{ sample_dir }}/fastq"
+    alignments_dir: "{{ sample_dir }}/alignments"
+    reports_dir: "{{ sample_dir }}/reports"
 
 - set_fact:
-    pipeman_adapter_fa: "{{ pipeman_genomeref_dir }}/contaminant_list.fa"
+    fq1: "{{ fastq_dir }}/{{ sample.fastq1 }}"
+    fq2: "{{ fastq_dir }}/{{ sample.fastq2 }}"
 
 - set_fact:
     trim_prefix: "{{ sample.sample_id }}.{{ sample.ngs_type }}.{{ sample.dna_prep_library_id }}.{{ sample.trim }}"
+    bam_prefix: "{{ sample.sample_id }}.{{ sample.ngs_type }}.{{ sample.dna_prep_library_id }}.{{ sample.ngs_platform }}.{{ sample.trim }}.{{ sample.aligner }}.{{ sample.genomebuild }}"
+
+- set_fact:
+    paired_fq1: "{{ fastq_dir }}/{{ trim_prefix }}_1_filtered.fastq.gz"
+    paired_fq2: "{{ fastq_dir }}/{{ trim_prefix }}_2_filtered.fastq.gz"
+    unpaired_fq1: "{{ fastq_dir }}/{{ trim_prefix }}_1_unpaired.fastq.gz"
+    unpaired_fq2: "{{ fastq_dir }}/{{ trim_prefix }}_2_unpaired.fastq.gz"
+
+    dupemark_bam: "{{ alignments_dir }}/{{ bam_prefix }}.dupemk.bam"
+    dupemark_flagstat: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.bam.flagstat"
+    dupemark_bed: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.bed"
+
+- include: genome_build.yml

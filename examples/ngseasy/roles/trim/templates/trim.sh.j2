@@ -5,13 +5,13 @@ wget -O /tmp/Trimmomatic-0.32.zip http://www.usadellab.org/cms/uploads/supplemen
 unzip /tmp/Trimmomatic-0.32.zip -d /tmp
 
 java -XX:ParallelGCThreads=1 -jar /tmp/Trimmomatic-0.32/trimmomatic-0.32.jar PE \
--threads {{ ncpu }} \
-{{ fq1 }} {{ fq2 }} \
-{{ paired_fq1 }} {{ unpaired_fq1 }} \
-{{ paired_fq2 }} {{ unpaired_fq2 }} \
+-threads {{ NCPU }} \
+{{ FQ1 }} {{ FQ2 }} \
+{{ PAIRED_FQ1 }} {{ UNPAIRED_FQ1 }} \
+{{ PAIRED_FQ2 }} {{ UNPAIRED_FQ2 }} \
 LEADING:3 \
 TRAILING:3 \
 SLIDINGWINDOW:4:15 \
 AVGQUAL:2 \
 MINLEN:75 \
-{{ 'ILLUMINACLIP:%s:2:30:10:5:true' % adapter_fa if adapter_fa is defined else '' }}
+{{ 'ILLUMINACLIP:%s:2:30:10:5:true' % ADAPTER_FA if ADAPTER_FA is defined else '' }}

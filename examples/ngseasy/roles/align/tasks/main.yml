@@ -1,0 +1,49 @@
+---
+- name: find platform unit
+  shell: "zcat {{ projects_dir }}/{{ fq1 }} | head -1 | sed 's/:/\\t/' - | cut -f 1 | sed 's/@//g' - "
+  register: platform_unit
+
+- debug: var=platform_unit
+
+- set_fact:
+    NCPU: "{{ sample.ncpu }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
+    BAM_PREFIX: "{{ bam_prefix }}"
+    RUNDATE: "{{ run_date }}"
+    PLATFORM_UNIT: "{{ platform_unit.output }}"
+    NGS_PLATFORM: "{{ sample.ngs_platform }}"
+    DNA_PREP_LIBRARY_ID: "{{ sample.dna_prep_library_id }}"
+    REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
+    DISCORDANT_SAM: "{{ pipeman_projects_dir }}/{{ alignments_dir }}/{{ bam_prefix }}.discordant.sam"
+    DISCORDANT_BAM: "{{ pipeman_projects_dir }}/{{ alignments_dir }}/{{ bam_prefix }}.discordant.bam"
+    SPLITREAD_SAM: "{{ pipeman_projects_dir }}/{{ alignments_dir }}/{{ bam_prefix }}.splitread.sam"
+    SPLITREAD_BAM: "{{ pipeman_projects_dir }}/{{ alignments_dir }}/{{ bam_prefix }}.splitread.bam"
+    UNMAPPED_FASTQ: "{{ pipeman_projects_dir }}/{{ alignments_dir }}/{{ bam_prefix }}.unmapped.fastq"
+    DUPEMARK_BAM: "{{ pipeman_projects_dir }}/{{ dupemark_bam }}"
+    DUPEMARK_FLAGSTAT: "{{ pipeman_projects_dir }}/{{ dupemark_flagstat }}"
+    DUPEMARK_BED: "{{ pipeman_projects_dir }}/{{ dupemark_bed }}"
+
+- set_fact:
+    TRIMMED_FQ1: "{{ pipeman_projects_dir }}/{{ fq1 }}"
+    TRIMMED_FQ2: "{{ pipeman_projects_dir }}/{{ fq2 }}"
+  when: sample.trim == "no-trim"
+
+- set_fact:
+    TRIMMED_FQ1: "{{ pipeman_projects_dir }}/{{ paired_fq1 }}"
+    TRIMMED_FQ2: "{{ pipeman_projects_dir }}/{{ paired_fq2 }}"
+  when: sample.trim != "no-trim"
+
+- include: bwa.yml
+  when: sample.aligner == "bwa"
+
+- include: bowtie2.yml
+  when: sample.aligner == "bowtie2"
+
+- include: snap.yml
+  when: sample.aligner == "snap"
+
+- include: novoalign.yml
+  when: sample.aligner == "novoalign"
+
+- include: stampy.yml
+  when: sample.aligner == "stampy"

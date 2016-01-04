@@ -1,0 +1,21 @@
+---
+- set_fact:
+    NOVOINDEX: "{{ pipeman_resources_dir }}/{{ novoindex }}"
+
+- name: Create novoalign.sh script
+  template: src="novoalign.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/novoalign.sh"
+
+- name: Run novoalign.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/novoalign.sh
+    image: compbio/ngseasy-novoalign:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_bam }}"
+    - "{{ projects_dir }}/{{ dupemark_flagstat }}"
+    - "{{ projects_dir }}/{{ dupemark_bed }}"
+  register: novoalign_output
+
+- debug: var=novoalign_output.stdout_lines

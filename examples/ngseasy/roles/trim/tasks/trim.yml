@@ -1,59 +1,54 @@
 ---
 - set_fact:
-    ncpu: "{{ sample.ncpu }}"
-    tmp_dir: "{{ pipeman_sample_dir }}/tmp"
-    fastq_dir: "{{ pipeman_sample_dir }}/fastq"
-    paired_fq1_name: "{{ trim_prefix }}_1_filtered.fastq.gz"
-    paired_fq2_name: "{{ trim_prefix }}_2_filtered.fastq.gz"
-    unpaired_fq1_name: "{{ trim_prefix }}_1_unpaired.fastq.gz"
-    unpaired_fq2_name: "{{ trim_prefix }}_2_unpaired.fastq.gz"
+    NCPU: "{{ sample.ncpu }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
+    FASTQ_DIR: "{{ pipeman_projects_dir }}/{{ fastq_dir }}"
+    FQ1: "{{ pipeman_projects_dir }}/{{ fq1 }}"
+    FQ2: "{{ pipeman_projects_dir }}/{{ fq2 }}"
+    PAIRED_FQ1: {{ pipeman_projects_dir }}/{{ paired_fq1 }}
+    PAIRED_FQ2: {{ pipeman_projects_dir }}/{{ paired_fq2 }}
+    UPAIRED_FQ1: {{ pipeman_projects_dir }}/{{ unpaired_fq1 }}
+    UNPAIRED_FQ2: {{ pipeman_projects_dir }}/{{ unpaired_fq2 }}
 
-- set_fact:
-    fq1: "{{ fastq_dir }}/{{ sample.fastq1 }}"
-    fq2: "{{ fastq_dir }}/{{ sample.fastq2 }}"
-    paired_fq1: "{{ fastq_dir }}/{{ paired_fq1_name }}"
-    paired_fq2: "{{ fastq_dir }}/{{ paired_fq2_name }}"
-    unpaired_fq1: "{{ fastq_dir }}/{{ unpaired_fq1_name }}"
-    unpaired_fq2: "{{ fastq_dir }}/{{ unpaired_fq2_name }}"
-    paired_fq1_html: "{{ paired_fq1_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
-    paired_fq2_html: "{{ paired_fq2_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
-    unpaired_fq1_html: "{{ unpaired_fq1_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
-    unpaired_fq2_html: "{{ unpaired_fq2_name | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    paired_fq1_html: "{{ paired_fq1 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    paired_fq2_html: "{{ paired_fq2 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    unpaired_fq1_html: "{{ unpaired_fq1 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    unpaired_fq2_html: "{{ unpaired_fq2 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
 
 - name: Create trim.sh script
-  template: src="trim.sh.j2" dest="{{ sample_dir }}/tmp/trim.sh"
+  template: src="trim.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/trim.sh"
 
 - name: Run trim.sh script in docker
   dockercmd:
-    command: /bin/bash {{ pipeman_sample_dir }}/tmp/trim.sh
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/trim.sh
     image: compbio/ngseasy-trimmomatic:1.0-r001
     volumes:
     - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
     rm: yes
     creates:
-    - "{{ sample_dir }}/fastq/{{ paired_fq1_name }}"
-    - "{{ sample_dir }}/fastq/{{ paired_fq2_name }}"
-    - "{{ sample_dir }}/fastq/{{ unpaired_fq1_name }}"
-    - "{{ sample_dir }}/fastq/{{ unpaired_fq2_name }}"
+    - "{{ projects_dir }}/{{ paired_fq1 }}"
+    - "{{ projects_dir }}/{{ paired_fq2 }}"
+    - "{{ projects_dir }}/{{ unpaired_fq1 }}"
+    - "{{ projects_dir }}/{{ unpaired_fq2 }}"
   register: trim_output
 
 - debug: var=trim_output.stdout_lines
 
 - name: Create trim_fastqc.sh script
-  template: src="trim_fastqc.sh.j2" dest="{{ sample_dir }}/tmp/trim_fastqc.sh"
+  template: src="trim_fastqc.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/trim_fastqc.sh"
 
 - name: Run trim_fastq.sh script in docker
   dockercmd:
-    command: /bin/bash {{ pipeman_sample_dir }}/tmp/trim_fastqc.sh
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/trim_fastqc.sh
     image: compbio/ngseasy-fastqc:1.0-r001
     volumes:
     - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
     rm: yes
     creates:
-    - "{{ sample_dir }}/fastq/{{ paired_fq1_html }}"
-    - "{{ sample_dir }}/fastq/{{ paired_fq2_html }}"
-    - "{{ sample_dir }}/fastq/{{ unpaired_fq1_html }}"
-    - "{{ sample_dir }}/fastq/{{ unpaired_fq2_html }}"
+    - "{{ projects_dir }}/{{ paired_fq1_html }}"
+    - "{{ projects_dir }}/{{ paired_fq2_html }}"
+    - "{{ projects_dir }}/{{ unpaired_fq1_html }}"
+    - "{{ projects_dir }}/{{ unpaired_fq2_html }}"
   register: trim_fastq_output
 
 - debug: var=trim_fastq_output.stdout_lines
