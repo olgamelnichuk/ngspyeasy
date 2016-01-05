@@ -18,6 +18,6 @@
     rm: yes
     creates:
     - "{{ projects_dir }}/{{ bsqr_bam_out }}"
-  register: realn_output
+  register: bsqr_output
 
-- debug: var=realn_output.stdout_lines
+- debug: var=bsqr_output.stdout_lines
