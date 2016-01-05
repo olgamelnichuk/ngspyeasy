@@ -1,0 +1,16 @@
+---
+- set_fact:
+    NCPU: "{{ sample.ncpu }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
+    REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
+    KNOWN_INDELS: "{{ pipeman_resources_dir }}/{{ known_indels }}"
+    DUPEMARK_BAM: "{{ pipeman_projects_dir }}/{{ dupemark_bam }}"
+    DUPEMARK_REALN_BAM: "{{ pipeman_projects_dir }}/{{ dupemark_realn_bam }}"
+    DUPEMARK_REALN_FLAGSTAT: "{{ pipeman_projects_dir }}/{{ dupemark_realn_flagstat }}"
+    DUPEMARK_REALN_BED: "{{ pipeman_projects_dir }}/{{ dupemark_realn_bed }}"
+
+- include: bam-realn.yml
+  when: sample.realn == "bam-realn"
+
+- include: gatk-realn.yml
+  when: sample.realn == "gatk-realn"

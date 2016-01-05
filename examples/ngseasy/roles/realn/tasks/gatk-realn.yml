@@ -1,0 +1,21 @@
+---
+- set_fact:
+    DUPEMARK_BAM_FOR_INDER_REALN_INTERVALS: "{{ pipeman_projects_dir }}/{{ alignments_dir }}/{{ bam_prefix }}.dupemk.bam.ForIndelRealigner.intervals"
+
+- name: Create gatk-realn.sh script
+  template: src="gatk-realn.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/gatk-realn.sh"
+
+- name: Run gatk-realn.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/gatk-realn.sh
+    image: compbio/ngseasy-gatk:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_realn_bam }}"
+    - "{{ projects_dir }}/{{ dupemark_realn_flagstat }}"
+    - "{{ projects_dir }}/{{ dupemark_realn_bed }}"
+  register: realn_output
+
+- debug: var=realn_output.stdout_lines

@@ -33,4 +33,9 @@
     dupemark_flagstat: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.bam.flagstat"
     dupemark_bed: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.bed"
 
+    dupemark_realn_bam: "{{ alignments_dir }}/{{ bam_prefix }}.dupemk.{{ sample.realn }}.bam"
+    dupemark_realn_flagstat: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.{{ sample.realn }}.bam.flagstat"
+    dupemark_realn_bed: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.{{ sample.realn }}.bed"
+
+
 - include: genome_build.yml
