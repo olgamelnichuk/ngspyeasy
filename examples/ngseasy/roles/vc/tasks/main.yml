@@ -1,0 +1,56 @@
+---
+- set_fact:
+    NCPU: "{{ sample.ncpu }}"
+    VC_BAM_IN:
+    VC_FILTERED_BAM:
+    MAPPED_READS_BED:
+    GENOMECOV_BED:
+
+
+- name: create callable-regions script
+  template: src="callable-regions.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/callable-regions.sh"
+
+- name: run callable-regions script
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/bam-bsqr.sh
+    image: compbio/ngseasy-base:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ mapped_reads_bed }}"
+    - "{{ projects_dir }}/{{ genomecov_bed }}"
+  register: cov_output
+
+- debug: var=cov_output.stdout_lines
+
+- name: create filter-bam script
+  templte: src="filter-bam.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/filter-bam.sh"
+
+- name: run filter-bam script
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/bam-bsqr.sh
+    image: compbio/ngseasy-base:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ vc_filtered_bam }}"
+  register: filter_output
+
+- debug: var=filter_output.stdout_lines
+
+- include: HaplotypeCaller.yml
+  when: sample.vc == "HaplotypeCaller"
+
+- include: UnifiedGenotyper.yml
+  when: sample.vc == "UnifiedGenotyper"
+
+- include: platypus.yml
+  when: sample.vc == "platypus" or sample.vc == "platypus-default"
+
+- include: freebayes.yml
+  when: sample.vc == "freebayes-parallel" or sample.vc == "freebayes-default"
+
+- include: ensemble.yml
+  when: sampple.vc == "ensemble"
