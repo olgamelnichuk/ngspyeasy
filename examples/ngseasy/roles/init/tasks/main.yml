@@ -17,6 +17,9 @@
 - name: create alignments dir
   file: path="{{ sample_dir }}/alignments" state=directory
 
+- name: create vcf dir
+  file: path="{{ sample_dir }}/vcf" state=directory
+
 - name: create reports dir
   file: path="{{ sample_dir }}reports" state=directory
 

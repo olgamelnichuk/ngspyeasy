@@ -14,6 +14,7 @@
     fastq_dir: "{{ sample_dir }}/fastq"
     alignments_dir: "{{ sample_dir }}/alignments"
     reports_dir: "{{ sample_dir }}/reports"
+    vcf_dir: "{{ sample_dir }}/vcf"
 
 - set_fact:
     fq1: "{{ fastq_dir }}/{{ sample.fastq1 }}"
@@ -37,5 +38,15 @@
     dupemark_realn_flagstat: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.{{ sample.realn }}.bam.flagstat"
     dupemark_realn_bed: "{{ reports_dir }}/{{ bam_prefix }}.dupemk.{{ sample.realn }}.bed"
 
+- set_fact:
+    bsqr_bam_in: "{{ dupemark_bam }}"
+    bsqr_bam_out: "{{ alignments_dir }}/{{ bam_prefix }}.dupemk.{{ sample.bsqr }}.bam"
+    is_bam_tool: "{{ sample.realn == 'bam-realn' and sample.bsqr == 'bam-bsqr' }}"
+    is_gatk_tool: "{{ sample.realn == 'gatk-realn' and sample.bsqr == 'gatk-bsqr' }}"
+
+- set_fact:
+    bsqr_bam_in: "{{ dupemark_realn_bam }}"
+    bsqr_bam_out: "{{ alignments_dir }}/{{ bam_prefix }}.dupemk.{{ sample.realn }}.{{ sample.bsqr }}.bam"
+  when: is_bam_tool or is_gatk_tool
 
 - include: genome_build.yml

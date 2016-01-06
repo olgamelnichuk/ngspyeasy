@@ -1,0 +1,92 @@
+---
+- set_fact:
+    freebayers_raw_vcf: {{ raw_vcf | regex_replace('.vcf$', '_freebayes.vcf') }}
+    freebayers_vcf_gz: {{ vcf_gz | regex_replace('.vcf.gz$', '_freebayes.vcf.gz') }}
+    platypus_raw_vcf: {{ raw_vcf | regex_replace('.vcf$', '_platypus.vcf') }}
+    platypus_vcf_gz: {{ vcf_gz | regex_replace('.vcf.gz$', '_platyous.vcf.gz') }}
+    haplotypecaller_raw_vcf: {{ raw_vcf | regex_replace('.vcf$', '_haplotyoecaller.vcf') }}
+    haplotypecaller_vcf_gz: {{ vcf_gz | regex_replace('.vcf.gz$', '_haplotypecaller.vcf.gz') }}
+
+- set_fact:
+    freebayers_raw_vcf_gz: "{{ freebayers_raw_vcf }}.gz"
+    platypus_raw_vcf_gz: "{{ platypus_raw_vcf }}.gz"
+    haplotypecaller_raw_vcf_gz: "{{ haplotypecaller_raw_vcf }}.gz"
+
+- set_fact:
+    FREEBAYES_RAW_VCF: "{{ pipeman_projects_dir }}/{{ freebayers_raw_vcf }}"
+    FREEBAYES_RAW_VCF_GZ: "{{ pipeman_projects_dir }}/{{ freebayers_raw_vcf_gz }}"
+    FREEBAYES_VCF_GZ: "{{ pipeman_projects_dir }}/{{ freebayers_vcf_gz }}"
+    PLATYPUS_RAW_VCF: "{{ pipeman_projects_dir }}/{{ platypus_raw_vcf }}"
+    PLATYPUS_RAW_VCF_GZ: "{{ pipeman_projects_dir }}/{{ platypus_raw_vcf_gz }}"
+    PLATYPUS_VCF_GZ: "{{ pipeman_projects_dir }}/{{ platypus_vcf_gz }}"
+    HAPLOTYPECALLER_RAW_VCF: "{{ pipeman_projects_dir }}/{{ haplotypecaller_raw_vcf }}"
+    HAPLOTYPECALLER_RAW_VCF_GZ: "{{ pipeman_projects_dir }}/{{ haplotypecaller_raw_vcf_gz }}"
+    HAPLOTYPECALLER_VCF_GZ: "{{ pipeman_projects_dir }}/{{ haplotypecaller_vcf_gz }}"
+
+- name: Create ensemble_freebayes.sh script
+  template: src="ensemble_freebayes.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/ensemble_freebayes.sh"
+
+- name: Run ensemble_freebayes.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/ensemble_freebayes.sh
+    image: compbio/ngseasy-freebayes:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ freebayers_raw_vcf }}"
+    - "{{ projects_dir }}/{{ freebayers_raw_vcf_gz }}"
+    - "{{ projects_dir }}/{{ freebayers_vcf_gz }}"
+  register: vc_output
+
+- debug: var=vc_output.stdout_lines
+
+- name: Create platypus-*.sh script
+  template: src="{{ sample.varcaller }}.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/ensemble_platypus.sh"
+
+- name: Run ensemble_platypus.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/ensemble_platypus.sh
+    image: compbio/ngseasy-platypus:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ platypus_raw_vcf }}"
+    - "{{ projects_dir }}/{{ platypus_raw_vcf_gz }}"
+    - "{{ projects_dir }}/{{ platypus_vcf_gz }}"
+  register: vc_output
+
+- debug: var=vc_output.stdout_lines
+
+- name: Create ensemble_HaplotypeCaller.sh script
+  template: src="ensemble_HaplotypeCaller.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/ensemble_HaplotypeCaller.sh"
+
+- name: Run HaplotypeCaller.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/ensemble_HaplotypeCaller.sh
+    image: compbio/ngseasy-gatk:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ haplotypecaller_raw_vcf }}"
+    - "{{ projects_dir }}/{{ haplotypecaller_raw_vcf_gz }}"
+    - "{{ projects_dir }}/{{ haplotypecaller_vcf_gz }}"
+  register: vc_output
+
+- debug: var=vc_output.stdout_lines
+
+- name: Create ensemble_bcbio-variation.sh script
+  template: src="ensemble_bcbio-variation.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/ensemble_bcbio-variation.sh"
+
+- name: Run ensemble_bcbio-variation.sh script
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/ensemble_bcbio-variation.sh
+    image: compbio/ngseasy-bcbio-variation:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ vcf_gz }}"
+  register: vc_output

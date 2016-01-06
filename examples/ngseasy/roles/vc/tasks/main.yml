@@ -13,21 +13,14 @@
 - set_fact:
     vc_filtered_bam: "{{ vc_bam_in | regex_replace('.bam$', '.filtered.bam') }}"
     mapped_reads_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.mapped.reads.bed"
-    genomecov_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.mapped.reads.bed"
+    genomecov_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.genomecov.bed"
 
 - set_fact:
     NCPU: "{{ sample.ncpu }}"
     VC_BAM_IN: "{{ pipeman_projects_dir }}/{{ vc_bam_in }}"
     VC_FILTERED_BAM: "{{ pipeman_projects_dir }}/{{ vc_filtered_bam }}"
-    MAPPED_READS_BED:
-    GENOMECOV_BED:
-
-     def mapped_reads_bed(self):
-        return self.vc_data.reports_path(os.path.basename(self.vc_data.vc_bam_in()) + ".mapped.reads.bed")
-
-    def genomecov_bed(self):
-        return self.vc_data.reports_path(os.path.basename(self.vc_data.vc_bam_in()) + ".genomecov.bed")
-
+    MAPPED_READS_BED: "{{ pipeman_projects_dir }}/{{ mapped_reads_bed }}"
+    GENOMECOV_BED: "{{ pipeman_projects_dir }}/{{ genomecov_bed }}"
 
 - name: create callable-regions script
   template: src="callable-regions.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/callable-regions.sh"
@@ -62,17 +55,44 @@
 
 - debug: var=filter_output.stdout_lines
 
+- set_fact:
+    raw_vcf: "{{ vcf_dir }}/{{ bam_prefix }}.raw.snps.indels.{{ sample.varcaller }}.vcf"
+    vcf_gz: "{{ vcf_dir }}/{{ bam_prefix }}.snps.indels.{{ sample.varcaller }}.vcf.gz"
+
+- set_fact:
+    raw_vcf_gz: "{{ raw_vcf }}.gz"
+
+- set_fact:
+    NCPU: "{{ sample.ncpu }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
+    REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
+    RAW_VCF: "{{ pipeman_projects_dir }}/{{ raw_vcf }}"
+    RAW_VCF_GZ: "{{ pipeman_projects_dir }}/{{ raw_vcf_gz }}"
+    VCF_GZ: "{{ pipeman_projects_dir }}/{{ vcf_gz }}"
+    KNOWN_SNPS_B138: "{{ pipeman_resources_dir }}/{{ known_snps_b138 }}"
+    COVERAGE_MIN: "2"
+    MAP_QUAL: "20"
+    BASE_QUAL: "20"
+
+- set_fact:
+    FILTER_DUPLICATES: "0"
+
+- set_fact:
+    FILTER_DUPLICATES: "1"
+  when: sample.ngs_type == "TGS" or sample.ngs_type == "WEX"
+
+
 - include: HaplotypeCaller.yml
   when: sample.vc == "HaplotypeCaller"
 
 - include: UnifiedGenotyper.yml
   when: sample.vc == "UnifiedGenotyper"
 
-- include: platypus.yml
-  when: sample.vc == "platypus" or sample.vc == "platypus-default"
-
 - include: freebayes.yml
   when: sample.vc == "freebayes-parallel" or sample.vc == "freebayes-default"
+
+- include: platypus.yml
+  when: sample.vc == "platypus" or sample.vc == "platypus-default"
 
 - include: ensemble.yml
   when: sampple.vc == "ensemble"

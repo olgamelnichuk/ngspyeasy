@@ -1,0 +1,19 @@
+---
+- name: Create platypus-*.sh script
+  template: src="{{ sample.varcaller }}.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/{{ sample.varcaller }}.sh"
+
+- name: Run platypus-*.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/{{ sample.varcaller }}.sh
+    image: compbio/ngseasy-platypus:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ raw_vcf }}"
+    - "{{ projects_dir }}/{{ raw_vcf_gz }}"
+    - "{{ projects_dir }}/{{ vcf_gz }}"
+  register: vc_output
+
+- debug: var=vc_output.stdout_lines
+

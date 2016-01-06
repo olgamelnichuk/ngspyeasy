@@ -1,0 +1,18 @@
+---
+- name: Create HaplotypeCaller.sh script
+  template: src="HaplotypeCaller.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/HaplotypeCaller.sh"
+
+- name: Run HaplotypeCaller.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/HaplotypeCaller.sh
+    image: compbio/ngseasy-gatk:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ raw_vcf }}"
+    - "{{ projects_dir }}/{{ raw_vcf_gz }}"
+    - "{{ projects_dir }}/{{ vcf_gz }}"
+  register: vc_output
+
+- debug: var=vc_output.stdout_lines
