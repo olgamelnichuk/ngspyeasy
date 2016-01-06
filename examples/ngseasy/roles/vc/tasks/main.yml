@@ -1,10 +1,32 @@
 ---
 - set_fact:
+    vc_bam_in: "{{ dupemark_bam }}"
+
+- set_fact:
+    vc_bam_in: "{{ dupemark_realn_bam }}"
+  when: sample.realn != "no-realn" and sample.bsqr == "no-bsqr"
+
+- set_fact:
+    vc_bam_in: "{{ bsqr_bam_out }}"
+  when: sample.realn != "no-realn" and sample.bsqr != "no-bsqr"
+
+- set_fact:
+    vc_filtered_bam: "{{ vc_bam_in | regex_replace('.bam$', '.filtered.bam') }}"
+    mapped_reads_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.mapped.reads.bed"
+    genomecov_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.mapped.reads.bed"
+
+- set_fact:
     NCPU: "{{ sample.ncpu }}"
-    VC_BAM_IN:
-    VC_FILTERED_BAM:
+    VC_BAM_IN: "{{ pipeman_projects_dir }}/{{ vc_bam_in }}"
+    VC_FILTERED_BAM: "{{ pipeman_projects_dir }}/{{ vc_filtered_bam }}"
     MAPPED_READS_BED:
     GENOMECOV_BED:
+
+     def mapped_reads_bed(self):
+        return self.vc_data.reports_path(os.path.basename(self.vc_data.vc_bam_in()) + ".mapped.reads.bed")
+
+    def genomecov_bed(self):
+        return self.vc_data.reports_path(os.path.basename(self.vc_data.vc_bam_in()) + ".genomecov.bed")
 
 
 - name: create callable-regions script
