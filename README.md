@@ -2,7 +2,9 @@
 Yet another one NGS pipeline runner based on Ansible automation software.
 
 The basic usage is:
+
 1. Write your pipeline as Ansible playbook.
+
 2. Run it with NGSpyeasy runner
 
 ```
