@@ -11,8 +11,7 @@ The basic usage is:
 $ ngspyeasy --samples /path/to/samples.config.tsv --vars pipeline_vars.yml pipeline_playbook.yml --log_dir /path/to/log_dir
 ```
 
-where `samples.config.tsv` contains a list of sample configurations your pipeline scripts use:
-Here is an example:
+where `samples.config.tsv` contains a list of sample configurations your pipeline scripts use. Here is an example:
 
 ```
 sample_id   fastq1  fatsq2
