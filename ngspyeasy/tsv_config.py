@@ -25,8 +25,6 @@ def parse(tsv_path):
     if not os.path.exists(tsv_path):
         raise IOError("File %s does not exist" % tsv_path)
 
-    filename = os.path.basename(tsv_path)
-
     if os.stat(tsv_path).st_size == 0:
         return TsvConfig([])
 
