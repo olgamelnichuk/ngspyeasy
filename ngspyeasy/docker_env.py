@@ -1,0 +1,121 @@
+#!/usr/bin/env python
+
+###
+# Copyright 2015, EMBL-EBI
+#
+# Licensed under the Apache License, Version 2.0 (the "License");
+# you may not use this file except in compliance with the License.
+# You may obtain a copy of the License at
+#
+#    http://www.apache.org/licenses/LICENSE-2.0
+#
+# Unless required by applicable law or agreed to in writing, software
+# distributed under the License is distributed on an "AS IS" BASIS,
+# WITHOUT WARRANTIES OR CONDITIONS OF ANY KIND, either express or implied.
+# See the License for the specific language governing permissions and
+# limitations under the License.
+###
+import subprocess
+import sys
+
+from logger import logger
+import os
+from docker import Client
+import projects_dir
+
+HOME = "/home/pipeman"
+
+NGS_PROJECTS = HOME + "/ngs_projects"
+
+NGS_RESOURCES = NGS_PROJECTS + "/ngseasy_resources"
+
+DOCKER_OPTS = ""
+
+DOCKER_BASEURL = 'unix://var/run/docker.sock'
+
+
+def local_projects_home():
+    return projects_dir.ProjectsDir(NGS_PROJECTS)
+
+
+def volumes(projects_home):
+    ngs_projects = projects_home.root()
+    ngs_resources = projects_home.resources_dir()
+    return [ngs_projects + ":" + NGS_PROJECTS,
+            ngs_resources + ":" + NGS_RESOURCES]
+
+
+def environment():
+    return dict(HOME=HOME)
+
+
+def working_dir():
+    return HOME
+
+
+def change_dir(cmd, projects_home):
+    relpath = os.path.relpath(cmd, projects_home.tmp_dir())
+    return os.path.join(local_projects_home().tmp_dir(), relpath)
+
+
+def user():
+    sudo_uid = os.getenv("SUDO_UID")
+    sudo_gid = os.getenv("SUDO_GID")
+
+    uid = str(os.getuid()) if sudo_uid is None else sudo_uid
+    gid = str(os.getgid()) if sudo_gid is None else sudo_gid
+    return uid + ":" + gid
+
+
+def run_command_api(cmd, image, name, projects_home):
+    c = Client(base_url=DOCKER_BASEURL)
+    container = c.create_container(image, command=change_dir(cmd, projects_home), name=name,
+                                   volumes=volumes(projects_home),
+                                   environment=environment(), working_dir=working_dir(), user=user())
+    c.start(container, publish_all_ports=True)
+    lines = []
+    for line in c.logs(container, stdout=True, stderr=True, stream=True, timestamps=True, tail='all'):
+        sys.stdout.write(line)
+        sys.stdout.flush()
+        lines.append(line)
+
+    logger().debug("\n" + "".join(lines))
+
+    status = c.wait(container)
+    logger().debug("exit status code: %s" % status)
+    c.remove_container(id)
+    return status
+
+
+def run_command(cmd, image, name, projects_home):
+    options = ["--rm", "-P", "-w", working_dir(), "-e", "HOME=%s" % HOME]
+    options.extend(["--user", user()])
+    options.extend(["--name", name])
+
+    for v in volumes(projects_home):
+        options.extend(["-v", v])
+
+    docker_run = ["docker", "run"] + options
+    docker_run.append(image)
+    docker_run.append(change_dir(cmd, projects_home))
+
+    docker_cmd = " ".join(docker_run)
+    logger().debug("[\n%s\n]" % docker_cmd)
+
+    proc = subprocess.Popen(
+        ["/bin/bash", "-c", docker_cmd],
+        stdout=subprocess.PIPE,
+        stderr=subprocess.STDOUT)
+
+    lines = []
+    try:
+        for line in iter(proc.stdout.readline, b''):
+            sys.stdout.write(line)
+            sys.stdout.flush()
+            lines.append(line)
+        proc.stdout.close()
+    except KeyboardInterrupt:
+        logger().info("KeyboardInterrupt received")
+
+    logger().debug("cmd:\n %s" % ''.join(lines))
+    return proc.returncode

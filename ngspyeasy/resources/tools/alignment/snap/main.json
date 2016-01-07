@@ -1,0 +1,31 @@
+[
+  {
+    "name": "snap",
+    "template": "snap.tmpl.sh",
+    "image": "compbio/ngseasy-snap:1.0-r001",
+    "vars": [
+      "NCPU",
+      "BAM_PREFIX",
+      "PLATFORM_UNIT",
+      "NGS_PLATFORM",
+      "DNA_PREP_LIBRARY_ID",
+      "RUNDATE",
+      "REFDIR",
+      "TMP_DIR",
+      "DISCORDANT_SAM",
+      "DISCORDANT_BAM",
+      "SPLITREAD_SAM",
+      "SPLITREAD_BAM",
+      "UNMAPPED_FASTQ"
+    ],
+    "input": [
+      "TRIMMED_FQ1",
+      "TRIMMED_FQ2"
+    ],
+    "output": [
+      "DUPEMARK_BAM",
+      "DUPEMARK_FLAGSTAT",
+      "DUPEMARK_BED"
+    ]
+  }
+]

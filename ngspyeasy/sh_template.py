@@ -26,24 +26,29 @@ import os
 def load(*p):
     root = os.path.dirname(__file__)
     path = os.path.join(root, *(["resources"] + list(p)))
-    logger().debug("Loading sh template from: %s" % path)
-
-    if not os.path.isfile(path):
-        raise IOError("sh template file not found: %s" % path)
-
-    with open(path) as f:
-        lines = f.readlines()
-
-    return ShTemplate(lines)
+    return ShTemplate(path)
 
 
 class ShTemplate(object):
-    def __init__(self, lines):
+    def __init__(self, path):
+        logger().debug("Loading sh template from: %s" % path)
+
+        if not os.path.isfile(path):
+            raise IOError("sh template file not found: %s" % path)
+
+        with open(path) as f:
+            lines = f.readlines()
+
         self.lines = [x for x in lines if not x.startswith("#")]
+        self.path = path
 
     def validate(self, **kwargs):
-        t = Template("".join(self.lines))
-        t.substitute(kwargs)
+        try:
+            t = Template("".join(self.lines))
+            t.substitute(kwargs)
+        except KeyError, e:
+            logger().exception(e)
+            raise ValueError("SH Template validation failure (var: %s): %s" % (e.message, self.path))
 
     def source(self, **kwargs):
         source = ["#!/usr/bin/env bash"]
@@ -51,17 +56,16 @@ class ShTemplate(object):
         source += [Template("".join(self.lines)).safe_substitute()]
         return source
 
-    def create_sh_file(self, validate=True, **kwargs):
+    def as_executable(self, tmpdir, validate=True, **kwargs):
         if validate:
             self.validate(**kwargs)
 
         source = self.source(**kwargs)
         logger().debug("\n".join(source))
 
-        file = tempfile.NamedTemporaryFile(delete=False)
+        file = tempfile.NamedTemporaryFile(dir=tmpdir, delete=False)
         file.write("\n".join(source))
         file.close()
 
-        st = os.stat(file.name)
-        os.chmod(file.name, st.st_mode | stat.S_IEXEC)
+        os.chmod(file.name, 0755)
         return file.name

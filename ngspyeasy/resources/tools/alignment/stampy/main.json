@@ -1,0 +1,86 @@
+[
+  {
+    "name": "bwa",
+    "template": "bwa.tmpl.sh",
+    "image": "compbio/ngseasy-bwa:1.0-r001",
+    "vars": [
+      "NCPU",
+      "BAM_PREFIX",
+      "PLATFORM_UNIT",
+      "NGS_PLATFORM",
+      "DNA_PREP_LIBRARY_ID",
+      "RUNDATE",
+      "REFFASTA",
+      "TMP_DIR"
+    ],
+    "input": [
+      "TRIMMED_FQ1",
+      "TRIMMED_FQ2"
+    ],
+    "output": [
+      "STAMPY_TMP_BAM"
+    ]
+  },
+  {
+    "name": "stampy",
+    "template": "stampy.tmpl.sh",
+    "image": "compbio/ngseasy-stampy:1.0-r001",
+    "vars": [
+      "STAMPY_VERSION",
+      "GENOMEINDEX",
+      "NCPU",
+      "TMP_DIR",
+      "DISCORDANT_SAM",
+      "DISCORDANT_BAM",
+      "SPLITREAD_SAM",
+      "SPLITREAD_BAM",
+      "UNMAPPED_FASTQ"
+    ],
+    "input": [
+      "STAMPY_TMP_BAM"
+    ],
+    "output": [
+      "STAMPY_DUPEMARK_TMP_BAM"
+    ]
+  },
+  {
+    "name": "picatd1",
+    "template": "picard_cleansam.tmpl.sh",
+    "image": "compbio/ngseasy-picardtools:1.0-r001",
+    "vars": [
+      "TMP_DIR",
+      "PICARD_VERSION"
+    ],
+    "input": [
+      "STAMPY_DUPEMARK_TMP_BAM"
+    ],
+    "output": [
+      "STAMPY_DUPEMARK_CLEANSAM_TMP_BAM"
+    ]
+  },
+  {
+    "name": "picard2",
+    "template": "picard_addorreplacegroups.tmpl.sh",
+    "image": "compbio/ngseasy-picardtools:1.0-r001",
+    "vars": [
+      "NCPU",
+      "TMP_DIR",
+      "PICARD_VERSION",
+      "BAM_PREFIX",
+      "DNA_PREP_LIBRARY_ID",
+      "NGS_PLATFORM",
+      "PLATFORM_UNIT",
+      "RUNDATE",
+      "STAMPY_DUPEMARK_TMP_BAM",
+      "STAMPY_TMP_BAM"
+    ],
+    "input": [
+      "STAMPY_DUPEMARK_CLEANSAM_TMP_BAM"
+    ],
+    "output": [
+      "DUPEMARK_BAM",
+      "DUPEMARK_FLAGSTAT",
+      "DUPEMARK_BED"
+    ]
+  }
+]

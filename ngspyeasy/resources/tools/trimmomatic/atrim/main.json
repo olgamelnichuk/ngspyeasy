@@ -1,0 +1,21 @@
+[
+  {
+    "name": "atrim",
+    "template": "atrim.tmpl.sh",
+    "image": "compbio/ngseasy-trimmomatic:1.0-r001",
+    "vars": [
+      "NCPU",
+      "ADAPTER_FA"
+    ],
+    "input": [
+      "FQ1",
+      "FQ2"
+    ],
+    "output": [
+      "PAIRED_FQ1",
+      "UNPAIRED_FQ1",
+      "PAIRED_FQ2",
+      "UNPAIRED_FQ2"
+    ]
+  }
+]

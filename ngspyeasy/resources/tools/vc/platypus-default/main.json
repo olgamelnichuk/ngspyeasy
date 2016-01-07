@@ -1,0 +1,20 @@
+[
+  {
+    "name": "platypus-default",
+    "template": "platypus-default.tmpl.sh",
+    "image": "compbio/ngseasy-platypus:1.0-r001",
+    "vars": [
+      "NCPU",
+      "REFFASTA",
+      "FILTER_DUPLICATES"
+    ],
+    "input": [
+      "VC_FILTERED_BAM"
+    ],
+    "output": [
+      "RAW_VCF",
+      "RAW_VCF_GZ",
+      "VCF_GZ"
+    ]
+  }
+]

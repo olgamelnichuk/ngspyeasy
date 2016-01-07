@@ -17,12 +17,12 @@
 ###
 
 import os.path
-import docker
+import docker_env
 
 
 def path_of_fixed_bashrc():
-    bashrc = os.path.join(docker.HOME, ".bashrc")
-    bashrc_fixed = os.path.join(docker.HOME, ".bashrc_fixed")
+    bashrc = os.path.join(docker_env.HOME, ".bashrc")
+    bashrc_fixed = os.path.join(docker_env.HOME, ".bashrc_fixed")
     if not os.path.isfile(bashrc):
         return bashrc_fixed
 

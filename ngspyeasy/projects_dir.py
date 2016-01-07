@@ -58,6 +58,9 @@ class ProjectsDir(object):
     def raw_fastq_dir(self):
         return os.path.join(self.projects_home, "raw_fastq")
 
+    def tmp_dir(self):
+        return os.path.join(self.projects_home, "tmp")
+
     def raw_fastq_path(self, fastq_name):
         return os.path.join(self.raw_fastq_dir(), fastq_name)
 
@@ -87,6 +90,8 @@ class ProjectsDir(object):
             if not os.path.isdir(dir):
                 logger().info("Creating directory: %s" % dir)
                 os.makedirs(dir)
+
+        makedir_ifnotexist(self.tmp_dir())
 
         for dir in uniq_sample_dirs:
             sample_dir = SampleDir(dir)

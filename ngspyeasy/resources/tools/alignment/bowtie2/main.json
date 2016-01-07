@@ -1,0 +1,32 @@
+[
+  {
+    "name": "bowtie2",
+    "template": "bowtie2.tmpl.sh",
+    "image": "compbio/ngseasy-bowtie2:1.0-r001",
+    "vars": [
+      "NCPU",
+      "BAM_PREFIX",
+      "PLATFORM_UNIT",
+      "NGS_PLATFORM",
+      "DNA_PREP_LIBRARY_ID",
+      "GENOMEINDEX",
+      "RUNDATE",
+      "TMP_DIR",
+      "FAST",
+      "DISCORDANT_SAM",
+      "DISCORDANT_BAM",
+      "SPLITREAD_SAM",
+      "SPLITREAD_BAM",
+      "UNMAPPED_FASTQ"
+    ],
+    "input": [
+      "TRIMMED_FQ1",
+      "TRIMMED_FQ2"
+    ],
+    "output": [
+      "DUPEMARK_BAM",
+      "DUPEMARK_FLAGSTAT",
+      "DUPEMARK_BED"
+    ]
+  }
+]
