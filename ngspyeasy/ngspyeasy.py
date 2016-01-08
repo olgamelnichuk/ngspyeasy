@@ -17,6 +17,7 @@
 ###
 
 import argparse
+import glob
 import sys
 import signal
 import threading
@@ -88,14 +89,15 @@ class JobSubmitter(object):
 
 
 def main(argv):
-    parser = argparse.ArgumentParser(description="NGSpeasy pipelines")
-    parser.add_argument("pipeline_path", metavar='/path/to/your_pipeline.yml', type=cmdargs.existed_file)
+    parser = argparse.ArgumentParser(description="NGSpyeasy pipeline runner")
+    parser.add_argument("playbook_path", metavar='/path/to/your_pipeline.yml', type=cmdargs.existed_file)
     parser.add_argument("--version", action="version", version="%(prog)s 3.0", help="print software version")
-    parser.add_argument("--samples", metavar="/path/to/config.tsv", dest="tsv_path", required=True,
+    parser.add_argument("--samples", metavar="/path/to/config.tsv", dest="samples_tsv", required=False,
                         type=cmdargs.existed_file, help="List of samples in TSV format")
     parser.add_argument("--vars", dest="var_files", metavar="/path/to/your/vars.yml", help="additional variables",
                         type=cmdargs.existed_file, action="append")
-    parser.add_argument("--mode", dest="mode", choices=["local", "lsf"], default="local", help="job scheduler")
+    parser.add_argument("--scheduler", dest="scheduler", choices=["local", "lsf"], default="local",
+                        help="job scheduler")
     parser.add_argument("--log_dir", dest="log_dir", type=cmdargs.existed_directory)
 
     args = parser.parse_args(argv)
@@ -103,48 +105,44 @@ def main(argv):
     if args.log_dir is not None:
         init_main_logger(args.log_dir)
 
-    tsv_path = os.path.abspath(args.tsv_path)
-    pipeline_path = os.path.abspath(args.pipeline_path)
+    logger().debug("Command line arguments: %s" % args)
+
+    samples_tsv = os.path.abspath(args.samples_tsv) if args.samples_tsv else None
+    playbook_path = os.path.abspath(args.playbook_path)
     var_files = [os.path.abspath(f) for f in args.var_files]
 
-    logger().debug("Command line arguments: %s" % args)
-    logger().debug("TSV config path: %s" % tsv_path)
-    try:
-        tsv_conf = tsv_config.parse(tsv_path)
-    except (IOError, ValueError) as e:
-        logger().exception(e)
-        sys.exit(1)
-
-    logger().info("TSV config first line: %s" % str(tsv_conf.row_at(0)))
-    all_samples = list(tsv_conf.all_rows())
+    all_samples = read_samples(samples_tsv)
     logger().info("Number of samples: %s" % len(all_samples))
 
-    try:
-        with open(pipeline_path, 'r') as stream:
-            tasks = yaml.load(stream)
-    except yaml.scanner.ScannerError, e:
-        logger().exception(e)
-        sys.exit(1)
+    all_tasks = read_tasks(playbook_path)
+    logger().info("Number of tasks: %s" % len(all_tasks))
+
+    start_scheduler(provider=args.scheduler)
 
     try:
-        logger().info("Starting job scheduler...")
-        scheduler = job_scheduler.JobScheduler()
-        scheduler.start()
-    except Exception, e:
-        logger().exception(e)
-        sys.exit(1)
+        vars = read_variables(var_files)
+        vars["all_samples"] = all_samples
 
-    try:
-        submitter = JobSubmitter(mode=args.mode, log_dir=args.log_dir)
-        for task_index, task in enumerate(tasks, start=0):
-            tmpl = task["samples"]
-            samples2run = all_samples
-            if tmpl != "all":
-                samples_str = jinja2.Template(tmpl).render({"all_samples": all_samples})
-                samples2run = eval(samples_str)
+        options = []
+        if args.log_dir is not None:
+            options.append("--log_dir %s" % args.log_dir)
+        if args.samples_tsv is not None:
+            options.append("--samples %s" % args.samples_tsv)
 
-            for sample_index, sample in enumerate(samples2run, start=0):
-                submitter.submit(sample_index, task_index, tsv_path, pipeline_path, var_files)
+        submitter = JobSubmitter(options)
+
+        for task_index, task in enumerate(all_tasks, start=0):
+            samples2run = parallel_samples(task, vars)
+            files2run = parallel_files(task, vars)
+
+            if len(samples2run) > 0:
+                for sample in samples2run:
+                    submitter.submit(task_index, playbook_path, dict(vars, curr_sample=sample))
+            elif len(files2run) > 0:
+                for file in files2run:
+                    submitter.submit(task_index, playbook_path, dict(vars, curr_file=file))
+            else:
+                submitter.submit(task_index, playbook_path, dict(vars))
 
         job_scheduler.all_done()
     except Exception as e:
@@ -158,6 +156,54 @@ def main(argv):
         for t in threads:
             if t != threading.currentThread():
                 t.join(1)
+
+
+def start_scheduler(provider):
+    logger().info("Starting job scheduler: provider=%s" % provider)
+    scheduler = job_scheduler.JobScheduler(provider=provider)
+    scheduler.start()
+
+
+def read_tasks(playbook_path):
+    logger().info("Reading playbook yaml...")
+    with open(playbook_path, 'r') as stream:
+        return yaml.load(stream)
+
+
+def read_samples(samples_tsv):
+    if samples_tsv is None:
+        return []
+
+    logger().debug("TSV config path: %s" % samples_tsv)
+    tsv_conf = tsv_config.parse(samples_tsv)
+
+    logger().info("TSV config first line: %s" % str(tsv_conf.row_at(0)))
+    return list(tsv_conf.all_rows())
+
+
+def read_variables(var_files):
+    d = dict()
+    for var_file in var_files:
+        with open(var_file, 'r') as stream:
+            vars = yaml.load(stream)
+            d.update(vars)
+    return d
+
+
+def parallel_samples(task, vars):
+    tmpl = task.get("samples", None)
+    if tmpl is None:
+        return []
+    samples_str = jinja2.Template(tmpl).render(vars)
+    return eval(samples_str)
+
+
+def parallel_files(task, vars):
+    tmpl = task.get("files", None)
+    if tmpl is None:
+        return []
+    pattern = jinja2.Template(tmpl).render(vars)
+    return sorted(glob.glob(pattern))
 
 
 def signal_handler(signum, frame):
