@@ -35,29 +35,29 @@ TEST_MODE = False
 
 
 class JobSubmitter(object):
-    def __init__(self, mode="local", log_dir=None):
+    def __init__(self, playbook_path, options):
         self.dependencies = dict()
-        self.mode = mode
-        self.log_dir = log_dir
+        self.playbook_path = playbook_path
+        self.options = options
 
-    def dependencies_for(self, sample_index):
-        return [x for x in [self.dependencies.get(str(sample_index), None)] if x is not None]
+    def job_ids_for(self, task_index):
+        return [x for x in [self.dependencies.get(str(task_index), None)] if x is not None]
 
-    def update_dependencies(self, sample_index, job_id):
-        self.dependencies[str(sample_index)] = job_id
+    def update_dependencies(self, task_index, job_id):
+        self.dependencies[str(task_index)] = job_id
 
-    def submit(self, sample_index, task_index, config_path, pipeline_script, var_files):
+    def submit(self, task_index, vars):
         job_cmd = self.cmd(sample_index, task_index, config_path, pipeline_script, var_files)
 
-        job_id = job_id_generator.get_next([str(sample_index), str(task_index)])
-        job_dependencies = self.dependencies_for(sample_index)
+        job_id = job_id_generator.get_next(["task_" + str(task_index)])
+        job_dependencies = self.job_ids_for(task_index - 1)
 
         logger().debug(
             "Submit job(job_id='%s', dependencies='%s')" % (job_id, job_dependencies))
 
         job_scheduler.submit(
             job_id, self.create_cmd(job_id, job_dependencies, job_cmd), job_dependencies)
-        self.update_dependencies(sample_index, job_id)
+        self.update_dependencies(task_index, job_id)
 
     def create_cmd(self, job_id, job_dependencies, job_cmd):
         return self.lsf_wrap(job_id, job_dependencies, job_cmd) if self.in_lsf_mode() else job_cmd
@@ -117,45 +117,26 @@ def main(argv):
     all_tasks = read_tasks(playbook_path)
     logger().info("Number of tasks: %s" % len(all_tasks))
 
-    start_scheduler(provider=args.scheduler)
+    vars = read_variables(var_files)
+    vars["all_samples"] = all_samples
+
+    options = []
+    if args.log_dir is not None:
+        options.append("--log_dir %s" % args.log_dir)
+    if args.samples_tsv is not None:
+        options.append("--samples %s" % args.samples_tsv)
+
+    executor = TaskExecutor(provider=args.provider)
+    executor.start()
 
     try:
-        vars = read_variables(var_files)
-        vars["all_samples"] = all_samples
-
-        options = []
-        if args.log_dir is not None:
-            options.append("--log_dir %s" % args.log_dir)
-        if args.samples_tsv is not None:
-            options.append("--samples %s" % args.samples_tsv)
-
-        submitter = JobSubmitter(options)
-
         for task_index, task in enumerate(all_tasks, start=0):
-            samples2run = parallel_samples(task, vars)
-            files2run = parallel_files(task, vars)
+            create_task(task_index, task, vars).execute(executor)
 
-            if len(samples2run) > 0:
-                for sample in samples2run:
-                    submitter.submit(task_index, playbook_path, dict(vars, curr_sample=sample))
-            elif len(files2run) > 0:
-                for file in files2run:
-                    submitter.submit(task_index, playbook_path, dict(vars, curr_file=file))
-            else:
-                submitter.submit(task_index, playbook_path, dict(vars))
-
-        job_scheduler.all_done()
     except Exception as e:
         logger().exception(e)
-        job_scheduler.stop()
-
-    while True:
-        threads = threading.enumerate()
-        if len(threads) == 1:
-            break
-        for t in threads:
-            if t != threading.currentThread():
-                t.join(1)
+    finally:
+        executor.terminate()
 
 
 def start_scheduler(provider):
