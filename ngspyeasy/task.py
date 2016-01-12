@@ -1,18 +1,39 @@
-class Task(object):
-    def __init__(self):
-        pass
+import job_id_generator
+import jinja2
+import glob
 
-    def execute(self, executor):
-        samples2run = parallel_samples(task, vars)
-        files2run = parallel_files(task, vars)
 
-        if len(samples2run) > 0:
-            for sample in samples2run:
-                executor.submit(task_index, dict(curr_sample=sample))
-        elif len(files2run) > 0:
-            for file in files2run:
-                executor.submit(task_index, dict(curr_file=file))
-        else:
-            executor.submit(task_index)
+# TODO
 
-        executor.wait_for_jobs()
+def as_commands(task_index, task, vars):
+    samples2run = parallel_samples(task, vars)
+    files2run = parallel_files(task, vars)
+
+
+def parallel_samples(task, vars):
+    tmpl = task.get("samples", None)
+    if tmpl is None:
+        return []
+    samples_str = jinja2.Template(tmpl).render(vars)
+    return eval(samples_str)
+
+
+def parallel_files(task, vars):
+    tmpl = task.get("files", None)
+    if tmpl is None:
+        return []
+    pattern = jinja2.Template(tmpl).render(vars)
+    return sorted(glob.glob(pattern))
+
+
+def job_id(task_index):
+    return job_id_generator.get_next(["task_" + str(task_index)])
+
+
+def cmd(task_index, run_index, pipeline_script, options):
+    executable = "ngspyeasy_task"
+    return " ".join([executable,
+                     pipeline_script,
+                     "--task_index", str(task_index),
+                     "--run_index"
+                     ]) + options
