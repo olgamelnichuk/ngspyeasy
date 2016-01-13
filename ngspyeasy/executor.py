@@ -1,7 +1,5 @@
 import multiprocessing
 import subprocess
-from Queue import Queue
-from threading import Thread
 import time
 
 import re
@@ -126,9 +124,9 @@ class LocalProvider(Provider):
         self._procs = unfinished
 
 
-work_queue = Queue()
+work_queue = multiprocessing.Queue()
 
-results_queue = Queue()
+results_queue = multiprocessing.Queue()
 
 
 def start(provider, log_dir):
@@ -144,7 +142,7 @@ def submit(name, cmd):
     work_queue.put((name, cmd))
 
 
-class JobExecutor(Thread):
+class JobExecutor(multiprocessing.Process):
     def __init__(self, provider, log_dir):
         super(JobExecutor, self).__init__()
         self._provider = LSFProvider(log_dir=log_dir) if provider == "lsf" else LocalProvider()
