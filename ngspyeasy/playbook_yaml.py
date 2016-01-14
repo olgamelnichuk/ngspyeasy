@@ -117,7 +117,7 @@ class JobCommand(object):
             options.append("--vars %s" % var_file)
 
     def compose(self, play_index, run_index):
-        executable = "ngspyeasy_play"
+        executable = "ngspyeasy_play_run"
         cmd = [executable,
                self._playbook_path,
                "--play_index", str(play_index)]
