@@ -30,8 +30,8 @@ def init_main_logger(log_dir):
     init_logger(os.path.join(log_dir, logname), verbose=True)
 
 
-def init_sample_logger(log_dir, sample_id):
-    logname = "%s_ngseasy@%s.log" % (datetime.datetime.now().strftime("%d%m%y"), sample_id)
+def init_play_run_logger(log_dir, run_id):
+    logname = "%s_ngseasy@%s.log" % (datetime.datetime.now().strftime("%d%m%y"), run_id)
     log_path = os.path.join(log_dir, logname)
     init_logger(log_path, verbose=True)
 

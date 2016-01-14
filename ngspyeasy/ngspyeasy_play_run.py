@@ -19,12 +19,12 @@ import argparse
 import shutil
 import sys
 import tempfile
-from ansible.module_utils import basic
 
+from ansible.module_utils import basic
+import playbook_yaml
 import os
 import cmdargs
-from logger import logger, init_sample_logger
-import tsv_config
+from logger import logger, init_play_run_logger
 from ansible.playbook import PlayBook
 from ansible import callbacks
 from ansible import utils
@@ -33,11 +33,11 @@ import yaml
 
 def main(argv):
     parser = argparse.ArgumentParser(description="NGSpeasy pipelines")
-    parser.add_argument("pipeline_path", metavar='/path/to/your_pipeline.yml', type=cmdargs.existed_file)
-    parser.add_argument("--sample_index", dest="sample_index", type=int, help="sample index to run with")
-    parser.add_argument("--task_index", dest="task_index", type=int, help="task index to run")
+    parser.add_argument("playbook_path", metavar='/path/to/your_pipeline.yml', type=cmdargs.existed_file)
+    parser.add_argument("--play_index", dest="play_index", type=int, help="play index", required=True)
+    parser.add_argument("--run_index", dest="run_index", type=int, default=-1, help="run index")
     parser.add_argument("--version", action="version", version="%(prog)s 3.0", help="print software version")
-    parser.add_argument("--samples", metavar="/path/to/config.tsv", dest="tsv_path", required=True,
+    parser.add_argument("--samples", metavar="/path/to/config.tsv", dest="samples_tsv",
                         type=cmdargs.existed_file, help="List of samples in TSV format")
     parser.add_argument("--vars", dest="var_files", metavar="/path/to/your/vars.yml", help="additional variables",
                         type=cmdargs.existed_file, action="append")
@@ -45,56 +45,32 @@ def main(argv):
 
     args = parser.parse_args(argv)
 
-    task_index = args.task_index
-    sample_index = args.sample_index
-    tsv_path = os.path.abspath(args.tsv_path)
-    pipeline_path = os.path.abspath(args.pipeline_path)
+    play_index = args.play_index
+    run_index = args.run_index
+    playbook_path = os.path.abspath(args.playbook_path)
+    samples_tsv = os.path.abspath(args.samples_tsv) if args.samples_tsv else None
     var_files = [os.path.abspath(f) for f in args.var_files]
 
-    if args.log_dir is not None:
-        init_sample_logger(args.log_dir, sample_index)
-
     logger().debug("Command line arguments: %s" % args)
-    logger().debug("TSV config path: %s" % tsv_path)
-    try:
-        tsv_conf = tsv_config.parse(tsv_path)
-    except (IOError, ValueError) as e:
-        logger().exception(e)
-        sys.exit(1)
+    logger().debug("TSV config path: %s" % samples_tsv)
 
-    extra_vars = dict()
+    pb = playbook_yaml.parse(playbook_path, samples_tsv, var_files, args.log_dir)
+    (play_run_vars, play_run_yaml, play_run_name) = pb.play_run(play_index, run_index)
 
-    sample = tsv_conf.row_at(sample_index)
-    if sample is None:
-        raise ValueError("Sample not found by index: %s" % sample_index)
+    if args.log_dir is not None:
+        init_play_run_logger(args.log_dir, args.play_index + "_" + play_run_name)
 
-    extra_vars["sample"] = sample
-
-    for var_file in var_files:
-        with open(var_file, 'r') as stream:
-            vars = yaml.load(stream)
-            print vars
-            extra_vars.update(vars)
-
-    try:
-        with open(pipeline_path, 'r') as stream:
-            tasks = yaml.load(stream)
-        task = tasks[task_index]
-    except yaml.scanner.ScannerError, e:
-        logger().exception(e)
-        sys.exit(1)
-
-    task.pop("samples", None)
+    task = play_run_yaml
     task["hosts"] = "all"
 
     temp_dir = tempfile.mkdtemp()
     print temp_dir
     try:
-        roles_dir = os.path.join(os.path.dirname(pipeline_path), "roles")
+        roles_dir = os.path.join(os.path.dirname(playbook_path), "roles")
         if os.path.exists(roles_dir):
             shutil.copytree(roles_dir, os.path.join(temp_dir, "roles"))
 
-        library_dir = os.path.join(os.path.dirname(pipeline_path), "library")
+        library_dir = os.path.join(os.path.dirname(playbook_path), "library")
         if os.path.exists(library_dir):
             shutil.copytree(library_dir, os.path.join(temp_dir, "library"))
 
@@ -102,7 +78,7 @@ def main(argv):
         with open(playbook, 'w') as outfile:
             outfile.write(yaml.dump([task], default_flow_style=False))
 
-        run_playbook(temp_dir, extra_vars)
+        run_playbook(temp_dir, play_run_vars)
     finally:
         shutil.rmtree(temp_dir)
 
@@ -266,7 +242,7 @@ class MyPlaybookRunnerCallbacks(callbacks.PlaybookRunnerCallbacks):
             # verbose ...
             if item:
                 msg = "%s: [%s] => (item=%s) => %s" % (
-                ok_or_changed, host, item, utils.jsonify(host_result2, format=verbose_always))
+                    ok_or_changed, host, item, utils.jsonify(host_result2, format=verbose_always))
             else:
                 if 'ansible_job_id' not in host_result or 'finished' in host_result2:
                     msg = "%s: [%s] => %s" % (ok_or_changed, host, utils.jsonify(host_result2, format=verbose_always))

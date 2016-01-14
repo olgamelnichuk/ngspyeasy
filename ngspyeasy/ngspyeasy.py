@@ -21,11 +21,10 @@ import sys
 import signal
 
 import executor
+import playbook_yaml
 import os
 import cmdargs
-import tsv_config
 from logger import logger, init_main_logger
-import yaml
 
 
 def main(argv):
@@ -47,34 +46,19 @@ def main(argv):
 
     logger().debug("Command line arguments: %s" % args)
 
-    samples_tsv = os.path.abspath(args.samples_tsv) if args.samples_tsv else None
     playbook_path = os.path.abspath(args.playbook_path)
+    samples_tsv = os.path.abspath(args.samples_tsv) if args.samples_tsv else None
     var_files = [os.path.abspath(f) for f in args.var_files]
 
-    all_samples = read_samples(samples_tsv)
-    logger().info("Number of samples: %s" % len(all_samples))
+    pb = playbook_yaml.parse(playbook_path, samples_tsv, var_files, args.log_dir)
 
-    all_tasks = read_tasks(playbook_path)
-    logger().info("Number of tasks: %s" % len(all_tasks))
-
-    vars = read_variables(var_files)
-    vars["all_samples"] = all_samples
-
-    options = []
-    if args.log_dir is not None:
-        options.append("--log_dir %s" % args.log_dir)
-    if args.samples_tsv is not None:
-        options.append("--samples %s" % args.samples_tsv)
-
-    # TODO create structure to create sets of parallel tasks
-
-    logger().info("Starting job scheduler: provider=%s" % args.provider)
+    logger().info("Starting job executor: provider=%s" % args.provider)
     executor.start(provider=args.provider, log_dir=args.log_dir)
 
     try:
-        for task_index, task in enumerate(all_tasks, start=0):
+        for play in pb.play_list():
             jobs = []
-            for name, cmd in task.as_commands(task_index, task, vars):
+            for name, cmd in play.commands():
                 executor.submit(name, cmd)
                 jobs.append(name)
             while len(jobs) > 0:
@@ -85,32 +69,6 @@ def main(argv):
         logger().exception(e)
     finally:
         executor.stop()
-
-
-def read_tasks(playbook_path):
-    logger().info("Reading playbook yaml...")
-    with open(playbook_path, 'r') as stream:
-        return yaml.load(stream)
-
-
-def read_samples(samples_tsv):
-    if samples_tsv is None:
-        return []
-
-    logger().debug("TSV config path: %s" % samples_tsv)
-    tsv_conf = tsv_config.parse(samples_tsv)
-
-    logger().info("TSV config first line: %s" % str(tsv_conf.row_at(0)))
-    return list(tsv_conf.all_rows())
-
-
-def read_variables(var_files):
-    d = dict()
-    for var_file in var_files:
-        with open(var_file, 'r') as stream:
-            vars = yaml.load(stream)
-            d.update(vars)
-    return d
 
 
 def signal_handler(signum, frame):
