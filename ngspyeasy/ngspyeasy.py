@@ -63,6 +63,8 @@ def main(argv):
                 jobs.append(name)
             while len(jobs) > 0:
                 name = executor.results_queue.get()
+                if name.startswith("STOP"):
+                    break
                 jobs.remove(name)
 
     except Exception as e:

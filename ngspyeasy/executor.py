@@ -1,6 +1,7 @@
 import multiprocessing
 import subprocess
 import time
+import sys
 
 import re
 from logger import logger
@@ -153,6 +154,12 @@ class JobExecutor(multiprocessing.Process):
         self._running_jobs = []
 
     def run(self):
+        try:
+            self.run_with_exception()
+        except Exception as e:
+            results_queue.put("STOP: " + sys.exc_info())
+
+    def run_with_exception(self):
         global work_queue
         global results_queue
 
@@ -162,6 +169,7 @@ class JobExecutor(multiprocessing.Process):
 
                 if name == "STOP":
                     self._provider.stop()
+                    results_queue.put("STOP")
                     break
 
                 self._submit(name, cmd)
