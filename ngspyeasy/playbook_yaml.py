@@ -87,6 +87,7 @@ class PlayRun(object):
         y = copy.deepcopy(yaml_obj)
         y.pop("samples", None)
         y.pop("files", None)
+        return y
 
     def name(self):
         if self._sample:
