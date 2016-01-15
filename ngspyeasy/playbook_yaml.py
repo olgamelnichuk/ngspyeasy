@@ -2,7 +2,6 @@ import copy
 import glob
 
 import os
-
 import job_id_generator
 import jinja2
 from logger import logger
@@ -55,6 +54,9 @@ class PlayYaml(object):
         self._cmd = cmd
         self._files = files
         self._samples = samples
+
+    def name(self):
+        return "play_%s" % str(self._index)
 
     def commands(self):
         if len(self._samples) > 0 or len(self._files) > 0:
