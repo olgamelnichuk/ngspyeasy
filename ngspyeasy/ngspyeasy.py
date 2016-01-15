@@ -57,6 +57,7 @@ def main(argv):
 
     try:
         for play in pb.plays():
+            logger().info("Starting play: %s" % play.name())
             jobs = []
             for name, cmd in play.commands():
                 logger().debug("cmd submit: name=%s\n %s\n" % (name, cmd))
@@ -72,6 +73,7 @@ def main(argv):
 
 
 def wait_for_results(jobs):
+    logger().debug("waiting jobs to be finished: %s" % jobs)
     while len(jobs) > 0:
         name = executor.results_queue.get()
         if name.startswith("STOP"):
