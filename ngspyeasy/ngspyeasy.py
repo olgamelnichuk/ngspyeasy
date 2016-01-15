@@ -56,7 +56,7 @@ def main(argv):
     executor.start(provider=args.provider, log_dir=args.log_dir)
 
     try:
-        for play in pb.play_list():
+        for play in pb.plays():
             jobs = []
             for name, cmd in play.commands():
                 executor.submit(name, cmd)
