@@ -85,8 +85,8 @@ class PlayRun(object):
 
     def yaml(self, yaml_obj):
         y = copy.deepcopy(yaml_obj)
-        y.pop("samples")
-        y.pop("files")
+        y.pop("samples", None)
+        y.pop("files", None)
 
     def name(self):
         if self._sample:
