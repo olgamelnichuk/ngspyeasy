@@ -90,7 +90,7 @@ class PlayRun(object):
 
     def name(self):
         if self._sample:
-            return "sample_" + self._index
+            return "sample_" + str(self._index)
         if self._file:
             return os.path.basename(self._file)
         return "None"
