@@ -79,6 +79,7 @@ def wait_for_results(jobs):
         if name.startswith("STOP"):
             return False
         jobs.remove(name)
+    return True
 
 
 def signal_handler(signum, frame):
