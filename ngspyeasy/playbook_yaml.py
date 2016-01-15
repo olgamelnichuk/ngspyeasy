@@ -125,7 +125,7 @@ class JobCommand(object):
         if run_index >= 0:
             cmd += ["--run_index", str(run_index)]
         cmd += self._options()
-        return self._next_id(play_index, run_index), cmd
+        return self._next_id(play_index, run_index), " ".join(cmd)
 
 
 def parse(playbook_path, tsv_path, var_files, log_dir):

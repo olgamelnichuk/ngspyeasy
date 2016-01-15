@@ -62,16 +62,21 @@ def main(argv):
                 logger().debug("cmd submit: name=%s\n %s\n" % (name, cmd))
                 executor.submit(name, cmd)
                 jobs.append(name)
-            while len(jobs) > 0:
-                name = executor.results_queue.get()
-                if name.startswith("STOP"):
-                    break
-                jobs.remove(name)
+            if not wait_for_results(jobs):
+                break
 
     except Exception as e:
         logger().exception(e)
     finally:
         executor.stop()
+
+
+def wait_for_results(jobs):
+    while len(jobs) > 0:
+        name = executor.results_queue.get()
+        if name.startswith("STOP"):
+            return False
+        jobs.remove(name)
 
 
 def signal_handler(signum, frame):

@@ -157,8 +157,9 @@ class JobExecutor(multiprocessing.Process):
         try:
             self.run_with_exception()
         except:
-            e = sys.exc_info()[0]
-            logger().info("executor: exiting with exception %s" % e)
+            (type, value, traceback) = sys.exc_info()
+            e = "".join(traceback.format_exception(type, value, traceback))
+            logger().error("executor: exiting with exception:\n %s" % e)
             results_queue.put("STOP")
 
     def run_with_exception(self):
