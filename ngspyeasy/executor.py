@@ -2,6 +2,7 @@ import multiprocessing
 import subprocess
 import time
 import sys
+import traceback
 
 import re
 from logger import logger
@@ -157,10 +158,10 @@ class JobExecutor(multiprocessing.Process):
         try:
             self.run_with_exception()
         except:
-            (type, value, traceback) = sys.exc_info()
-            e = "".join(traceback.format_exception(type, value, traceback))
-            logger().error("executor: exiting with exception:\n %s" % e)
             results_queue.put("STOP")
+            (type, value, tb) = sys.exc_info()
+            e = "".join(traceback.format_exception(type, value, tb))
+            logger().error("executor: exiting with exception:\n %s" % e)
 
     def run_with_exception(self):
         global work_queue
