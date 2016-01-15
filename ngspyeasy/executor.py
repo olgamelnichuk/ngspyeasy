@@ -156,8 +156,9 @@ class JobExecutor(multiprocessing.Process):
     def run(self):
         try:
             self.run_with_exception()
-        except Exception as e:
-            results_queue.put("STOP: " + sys.exc_info())
+        except:
+            e = sys.exc_info()[0]
+            results_queue.put("STOP: %s" % e)
 
     def run_with_exception(self):
         global work_queue
