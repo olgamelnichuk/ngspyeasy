@@ -19,29 +19,41 @@
 import sys
 import logging
 import datetime
+import multiprocessing
+import threading
+import traceback
 
 import os.path
 
 FORMATTER = logging.Formatter('%(asctime)s %(threadName)s %(module)s %(levelname)s: %(message)s')
 
 
-def init_main_logger(log_dir):
+def init_main_logger(log_dir, verbose=True):
     logname = "%s_ngseasy.log" % datetime.datetime.now().strftime("%d%m%y")
-    init_logger(os.path.join(log_dir, logname), verbose=True)
+    logfile = os.path.join(log_dir, logname)
 
-
-def init_play_run_logger(log_dir, run_id):
-    logname = "%s_ngseasy@%s.log" % (datetime.datetime.now().strftime("%d%m%y"), run_id)
-    log_path = os.path.join(log_dir, logname)
-    init_logger(log_path, verbose=True)
-
-
-def init_logger(logfile, verbose=False):
-    log_dir = os.path.dirname(logfile)
     if not os.path.isdir(log_dir):
         os.makedirs(log_dir)
 
-    logger = logging.getLogger("main")
+    logger = logging.getLogger("root")
+    logger.setLevel(logging.DEBUG if verbose else logging.INFO)
+    logger.addHandler(multi_proc_handler(logfile))
+    logger.addHandler(console_handler())
+
+    file_only = logging.getLogger("file-only")
+    file_only.setLevel(logging.DEBUG if verbose else logging.INFO)
+    file_only.addHandler(multi_proc_handler(logfile))
+    return logger
+
+
+def init_play_run_logger(log_dir, run_id, verbose=True):
+    logname = "%s_ngseasy@%s.log" % (datetime.datetime.now().strftime("%d%m%y"), run_id)
+    logfile = os.path.join(log_dir, logname)
+
+    if not os.path.isdir(log_dir):
+        os.makedirs(log_dir)
+
+    logger = logging.getLogger("root")
     logger.setLevel(logging.DEBUG if verbose else logging.INFO)
     logger.addHandler(file_handler(logfile))
     logger.addHandler(console_handler())
@@ -51,6 +63,12 @@ def init_logger(logfile, verbose=False):
     file_only.addHandler(file_handler(logfile))
 
     return logger
+
+
+def multi_proc_handler(logfile):
+    handler = MultiProcLogHandler(logfile)
+    handler.setFormatter(FORMATTER)
+    return handler
 
 
 def file_handler(logfile):
@@ -69,8 +87,62 @@ def logger(file_only=False):
     if file_only:
         return logging.getLogger("file-only")
 
-    logger = logging.getLogger("main")
+    logger = logging.getLogger("root")
     if len(logger.handlers) == 0:
         logger.addHandler(console_handler())
         logger.setLevel(logging.DEBUG)
     return logger
+
+
+class MultiProcLogHandler(logging.Handler):
+    def __init__(self, logfile):
+        logging.Handler.__init__(self)
+
+        self._handler = logging.FileHandler(logfile)
+        self.queue = multiprocessing.Queue(-1)
+
+        thrd = threading.Thread(target=self.receive)
+        thrd.daemon = True
+        thrd.start()
+
+    def setFormatter(self, fmt):
+        logging.Handler.setFormatter(self, fmt)
+        self._handler.setFormatter(fmt)
+
+    def receive(self):
+        while True:
+            try:
+                record = self.queue.get()
+                self._handler.emit(record)
+            except (KeyboardInterrupt, SystemExit):
+                raise
+            except EOFError:
+                break
+            except:
+                traceback.print_exc(file=sys.stderr)
+
+    def send(self, s):
+        self.queue.put_nowait(s)
+
+    def _format_record(self, record):
+        if record.args:
+            record.msg = record.msg % record.args
+            record.args = None
+        if record.exc_info:
+            dummy = self.format(record)
+            record.exc_info = None
+
+        return record
+
+    def emit(self, record):
+        try:
+            s = self._format_record(record)
+            self.send(s)
+        except (KeyboardInterrupt, SystemExit):
+            raise
+        except:
+            self.handleError(record)
+
+    def close(self):
+        self._handler.close()
+        logging.Handler.close(self)

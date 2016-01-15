@@ -127,9 +127,9 @@ class LocalProvider(Provider):
         self._procs = unfinished
 
 
-work_queue = multiprocessing.Queue()
+work_queue = multiprocessing.Queue(-1)
 
-results_queue = multiprocessing.Queue()
+results_queue = multiprocessing.Queue(-1)
 
 
 def start(provider, log_dir):
@@ -158,7 +158,8 @@ class JobExecutor(multiprocessing.Process):
             self.run_with_exception()
         except:
             e = sys.exc_info()[0]
-            results_queue.put("STOP: %s" % e)
+            logger().info("executor: exiting with exception %s" % e)
+            results_queue.put("STOP")
 
     def run_with_exception(self):
         global work_queue
@@ -169,10 +170,12 @@ class JobExecutor(multiprocessing.Process):
                 (name, cmd) = work_queue.get(block=False)
 
                 if name == "STOP":
-                    self._provider.stop()
+                    logger().info("executor: received [STOP] message")
                     results_queue.put("STOP")
+                    self._provider.stop()
                     break
 
+                logger().info("executor: received cmd to run: name=%s" % name)
                 self._submit(name, cmd)
             self._update_results()
 

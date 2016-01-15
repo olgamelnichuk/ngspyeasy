@@ -59,6 +59,7 @@ def main(argv):
         for play in pb.plays():
             jobs = []
             for name, cmd in play.commands():
+                logger().debug("cmd submit: name=%s\n %s\n" % (name, cmd))
                 executor.submit(name, cmd)
                 jobs.append(name)
             while len(jobs) > 0:
