@@ -115,6 +115,8 @@ class LocalProvider(Provider):
         self._update()
         if len(self._procs) > self._pool_size:
             return
+        if len(self._waiting_jobs) == 0:
+            return
         (name, cmd) = self._waiting_jobs.pop()
         proc = subprocess.Popen(["/bin/bash", "-c", cmd], env=os.environ.copy())
         self._procs.append((proc, cmd, name))
