@@ -58,7 +58,7 @@ def main(argv):
     (play_run_vars, play_run_yaml, play_run_name) = pb.play_run(play_index, run_index)
 
     if args.log_dir is not None:
-        init_play_run_logger(args.log_dir, args.play_index + "_" + play_run_name)
+        init_play_run_logger(args.log_dir, str(play_index) + "_" + play_run_name)
 
     task = play_run_yaml
     task["hosts"] = "all"
