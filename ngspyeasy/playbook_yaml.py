@@ -115,6 +115,7 @@ class JobCommand(object):
             options.append("--samples %s" % self._tsv_path)
         for var_file in self._var_files:
             options.append("--vars %s" % var_file)
+        return options
 
     def compose(self, play_index, run_index):
         executable = "ngspyeasy_play_run"
