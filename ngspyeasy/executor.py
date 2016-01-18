@@ -44,7 +44,7 @@ class LSFProvider(Provider):
             command.extend(["-e", stderr])
 
         command.append(cmd)
-        logger().debug("Submitting job with :%s %s", command)
+        logger().debug("Submitting job: name=%s command=\n %s\n" % (name, command))
 
         proc = subprocess.Popen(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
         out = "".join([l for l in proc.stdout])
