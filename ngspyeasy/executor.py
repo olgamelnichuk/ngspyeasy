@@ -156,16 +156,16 @@ class JobExecutor(multiprocessing.Process):
         self._mapping = dict()
         self._running_jobs = []
 
-    def run(self):
+    @staticmethod
+    def exceptions():
         try:
-            self.run_with_exception()
+            yield
         except:
-            results_queue.put("STOP")
             (type, value, tb) = sys.exc_info()
             e = "".join(traceback.format_exception(type, value, tb))
-            logger().error("executor: exiting with exception:\n %s" % e)
+            logger().error("exception in executor: \n %s" % e)
 
-    def run_with_exception(self):
+    def run(self):
         global work_queue
         global results_queue
 
@@ -175,8 +175,7 @@ class JobExecutor(multiprocessing.Process):
 
                 if name == "STOP":
                     logger().info("executor: received [STOP] message")
-                    results_queue.put("STOP")
-                    self._provider.stop()
+                    self._stop()
                     break
 
                 logger().info("executor: received cmd to run: name=%s" % name)
@@ -184,17 +183,21 @@ class JobExecutor(multiprocessing.Process):
             self._update_results()
 
     def _submit(self, name, cmd):
-        job_id = self._provider.submit(name, cmd)
-        logger().debug("job_id=%s" % job_id)
-        self._mapping[job_id] = name
-        self._running_jobs.append(job_id)
+        with self.exceptions():
+            job_id = self._provider.submit(name, cmd)
+            logger().debug("job_id=%s" % job_id)
+            self._mapping[job_id] = name
+            self._running_jobs.append(job_id)
 
     def _update_results(self):
-        if len(self._running_jobs) == 0:
-            return
+        with self.exceptions():
+            job_list = self._provider.list()
+            finished_jobs = [x for x in self._running_jobs if x not in set(job_list)]
+            for job_id in finished_jobs:
+                results_queue.put(self._mapping[job_id])
+            self._running_jobs = job_list
 
-        job_list = self._provider.list()
-        finished_jobs = [x for x in self._running_jobs if x not in set(job_list)]
-        for job_id in finished_jobs:
-            results_queue.put(self._mapping[job_id])
-        self._running_jobs = job_list
+    def _stop(self):
+        with self.exceptions():
+            results_queue.put("STOP")
+            self._provider.stop()
