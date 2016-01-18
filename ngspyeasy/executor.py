@@ -64,8 +64,6 @@ class LSFProvider(Provider):
         proc = subprocess.Popen(["bjobs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         jobs = []
         for l in proc.stdout:
-            if l == 'No unfinished job found':
-                return []
             fields = [x for x in l.strip().split(" ") if x]
             try:
                 long(fields[0])
@@ -73,6 +71,8 @@ class LSFProvider(Provider):
                 continue
             jobs.append(fields[0])
         err = "".join([l for l in proc.stderr])
+        if err == 'No unfinished job found':
+            return []
         if proc.wait() != 0:
             raise ValueError("Error while listing jobs:\n%s" % (err))
         return jobs
