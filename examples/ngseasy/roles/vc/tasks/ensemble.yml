@@ -42,7 +42,7 @@
 - debug: var=vc_output.stdout_lines
 
 - name: Create platypus-*.sh script
-  template: src="{{ sample.varcaller }}.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/ensemble_platypus.sh"
+  template: src="{{ curr_sample.varcaller }}.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/ensemble_platypus.sh"
 
 - name: Run ensemble_platypus.sh script in docker
   dockercmd:

@@ -1,6 +1,6 @@
 ---
 - name: just a test
-  shell: echo "hello {{ some_name }}. Sample id is {{ sample.sample_id }}"
+  shell: echo "hello {{ some_name }}. Sample id is {{ curr_sample.sample_id }}"
   register: echo_output
 
 - debug: var=echo_output

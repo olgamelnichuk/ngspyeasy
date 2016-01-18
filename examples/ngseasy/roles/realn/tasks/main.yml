@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    NCPU: "{{ sample.ncpu }}"
+    NCPU: "{{ curr_sample.ncpu }}"
     TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
     REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
     KNOWN_INDELS: "{{ pipeman_resources_dir }}/{{ known_indels }}"
@@ -10,7 +10,7 @@
     DUPEMARK_REALN_BED: "{{ pipeman_projects_dir }}/{{ dupemark_realn_bed }}"
 
 - include: bam-realn.yml
-  when: sample.realn == "bam-realn"
+  when: curr_sample.realn == "bam-realn"
 
 - include: gatk-realn.yml
-  when: sample.realn == "gatk-realn"
+  when: curr_sample.realn == "gatk-realn"

@@ -5,8 +5,8 @@
     TMP_DIR: "{{ pipeman_projects_dir }}/ {{ tmp_dir }}"
     FASTQ_DIR: "{{ pipeman_projects_dir }}/{{ fastq_dir }}"
 
-    fq1_html: "{{ sample.fastq1 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
-    fq2_html: "{{ sample.fastq2 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    fq1_html: "{{ curr_sample.fastq1 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    fq2_html: "{{ curr_sample.fastq2 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
 
 - name: Create fastqc.sh script
   template: src="fastqc.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/fastqc.sh"

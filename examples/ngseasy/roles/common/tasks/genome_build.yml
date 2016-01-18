@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    genomedir: "reference_genomes_{{ sample.genomebuild }}"
+    genomedir: "reference_genomes_{{ curr_sample.genomebuild }}"
 
 - set_fact:
     adapter_fa: "{{ genomedir }}/contaminant_list.fa"
@@ -14,7 +14,7 @@
     known_snps_omni: "{{ genomedir }}/1000G_omni2.5.b37.vcf"
     known_snps_b138: "{{ genomedir }}/dbsnp_138.b37.vcf"
     novoindex: "{{ genomedir }}/human_g1k_v37.novoindex"
-  when: sample.genomebuild == "b37"
+  when: curr_sample.genomebuild == "b37"
 
 - set_fact:
     genmeindex: "{{ genomedir }}/ucsc.hg19"
@@ -25,14 +25,14 @@
     known_snps_omni: "{{ genomedir }}/1000G_omni2.5.hg19.sites.vcf"
     known_snps_b138: "{{ genomedir }}/bsnp_138.hg19.vcf"
     novoindex: "{{ genomedir }}/ucsc.hg19.fasta.novoindex"
-  when: sample.genomebuild == "hg19"
+  when: curr_sample.genomebuild == "hg19"
 
 - set_fact:
     genomeindex: "{{ genomedir }}/hs37d5"
     reffasta: "{{ genomedir }}/hs37d5.fasta"
     novoindex: "{{ genomedir }}/hs37d5.fasta.novoindex"
-  when: sample.genomebuild == "hs37d5"
+  when: curr_sample.genomebuild == "hs37d5"
 
 - set_fact:
     genomeindex: "{{ genomedir }}/hs38DH"
-  when: sample.genomebuild == "hs38DH"
+  when: curr_sample.genomebuild == "hs38DH"

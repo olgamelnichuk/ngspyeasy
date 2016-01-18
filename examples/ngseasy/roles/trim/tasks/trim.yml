@@ -1,6 +1,6 @@
 ---
 - set_fact:
-    NCPU: "{{ sample.ncpu }}"
+    NCPU: "{{ curr_sample.ncpu }}"
     TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
     FASTQ_DIR: "{{ pipeman_projects_dir }}/{{ fastq_dir }}"
     FQ1: "{{ pipeman_projects_dir }}/{{ fq1 }}"

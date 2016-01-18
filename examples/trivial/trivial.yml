@@ -1,4 +1,8 @@
 ---
 - name: do something trivial
-  roles: [my_role]
+  roles: [sample_role]
   samples: "{{ all_samples }}"
+
+- name: one more test
+  roles: [file_role]
+  files: "/tmp/*.txt"
