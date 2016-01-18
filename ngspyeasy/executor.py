@@ -187,6 +187,9 @@ class JobExecutor(multiprocessing.Process):
         self._running_jobs.append(job_id)
 
     def _update_results(self):
+        if len(self._running_jobs) == 0:
+            return
+
         job_list = self._provider.list()
         finished_jobs = [x for x in self._running_jobs if x not in set(job_list)]
         for job_id in finished_jobs:
