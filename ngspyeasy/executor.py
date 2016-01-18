@@ -183,6 +183,7 @@ class JobExecutor(multiprocessing.Process):
 
     def _submit(self, name, cmd):
         job_id = self._provider.submit(name, cmd)
+        logger().debug("job_id=%s" % job_id)
         self._mapping[job_id] = name
         self._running_jobs.append(job_id)
 
