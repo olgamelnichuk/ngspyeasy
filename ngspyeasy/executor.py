@@ -1,3 +1,4 @@
+import contextlib
 import multiprocessing
 import subprocess
 import time
@@ -156,8 +157,8 @@ class JobExecutor(multiprocessing.Process):
         self._mapping = dict()
         self._running_jobs = []
 
-    @staticmethod
-    def exceptions():
+    @contextlib.contextmanager
+    def exceptions(self):
         try:
             yield
         except:
