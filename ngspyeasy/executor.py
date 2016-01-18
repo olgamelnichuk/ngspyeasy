@@ -71,7 +71,7 @@ class LSFProvider(Provider):
                 continue
             jobs.append(fields[0])
         err = "".join([l for l in proc.stderr])
-        if err == 'No unfinished job found':
+        if err.startswith('No unfinished job found'):
             return []
         if proc.wait() != 0:
             raise ValueError("Error while listing jobs:\n%s" % (err))
