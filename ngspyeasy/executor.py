@@ -38,8 +38,8 @@ class LSFProvider(Provider):
             command.extend(["-q", str(self._queue)])
 
         if self._log_dir:
-            stderr = os.path.join(self._log_dir, "lsf-%J.err")
-            stdout = os.path.join(self._log_dir, "lsf-%J.out")
+            stderr = os.path.join(self._log_dir, "lsf-%s.err" % name)
+            stdout = os.path.join(self._log_dir, "lsf-%s.out" % name)
             command.extend(["-o", stdout])
             command.extend(["-e", stderr])
 
