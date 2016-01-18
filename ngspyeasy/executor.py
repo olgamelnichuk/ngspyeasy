@@ -64,6 +64,8 @@ class LSFProvider(Provider):
         proc = subprocess.Popen(["bjobs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         jobs = []
         for l in proc.stdout:
+            if l == 'No unfinished job found':
+                return []
             fields = [x for x in l.strip().split(" ") if x]
             try:
                 long(fields[0])
