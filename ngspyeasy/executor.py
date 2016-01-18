@@ -61,7 +61,7 @@ class LSFProvider(Provider):
         return match.group('job_id')
 
     def list(self):
-        proc = subprocess.Popen([], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
+        proc = subprocess.Popen(["bjobs"], stdout=subprocess.PIPE, stderr=subprocess.PIPE, shell=False)
         jobs = []
         for l in proc.stdout:
             fields = [x for x in l.strip().split(" ") if x]
