@@ -7,7 +7,7 @@
 
 - set_fact:
     sample_dir: "{{ curr_sample.project_id }}/{{ curr_sample.sample_id }}"
-    run_date: {{ timestamp.stdout }}
+    run_date: "{{ timestamp.stdout }}"
 
 - set_fact:
     tmp_dir: "{{ sample_dir }}/tmp"
