@@ -11,16 +11,18 @@
   roles: [trim]
   samples: "{{ all_samples }}"
 
+- name: run alignment on a sample
+  roles: [align]
+  samples: "{{ all_samples }}"
 
+- name: run realignment on a sample
+  roles: [realn]
+  samples: "{{ all_samples }}"
 
+- name: run BQSR on a sample
+  roles: [bsqr]
+  samples: "{{ all_samples }}"
 
-
-  - name: split fastq
-    role: [split_fastq]
-
-  - name: align fastq parts
-    role: [bwa, stampy]
-    files: "{{ split_dir }}/*"
-
-  - name: merge alignments
-    role: [merge_alignments]
+- name: run variant caller on a sample
+  roles: [vc]
+  samples: "{{ all_samples }}"
