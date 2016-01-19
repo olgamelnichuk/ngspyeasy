@@ -5,10 +5,10 @@
     FASTQ_DIR: "{{ pipeman_projects_dir }}/{{ fastq_dir }}"
     FQ1: "{{ pipeman_projects_dir }}/{{ fq1 }}"
     FQ2: "{{ pipeman_projects_dir }}/{{ fq2 }}"
-    PAIRED_FQ1: {{ pipeman_projects_dir }}/{{ paired_fq1 }}
-    PAIRED_FQ2: {{ pipeman_projects_dir }}/{{ paired_fq2 }}
-    UPAIRED_FQ1: {{ pipeman_projects_dir }}/{{ unpaired_fq1 }}
-    UNPAIRED_FQ2: {{ pipeman_projects_dir }}/{{ unpaired_fq2 }}
+    PAIRED_FQ1: "{{ pipeman_projects_dir }}/{{ paired_fq1 }}"
+    PAIRED_FQ2: "{{ pipeman_projects_dir }}/{{ paired_fq2 }}"
+    UPAIRED_FQ1: "{{ pipeman_projects_dir }}/{{ unpaired_fq1 }}"
+    UNPAIRED_FQ2: "{{ pipeman_projects_dir }}/{{ unpaired_fq2 }}"
 
     paired_fq1_html: "{{ paired_fq1 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
     paired_fq2_html: "{{ paired_fq2 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
