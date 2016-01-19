@@ -10,7 +10,7 @@
     TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
     BAM_PREFIX: "{{ bam_prefix }}"
     RUNDATE: "{{ run_date }}"
-    PLATFORM_UNIT: "{{ platform_unit.output }}"
+    PLATFORM_UNIT: "{{ platform_unit.stdout }}"
     NGS_PLATFORM: "{{ curr_sample.ngs_platform }}"
     DNA_PREP_LIBRARY_ID: "{{ curr_sample.dna_prep_library_id }}"
     REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
