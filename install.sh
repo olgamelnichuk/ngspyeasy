@@ -14,5 +14,5 @@ python ${DEST}/ngspyeasy.py \"\$@\"" > /usr/bin/ngspyeasy
 chmod a+x /usr/bin/ngspyeasy
 
 echo "#!/usr/bin/env bash
-python ${DEST}/ngspyeasy_tool.py \"\$@\"" > /usr/bin/ngspyeasy_tool
+python ${DEST}/ngspyeasy_play_run.py \"\$@\"" > /usr/bin/ngspyeasy_play_run
 chmod a+x /usr/bin/ngspyeasy_tool

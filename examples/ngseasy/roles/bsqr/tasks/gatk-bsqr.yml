@@ -1,0 +1,23 @@
+---
+- set_fact:
+    KNOWN_INDELS: "{{ pipeman_resources_dir }}/{{ known_indels }}"
+    KNOWN_SNPS_B138: "{{ pipeman_resources_dir }}/{{ known_snps_b138 }}"
+    KNOWN_SNPS_OMNI: "{{ pipeman_resources_dir }}/{{ known_snps_omni }}"
+    KNOWN_SNPS_1000G: "{{ pipeman_resources_dir }}/{{ known_snps_1000g }}"
+    RECAL_DATA_TABLE: "{{ pipeman_projects_dir }}/{{ reports_dir }}/{{ bam_prefix }}.recal_data.table"
+
+- name: Create gatk-bsqr.sh script
+  template: src="gatk-bsqr.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/gatk-bsqr.sh"
+
+- name: Run gatk-bsqr.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/gatk-bsqr.sh
+    image: compbio/ngseasy-gatk:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ bsqr_bam_out }}"
+  register: bsqr_output
+
+- debug: var=bsqr_output.stdout_lines

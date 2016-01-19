@@ -1,0 +1,43 @@
+---
+- set_fact:
+     project_dir: "{{ projects_dir }}/{{ curr_sample.project_id }}"
+
+- set_fact:
+     sample_dir: "{{ project_dir }}/{{ curr_sample.sample_id }}"
+
+- name: create project dir
+  file: path="{{ project_dir }}" state=directory
+
+- name: create sample dir
+  file: path="{{ sample_dir }}" state=directory
+
+- name: create fastq dir
+  file: path="{{ sample_dir }}/fastq" state=directory
+
+- name: create alignments dir
+  file: path="{{ sample_dir }}/alignments" state=directory
+
+- name: create vcf dir
+  file: path="{{ sample_dir }}/vcf" state=directory
+
+- name: create reports dir
+  file: path="{{ sample_dir }}reports" state=directory
+
+- name: create tmp dir
+  file: path="{{ sample_dir }}/tmp" state=directory
+
+- name: check if fastq1 file exists
+  stat: path="{{ raw_fastq_dir }}/{{ curr_sample.fastq1 }}" get_checksum=no get_md5=no
+  register: fastq1_stat
+
+- name: move fastq1 file if it is exists
+  command: mv {{ raw_fastq_dir }}/{{ curr_sample.fastq1 }} {{ sample_dir }}/fastq/{{ curr_sample.fastq1 }}
+  when: fastq1_stat.stat.exists
+
+- name: check if fastq2 file exists
+  stat: path="{{ raw_fastq_dir }}/{{ curr_sample.fastq2 }}" get_checksum=no get_md5=no
+  register: fastq2_stat
+
+- name: move fastq2 file if it is exists
+  command: mv {{ raw_fastq_dir }}/{{ curr_sample.fastq2 }} {{ sample_dir }}/fastq/{{ curr_sample.fastq2 }}
+  when: fastq2_stat.stat.exists

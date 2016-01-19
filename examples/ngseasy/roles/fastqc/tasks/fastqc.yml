@@ -1,0 +1,26 @@
+---
+- set_fact:
+    FQ1: "{{ pipeman_projects_dir }}/{{ fq1 }}"
+    FQ2: "{{ pipeman_projects_dir }}/{{ fq2 }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/ {{ tmp_dir }}"
+    FASTQ_DIR: "{{ pipeman_projects_dir }}/{{ fastq_dir }}"
+
+    fq1_html: "{{ curr_sample.fastq1 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+    fq2_html: "{{ curr_sample.fastq2 | regex_replace('.fastq.gz$', '_fastqc.html') }}"
+
+- name: Create fastqc.sh script
+  template: src="fastqc.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/fastqc.sh"
+
+- name: Run fastqc.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/fastqc.sh
+    image: compbio/ngseasy-fastqc:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ fastq_dir }}/{{ fq1_html }}"
+    - "{{ projects_dir }}/{{ fastq_dir }}/{{ fq2_html }}"
+  register: fastqc_output
+
+- debug: var=fastqc_output.stdout_lines

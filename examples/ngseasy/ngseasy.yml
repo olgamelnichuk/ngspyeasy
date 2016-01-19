@@ -1,0 +1,26 @@
+---
+- name: init sample directories
+  roles: [init]
+  split: "{{ all_samples }}"
+
+- name: run fastqc on a sample
+  roles: [fastqc]
+  samples: "{{ all_samples }}"
+
+- name: run trimmomatic on a sample
+  roles: [trim]
+  samples: "{{ all_samples }}"
+
+
+
+
+
+  - name: split fastq
+    role: [split_fastq]
+
+  - name: align fastq parts
+    role: [bwa, stampy]
+    files: "{{ split_dir }}/*"
+
+  - name: merge alignments
+    role: [merge_alignments]

@@ -1,0 +1,7 @@
+---
+projects_dir: "/home/bob/ngs_projects"
+resources_dir: "/home/bob/ngs_resources"
+raw_fastq_dir: "{{ projects_dir }}/raw_fastq"
+
+pipeman_projects_dir: "/home/pipeman/ngs_projects"
+pipeman_resources_dir: "/home/pipeman/ngs_resources"

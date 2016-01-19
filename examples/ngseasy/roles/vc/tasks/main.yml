@@ -1,0 +1,98 @@
+---
+- set_fact:
+    vc_bam_in: "{{ dupemark_bam }}"
+
+- set_fact:
+    vc_bam_in: "{{ dupemark_realn_bam }}"
+  when: curr_sample.realn != "no-realn" and curr_sample.bsqr == "no-bsqr"
+
+- set_fact:
+    vc_bam_in: "{{ bsqr_bam_out }}"
+  when: curr_sample.realn != "no-realn" and curr_sample.bsqr != "no-bsqr"
+
+- set_fact:
+    vc_filtered_bam: "{{ vc_bam_in | regex_replace('.bam$', '.filtered.bam') }}"
+    mapped_reads_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.mapped.reads.bed"
+    genomecov_bed: "{{ reports_dir }}/{{ vc_bam_in | basename }}.genomecov.bed"
+
+- set_fact:
+    NCPU: "{{ curr_sample.ncpu }}"
+    VC_BAM_IN: "{{ pipeman_projects_dir }}/{{ vc_bam_in }}"
+    VC_FILTERED_BAM: "{{ pipeman_projects_dir }}/{{ vc_filtered_bam }}"
+    MAPPED_READS_BED: "{{ pipeman_projects_dir }}/{{ mapped_reads_bed }}"
+    GENOMECOV_BED: "{{ pipeman_projects_dir }}/{{ genomecov_bed }}"
+
+- name: create callable-regions script
+  template: src="callable-regions.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/callable-regions.sh"
+
+- name: run callable-regions script
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/bam-bsqr.sh
+    image: compbio/ngseasy-base:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ mapped_reads_bed }}"
+    - "{{ projects_dir }}/{{ genomecov_bed }}"
+  register: cov_output
+
+- debug: var=cov_output.stdout_lines
+
+- name: create filter-bam script
+  templte: src="filter-bam.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/filter-bam.sh"
+
+- name: run filter-bam script
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/bam-bsqr.sh
+    image: compbio/ngseasy-base:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ vc_filtered_bam }}"
+  register: filter_output
+
+- debug: var=filter_output.stdout_lines
+
+- set_fact:
+    raw_vcf: "{{ vcf_dir }}/{{ bam_prefix }}.raw.snps.indels.{{ curr_sample.varcaller }}.vcf"
+    vcf_gz: "{{ vcf_dir }}/{{ bam_prefix }}.snps.indels.{{ curr_sample.varcaller }}.vcf.gz"
+
+- set_fact:
+    raw_vcf_gz: "{{ raw_vcf }}.gz"
+
+- set_fact:
+    NCPU: "{{ curr_sample.ncpu }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
+    REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
+    RAW_VCF: "{{ pipeman_projects_dir }}/{{ raw_vcf }}"
+    RAW_VCF_GZ: "{{ pipeman_projects_dir }}/{{ raw_vcf_gz }}"
+    VCF_GZ: "{{ pipeman_projects_dir }}/{{ vcf_gz }}"
+    KNOWN_SNPS_B138: "{{ pipeman_resources_dir }}/{{ known_snps_b138 }}"
+    COVERAGE_MIN: "2"
+    MAP_QUAL: "20"
+    BASE_QUAL: "20"
+
+- set_fact:
+    FILTER_DUPLICATES: "0"
+
+- set_fact:
+    FILTER_DUPLICATES: "1"
+  when: curr_sample.ngs_type == "TGS" or curr_sample.ngs_type == "WEX"
+
+
+- include: HaplotypeCaller.yml
+  when: curr_sample.vc == "HaplotypeCaller"
+
+- include: UnifiedGenotyper.yml
+  when: curr_sample.vc == "UnifiedGenotyper"
+
+- include: freebayes.yml
+  when: curr_sample.vc == "freebayes-parallel" or curr_sample.vc == "freebayes-default"
+
+- include: platypus.yml
+  when: curr_sample.vc == "platypus" or curr_sample.vc == "platypus-default"
+
+- include: ensemble.yml
+  when: sampple.vc == "ensemble"

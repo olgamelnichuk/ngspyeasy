@@ -1,25 +1,23 @@
-# NGSPyEasy
-Python version of [NGSeasy](https://github.com/KHP-Informatics/ngseasy)
+# NGSpyeasy
+Yet another one NGS pipeline runner based on Ansible automation software.
 
-The basic usage is: 
-```
-$ python /<path-to-ngspyeasy>/ngspyeasy.py -c ngseasy_test.config.tsv -d /home/bob/ngs_projects
-```
-where config file is compartible with the one you use in NGSeasy, but NGSPyEasy ignores `PROJECT_DIR` column and uses `ngs_projects` directory instead (just for simplicity). 
+The basic usage is:
 
-`ngspyeasy` doesn't require a specific directory to change to before the start; config file option is just a name of the config file in the `projects_home/config_files` directory, but it accepts the full path as well.
+1. Write your pipeline as Ansible playbook.
 
-The long command line option names are also supported:
+2. Run it with NGSpyeasy runner
+
 ```
-$ python /<path-to-ngspyeasy>/ngspyeasy.py --config ngseasy_test.config.tsv \
-    --projects-dir /home/bob/ngs_projects \
-    --resources-dir /nfs/ngs_resources --verbose
+$ ngspyeasy --samples /path/to/samples.config.tsv --vars pipeline_vars.yml pipeline_playbook.yml --log_dir /path/to/log_dir
 ```
 
-Running just one step is also possible. Here is an example of running `trimmomatic` step:
-```
-$ python /<path-to-ngspyeasy>/ngspyeasy.py trimmomatic --config ngseasy_test.config.tsv \
-    --projects-dir /home/bob/ngs_projects \
-    --resources-dir /nfs/ngs_resources --verbose
-```
+where `samples.config.tsv` contains a list of sample configurations your pipeline scripts use. Here is an example:
 
+```
+sample_id   fastq1  fatsq2
+
+sample1 sample1_1.fastq.gz  sample1_2.fastq.gz
+sample2 sample2_1.fastq.gz  sample2_2.fastq.gz
+sample3 sample3_1.fastq.gz  sample3_2.fastq.gz
+...
+```

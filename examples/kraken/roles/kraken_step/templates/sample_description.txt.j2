@@ -1,0 +1,2 @@
+{{ ['Name', 'File', 'Geometry', 'Barcodes', '5p_ad', '3p_ad', '5p_seq_insert', '3p_seq_insert'] | join("\t") }}
+{{ [curr_sample.name, curr_sample.file, curr_sample.geometry, curr_sample.barcodes, curr_sample['5p_ad'], curr_sample['3p_ad'], curr_sample['5p_seq_insert'], curr_sample['3p_seq_insert']] | join("\t") }}

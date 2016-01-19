@@ -1,0 +1,19 @@
+---
+- set_fact:
+    DBSNP_RECAB: "{{ pipeman_resources_dir }}/{{ dbsnp_recab }}"
+
+- name: Create bam-bsqr.sh script
+  template: src="bam-bsqr.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/bam-bsqr.sh"
+
+- name: Run bam-bsqr.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/bam-bsqr.sh
+    image: compbio/ngseasy-base:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ bsqr_bam_out }}"
+  register: bsqr_output
+
+- debug: var=bsqr_output.stdout_lines

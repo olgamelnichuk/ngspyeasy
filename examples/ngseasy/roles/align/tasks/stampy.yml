@@ -1,0 +1,88 @@
+---
+- set_fact:
+    stampy_tmp_bam: "{{ alignments_dir}}/{{ bam_prefix }}.tmp.bam"
+    dupemark_tmp_bam: "{{ alignments_dir}}/{{ bam_prefix }}.dupemk.tmp.bam"
+    dupemark_cleansam_tmp_bam: "{{ alignments_dir}}/{{ bam_prefix }}.dupemk.tmpcleansam.bam"
+
+- set_fact:
+    REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
+    STAMPY_TMP_BAM: "{{ pipeman_projects_dir }}/{{ stampy_tmp_bam }}"
+
+- name: Create stampy_bwa.sh script
+  template: src="stampy_bwa.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/stampy_bwa.sh"
+
+- name: Run stampy_bwa.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/stampy_bwa.sh
+    image: compbio/ngseasy-bwa:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ stampy_tmp_bam }}"
+  register: bwa_output
+
+- debug: var=bwa_output.stdout_lines
+
+
+- set_fact:
+    STAMPY_VERSION: "stampy-1.0.27"
+    GENOMEINDEX: "{{ pipeman_resources_dir }}/{{ genomeindex }}"
+    DUPEMARK_TMP_BAM: "{{ pipeman_projects_dir }}/{{ dupemark_tmp_bam }}"
+
+- name: Create stampy.sh script
+  template: src="stampy.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/stampy.sh"
+
+- name: Run stampy.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/stampy.sh
+    image: compbio/ngseasy-stampy:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_tmp_bam }}"
+  register: stampy_output
+
+- debug: var=stampy_output.stdout_lines
+
+
+- set_fact:
+    PICARD_VERSION: "picard-tools-1.128"
+    DUPEMARK_CLEANSAM_TMP_BAM: "{{ pipeman_projects_dir }}/{{ dupemark_cleansam_tmp_bam }}"
+
+- name: Create picard_cleansam.sh script
+  template: src="picard_cleansam.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/picard_cleansam.sh"
+
+- name: Run picard_cleansam.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/picard_cleansam.sh
+    image: compbio/ngseasy-picardtools:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_cleansam_tmp_bam }}"
+  register: cleansam_output
+
+- debug: var=cleansam_output.stdout_lines
+
+- name: Create picard_addorreplacegroups.sh script
+  template: src="picard_addorreplacegroups.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/picard_addorreplacegroups.sh"
+
+- name: Run picard_addorreplacegroups.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/picard_addorreplacegroups.sh
+    image: compbio/ngseasy-picardtools:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_bam }}"
+    - "{{ projects_dir }}/{{ dupemark_flagstat }}"
+    - "{{ projects_dir }}/{{ dupemark_bed }}"
+  register: addorreplacegroups_output
+
+- debug: var=addorreplacegroups_output.stdout_lines
+
+

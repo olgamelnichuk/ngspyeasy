@@ -1,0 +1,25 @@
+---
+- name: organise directory structure
+  roles:
+  - {role: kraken_step, step: "organise"}
+  samples: "{{ all_samples }}"
+
+- name: reaper step
+  roles:
+  - {role: kraken_step, step: "reaper"}
+  samples: "{{ all_samples }}"
+
+- name: filter step
+  roles:
+  - {role: kraken_step, step: "filter"}
+  samples: "{{ all_samples }}"
+
+- name: align step
+  roles:
+  - {role: kraken_step, step: "align"}
+  samples: "{{ all_samples }}"
+
+- name: features step
+  roles:
+  - {role: kraken_step, step: "features"}
+  samples: "{{ all_samples }}"

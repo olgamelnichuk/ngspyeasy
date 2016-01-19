@@ -1,0 +1,6 @@
+---
+- include: trim.yml ADAPTER_FA="{{ pipeman_resources_dir }}/{{ adapter_fa }}"
+  when: curr_sample.trim == "atrim"
+
+- include: trim.yml
+  when: curr_sample.trim == "btrim"

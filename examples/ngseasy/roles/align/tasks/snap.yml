@@ -1,0 +1,21 @@
+---
+- set_fact:
+    REFDIR: "{{ pipeman_resources_dir }}/{{ genomedir }}"
+
+- name: Create snap.sh script
+  template: src="snap.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/snap.sh"
+
+- name: Run snap.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/snap.sh
+    image: compbio/ngseasy-snap:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_bam }}"
+    - "{{ projects_dir }}/{{ dupemark_flagstat }}"
+    - "{{ projects_dir }}/{{ dupemark_bed }}"
+  register: snap_output
+
+- debug: var=snap_output.stdout_lines

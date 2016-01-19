@@ -1,0 +1,3 @@
+---
+- include: fastqc.yml
+  when: curr_sample.fastqc == "qc-fastqc"

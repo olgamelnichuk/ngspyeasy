@@ -1,0 +1,13 @@
+---
+- set_fact:
+    NCPU: "{{ curr_sample.ncpu }}"
+    TMP_DIR: "{{ pipeman_projects_dir }}/{{ tmp_dir }}"
+    REFFASTA: "{{ pipeman_resources_dir }}/{{ reffasta }}"
+    BSQR_BAM_IN: "{{ pipeman_projects_dir }}/{{ bsqr_bam_in }}"
+    BSQR_BAM_OUT: "{{ pipeman_projects_dir }}/{{ bsqr_bam_out }}"
+
+- include: bam-bsqr.yml
+  when: curr_sample.bsqr == "bam-bsqr"
+
+- include: gatk-bsqr.yml
+  when: curr_sample.bsqr == "gatk-bsqr"

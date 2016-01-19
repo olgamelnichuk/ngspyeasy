@@ -1,0 +1,31 @@
+---
+- set_fact:
+    sample_description_file: "sample_{{ curr_sample.name }}_description.txt"
+    analysis_dir: "sample_{{ curr_sample.name }}"
+
+- set_fact:
+    options: "--analysisDir={{ analysis_dir }}/ --processors={{ processors }}"
+
+- set_fact:
+    options: "--identifier={{ analysis_dir }} --no-unique"
+  when: step == "organise"
+
+- set_fact:
+    options: "--annotationDir=/wd/Annotation {{ options }}"
+  when: step == "align" or step == "features"
+
+- name: create sample description file
+  template: src="sample_description.txt.j2" dest="{{ kraken_projects_dir }}/{{ sample_description_file }}"
+
+- name: runnning pipeline step
+  dockercmd:
+    command: /kraken/seqimp/bin/imp_commandline.pl --step={{ step }} --description=/wd/{{ sample_description_file }} --user-configuration=/wd/config.txt --dataDir=/wd/fastq/ {{ options }}
+    image: "{{ kraken_image }}"
+    working_dir: "/wd"
+    volumes:
+    - "{{ kraken_projects_dir }}:/wd"
+    - "{{ kraken_annotation_dir }}:/wd/Annotation"
+    rm: yes
+  register: docker_output
+
+- debug: var=docker_output.stdout_lines

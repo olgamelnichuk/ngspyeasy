@@ -1,0 +1,18 @@
+---
+- name: Create bwa.sh script
+  template: src="bwa.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/bwa.sh"
+
+- name: Run bwa.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/bwa.sh
+    image: compbio/ngseasy-bwa:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ dupemark_bam }}"
+    - "{{ projects_dir }}/{{ dupemark_flagstat }}"
+    - "{{ projects_dir }}/{{ dupemark_bed }}"
+  register: bwa_output
+
+- debug: var=bwa_output.stdout_lines

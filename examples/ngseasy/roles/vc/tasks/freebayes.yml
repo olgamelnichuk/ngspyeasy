@@ -1,0 +1,18 @@
+---
+- name: Create freebayes-*.sh script
+  template: src="{{ curr_sample.varcaller }}.sh.j2" dest="{{ projects_dir }}/{{ tmp_dir }}/{{ curr_sample.varcaller }}.sh"
+
+- name: Run freebayes-*.sh script in docker
+  dockercmd:
+    command: /bin/bash {{ pipeman_projects_dir }}/{{ tmp_dir }}/{{ curr_sample.varcaller }}.sh
+    image: compbio/ngseasy-freebayes:1.0-r001
+    volumes:
+    - "{{ projects_dir }}:{{ pipeman_projects_dir }}"
+    rm: yes
+    creates:
+    - "{{ projects_dir }}/{{ raw_vcf }}"
+    - "{{ projects_dir }}/{{ raw_vcf_gz }}"
+    - "{{ projects_dir }}/{{ vcf_gz }}"
+  register: vc_output
+
+- debug: var=vc_output.stdout_lines
